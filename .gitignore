@@ -1,3 +1,9 @@
 bin/
 obj/
 /packages/
+
+*.dmp
+*.out
+*.log
+*.tmp
+
