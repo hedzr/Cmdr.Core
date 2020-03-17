@@ -189,19 +189,22 @@ namespace mdxlib.MDict
                 //读取和解压缩一级索引表
                 LoadKwIndex1Table(fs, fs.Name);
 
-                var posSeg1BlockStart = fs.Position;
-                //二级索引表
-                if ( //this.DictHeader.GeneratedByEngineVersion != "1.2" &&
-                    this.DictIndex.TotalEntries < 630000)
+                if (walkOnContentIndexTable)
                 {
-                    LoadKwIndex2Table(fs, fs.Name);
+                    var posSeg1BlockStart = fs.Position;
+                    //二级索引表
+                    if ( //this.DictHeader.GeneratedByEngineVersion != "1.2" &&
+                        this.DictIndex.TotalEntries < 630000)
+                    {
+                        LoadKwIndex2Table(fs, fs.Name);
 
-                    // segment 2
-                    LoadContentIndexTable(fs, fs.Name, posSeg1BlockStart);
-                }
-                else
-                {
-                    ErrorLog($"   没有装载二级索引表(因条目数太多): {this.DictIndex.TotalEntries} entries.");
+                        // segment 2
+                        LoadContentIndexTable(fs, fs.Name, posSeg1BlockStart);
+                    }
+                    else
+                    {
+                        ErrorLog($"   没有装载二级索引表(因条目数太多): {this.DictIndex.TotalEntries} entries.");
+                    }
                 }
 
                 return true;
@@ -601,7 +604,7 @@ namespace mdxlib.MDict
                         if (mod8 == 15) Log("");
                     }
 
-                    write_file(CompressUtil.stripPathExt(fsName) + ".seg1.out.dmp", _seg1.IndexesRawData.ToArray(), j1);
+                    writeFile(CompressUtil.stripPathExt(fsName) + ".seg1.out.dmp", _seg1.IndexesRawData.ToArray(), j1);
                 }
 
                 Log("");
@@ -617,7 +620,7 @@ namespace mdxlib.MDict
                     using (var outs = new MemoryStream(arrayOfByte7))
                     {
                         // CompressUtil.InflaterDecompressBuffer(_seg1.IndexesRawData.ToArray(), 0, j1, outs);
-                        CompressUtil.InflateBufferWithPureZlib(_seg1.IndexesRawData.ToArray(), i1, outs);
+                        CompressUtil.InflateBufferWithPureZlib(_seg1.IndexesRawData.ToArray(), j1, outs);
                     }
 
                     ok = arrayOfByte7.Length == (int) _seg0.Seg1UncompressedSize;
@@ -636,7 +639,7 @@ namespace mdxlib.MDict
 
                     if (debugModeEnable)
                     {
-                        write_file(CompressUtil.stripPathExt(fsName) + ".seg1.out.decomp.dmp", arrayOfByte7);
+                        writeFile(CompressUtil.stripPathExt(fsName) + ".seg1.out.decomp.dmp", arrayOfByte7);
                     }
 
                     #endregion
@@ -940,8 +943,8 @@ namespace mdxlib.MDict
                     startPos, startPos + kwi.CompressedSize, 0, kwiIdx, kwi.CompressedSize, kwi.UncompressedSize,
                     kwi.Keyword, kwi.KeywordEnd, kwi.CountOfEntries));
 
-                var magicNum = this.readUInt32(fs);
-                var j2 = this.readUInt32(fs);
+                var magicNum = readUInt32(fs);
+                var j2 = readUInt32(fs);
                 //不必进行校验，没有确定的标志。if ((kwi_idx==0 && (uint)j2 == 0xfd35fc4dU) || kwi_idx > 0 )
                 {
                     var rawData = new byte[kwi.CompressedSize - 8];
@@ -965,7 +968,7 @@ namespace mdxlib.MDict
 
                         try
                         {
-                            byte[] txt = CompressUtil.InflaterDecompress(rawData, 0, rawData.Length);
+                            var txt = CompressUtil.InflaterDecompress(rawData, 0, rawData.Length, false);
 
                             #region debug
 
@@ -1019,7 +1022,7 @@ namespace mdxlib.MDict
                         {
                             ErrorLog(ex.ToString());
                             var path = $"{CompressUtil.stripPathExt(fsName)}.seg1.kwi.{kwiIdx:D5}.raw.v2.0.prb";
-                            write_file(path, rawData);
+                            writeFile(path, rawData);
                             //write_file(CompressUtil.stripPathExt(fsName) + string.Format(".seg1.kwi.{0:D5}.bin.v2.0.prb", kwi_idx), rawdata);
                             //throw ex;
                             continue;
@@ -1082,7 +1085,7 @@ namespace mdxlib.MDict
                                 {
                                     Log(ex.ToString());
                                     var path = $"{CompressUtil.stripPathExt(fsName)}.seg1.kwi.{kwiIdx:D5}.raw.v1.x.prb";
-                                    write_file(path, rawData);
+                                    writeFile(path, rawData);
                                     //write_file(CompressUtil.stripPathExt(fsName) + string.Format(".seg1.kwi.{0:D5}.bin.v1.x.prb", kwi_idx), rawdata);
                                     //throw ex;
                                     continue;
@@ -1252,7 +1255,7 @@ namespace mdxlib.MDict
                                 {
                                     ErrorLog("BAD");
                                     var path = $"{CompressUtil.stripPathExt(fsName)}.seg1.kwi.{kwiIdx:D5}.raw.v1.2.prb";
-                                    write_file(path, rawData);
+                                    writeFile(path, rawData);
                                     //write_file(CompressUtil.stripPathExt(fsName) + string.Format(".seg1.kwi.{0:D5}.bin.v1.2.prb", kwi_idx), rawdata);
                                 }
                                 else
@@ -1609,7 +1612,7 @@ namespace mdxlib.MDict
                             {
                                 Debug.WriteLine(ex);
                                 var path = $"{CompressUtil.stripPathExt(fsName)}.seg2.cti.{k:D5}.prb";
-                                write_file(path, rawData, rawData.Length);
+                                writeFile(path, rawData, rawData.Length);
                             }
                         }
 
@@ -1848,7 +1851,7 @@ namespace mdxlib.MDict
                         //byte[] txt = CompressUtil.InflaterDecompress(rawdata, 0, rawdata.Length);
 
                         var path = $"{CompressUtil.stripPathExt(fs.Name)}.ctt.{kwi2.CIIndex:D5}.raw";
-                        write_file(path, rawData);
+                        writeFile(path, rawData);
                         //seg2name1 = CompressUtil.stripPathExt(fs.Name) + ".ctt.blk." + kwi2.ContentBlockIndex + ".bin";
                         //using (FileStream fsOut = File.Create(seg2name1))
                         //{
@@ -2001,7 +2004,7 @@ namespace mdxlib.MDict
 
         #region small helpers,
 
-        int xreadInt32(Stream fs)
+        private static int xreadInt32(Stream fs)
         {
             uint x = 0;
             x |= (uint) fs.ReadByte() << 24;
@@ -2011,7 +2014,7 @@ namespace mdxlib.MDict
             return (int) x;
         }
 
-        uint readUInt32(Stream fs)
+        private static uint readUInt32(Stream fs)
         {
             uint x = 0;
             x |= (uint) fs.ReadByte() << 24;
@@ -2021,27 +2024,27 @@ namespace mdxlib.MDict
             return x;
         }
 
-        int xreadInt32(byte[] b, int offset)
+        private static int xreadInt32(byte[] b, int offset)
         {
             uint x = 0;
             x |= (uint) b[offset++] << 24;
             x |= (uint) b[offset++] << 16;
             x |= (uint) b[offset++] << 8;
-            x |= (uint) b[offset++];
+            x |= (uint) b[offset];
             return (int) x;
         }
 
-        uint readUInt32(byte[] b, int offset)
+        private static uint readUInt32(byte[] b, int offset)
         {
             uint x = 0;
             x |= (uint) b[offset++] << 24;
             x |= (uint) b[offset++] << 16;
             x |= (uint) b[offset++] << 8;
-            x |= (uint) b[offset++];
+            x |= (uint) b[offset];
             return x;
         }
 
-        int xreadInt32Intel(Stream fs)
+        private static int xreadInt32Intel(Stream fs)
         {
             uint x = 0;
             x |= (uint) fs.ReadByte();
@@ -2051,7 +2054,7 @@ namespace mdxlib.MDict
             return (int) x;
         }
 
-        uint readUInt32Intel(Stream fs)
+        private static uint readUInt32Intel(Stream fs)
         {
             uint x = 0;
             x |= (uint) fs.ReadByte();
@@ -2061,7 +2064,7 @@ namespace mdxlib.MDict
             return x;
         }
 
-        long xreadInt64(Stream fs)
+        private static long xreadInt64(Stream fs)
         {
             ulong x = 0;
             x |= ((ulong) (uint) fs.ReadByte() << 56);
@@ -2075,7 +2078,7 @@ namespace mdxlib.MDict
             return (long) x;
         }
 
-        ulong readUInt64(Stream fs)
+        private static ulong readUInt64(Stream fs)
         {
             ulong x = 0;
             x |= ((ulong) (uint) fs.ReadByte() << 56);
@@ -2089,7 +2092,7 @@ namespace mdxlib.MDict
             return x;
         }
 
-        long xreadInt64(byte[] b, int offset)
+        private static long xreadInt64(byte[] b, int offset)
         {
             ulong x = 0;
             x |= ((ulong) (uint) b[offset++] << 56);
@@ -2099,11 +2102,11 @@ namespace mdxlib.MDict
             x |= ((ulong) (uint) b[offset++] << 24);
             x |= ((ulong) (uint) b[offset++] << 16);
             x |= ((ulong) (uint) b[offset++] << 8);
-            x |= ((ulong) (uint) b[offset++]);
+            x |= ((ulong) (uint) b[offset]);
             return (long) x;
         }
 
-        ulong readUInt64(byte[] b, int offset)
+        private static ulong readUInt64(byte[] b, int offset)
         {
             ulong x = 0;
             x |= ((ulong) (uint) b[offset++] << 56);
@@ -2113,27 +2116,27 @@ namespace mdxlib.MDict
             x |= ((ulong) (uint) b[offset++] << 24);
             x |= ((ulong) (uint) b[offset++] << 16);
             x |= ((ulong) (uint) b[offset++] << 8);
-            x |= ((ulong) (uint) b[offset++]);
+            x |= ((ulong) (uint) b[offset]);
             return x;
         }
 
-        short xreadInt16(byte[] b, int offset)
+        private static short xreadInt16(byte[] b, int offset)
         {
             ushort x = 0;
             x |= (ushort) ((uint) b[offset++] << 8);
-            x |= (ushort) ((uint) b[offset++]);
+            x |= (ushort) ((uint) b[offset]);
             return (short) x;
         }
 
-        ushort readUInt16(byte[] b, int offset)
+        private static ushort readUInt16(byte[] b, int offset)
         {
             ushort x = 0;
             x |= (ushort) ((uint) b[offset++] << 8);
-            x |= (ushort) ((uint) b[offset++]);
+            x |= (ushort) ((uint) b[offset]);
             return x;
         }
 
-        DateTime readFileTime(Stream fs)
+        private static DateTime readFileTime(Stream fs)
         {
             long x64;
             uint lo = readUInt32Intel(fs);
@@ -2146,7 +2149,7 @@ namespace mdxlib.MDict
             return DateTime.FromFileTime(x64);
         }
 
-        string readString(Stream fs, int bytes)
+        private static string readString(Stream fs, int bytes)
         {
             byte[] buf = new byte[bytes];
             int size = fs.Read(buf, 0, bytes);
@@ -2154,27 +2157,28 @@ namespace mdxlib.MDict
             return Encoding.Unicode.GetString(buf);
         }
 
-        private void write_file(string name, byte[] content)
+        private static void writeFile(string name, byte[] content)
         {
             //string seg2name1 = CompressUtil.stripPathExt(fs.Name) + ".seg2.idx.dmp";
             using var fsOut = File.Create(name);
             fsOut.Write(content, 0, content.Length);
         }
 
-        private void write_file(string name, byte[] content, int length)
+        private static void writeFile(string name, byte[] content, int length)
         {
             using var fsOut = File.Create(name);
             fsOut.Write(content, 0, length);
         }
 
         #endregion
-        
-        public new void Dispose()
-        {
-            Console.WriteLine("MDictLoader.Dispose()");
-            Shutdown();
-        }
-        
-        public bool debugModeEnable = true;
+
+        // public new void Dispose()
+        // {
+        //     Console.WriteLine("MDictLoader.Dispose()");
+        //     Shutdown();
+        // }
+
+        public bool debugModeEnable = false;
+        public bool walkOnContentIndexTable = false;
     }
 }

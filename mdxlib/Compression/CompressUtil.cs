@@ -608,44 +608,42 @@ namespace mdxlib.Compression
             //int bufferSize = 1024;
             var buffer = new byte[BufferSize];
             var decompressor = new ZlibCodec();
-        
+
             var rc = decompressor.InitializeInflate();
-        
+
             decompressor.InputBuffer = compressedBytes;
             decompressor.NextIn = 0;
             decompressor.AvailableBytesIn = length;
-        
+
             decompressor.OutputBuffer = buffer;
-        
+
             // pass 1: inflate 
             do
             {
                 decompressor.NextOut = 0;
                 decompressor.AvailableBytesOut = buffer.Length;
                 rc = decompressor.Inflate(FlushType.None);
-        
+
                 if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
                     throw new Exception("inflating: " + decompressor.Message);
-        
+
                 outs.Write(decompressor.OutputBuffer, 0, buffer.Length - decompressor.AvailableBytesOut);
-            }
-            while (decompressor.AvailableBytesIn > 0 || decompressor.AvailableBytesOut == 0);
-        
+            } while (decompressor.AvailableBytesIn > 0 && decompressor.AvailableBytesOut == 0);
+
             // pass 2: finish and flush
             do
             {
                 decompressor.NextOut = 0;
                 decompressor.AvailableBytesOut = buffer.Length;
                 rc = decompressor.Inflate(FlushType.Finish);
-        
+
                 if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
                     throw new Exception("inflating: " + decompressor.Message);
-        
+
                 if (buffer.Length - decompressor.AvailableBytesOut > 0)
                     outs.Write(buffer, 0, buffer.Length - decompressor.AvailableBytesOut);
-            }
-            while (decompressor.AvailableBytesIn > 0 || decompressor.AvailableBytesOut == 0);
-        
+            } while (decompressor.AvailableBytesIn > 0 && decompressor.AvailableBytesOut == 0);
+
             decompressor.EndInflate();
         }
 
