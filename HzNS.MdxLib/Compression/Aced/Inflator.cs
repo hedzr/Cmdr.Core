@@ -82,7 +82,7 @@ public static void Release()
 
 using System;
 
-namespace mdxlib.Compression.Aced
+namespace HzNS.MdxLib.Compression.Aced
 {
     // AcedInflator class (not thread-safe)
 

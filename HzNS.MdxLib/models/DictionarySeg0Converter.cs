@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 
-namespace mdxlib.models
+namespace HzNS.MdxLib.models
 {
     #region DictionarySeg0Converter
 

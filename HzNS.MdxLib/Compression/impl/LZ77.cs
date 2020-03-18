@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace mdxlib.Compression.impl
+namespace HzNS.MdxLib.Compression.impl
 {
     public class LZ77
     {

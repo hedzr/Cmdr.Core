@@ -1,4 +1,4 @@
-﻿namespace mdxlib.models
+﻿namespace HzNS.MdxLib.models
 {
     public class DictItem
     {

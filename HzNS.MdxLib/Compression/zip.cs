@@ -6,7 +6,7 @@ using System.Xml;
 using System.Web;
 using Microsoft.AspNetCore.Http;
 
-namespace mdxlib.Compression
+namespace HzNS.MdxLib.Compression
 {
     /// <summary> 
     /// zip 压缩 

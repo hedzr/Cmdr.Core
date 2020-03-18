@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using mdxlib.MDict;
+using HzNS.Cmdr;
+using HzNS.MdxLib.MDict;
 
 namespace mdx
 {
@@ -12,6 +13,8 @@ namespace mdx
     {
         static void Main(string[] args)
         {
+            Entry.From(args);
+            
             Console.WriteLine("Hello World!");
 
             foreach (var filename in args)
@@ -33,7 +36,7 @@ namespace mdx
                 }
             }
 
-            // mdxlib.open("*.mdx,mdd,sdx,wav,png,...") => mdxfile
+            // HzNS.MdxLib.open("*.mdx,mdd,sdx,wav,png,...") => mdxfile
             // mdxfile.preload()
             // mdxfile.getEntry("beta") => entryInfo.{item,index}
             // mdxfile.find("a")           // "a", "a*b", "*b"

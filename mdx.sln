@@ -2,7 +2,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mdx", "mdx\mdx.csproj", "{D9F56942-50D9-43E2-9CB2-AB8098D00B68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mdxlib", "mdxlib\mdxlib.csproj", "{6252F6CF-3471-4BBA-8EBE-B1FED2E76F2E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HzNS.MdxLib", "HzNS.MdxLib\HzNS.MdxLib.csproj", "{6252F6CF-3471-4BBA-8EBE-B1FED2E76F2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{4B588651-C547-48BA-A2BA-94A8A9A560F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HzNS.Cmdr", "HzNS.Cmdr\HzNS.Cmdr.csproj", "{07FDB28A-58E2-42BF-95DD-93F2951AA6F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +22,13 @@ Global
 		{6252F6CF-3471-4BBA-8EBE-B1FED2E76F2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6252F6CF-3471-4BBA-8EBE-B1FED2E76F2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6252F6CF-3471-4BBA-8EBE-B1FED2E76F2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B588651-C547-48BA-A2BA-94A8A9A560F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B588651-C547-48BA-A2BA-94A8A9A560F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B588651-C547-48BA-A2BA-94A8A9A560F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B588651-C547-48BA-A2BA-94A8A9A560F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07FDB28A-58E2-42BF-95DD-93F2951AA6F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07FDB28A-58E2-42BF-95DD-93F2951AA6F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07FDB28A-58E2-42BF-95DD-93F2951AA6F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07FDB28A-58E2-42BF-95DD-93F2951AA6F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

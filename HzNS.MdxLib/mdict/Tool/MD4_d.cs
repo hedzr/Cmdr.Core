@@ -1,4 +1,4 @@
-﻿namespace mdxlib.MDict.Tool
+﻿namespace HzNS.MdxLib.MDict.Tool
 {
     /// <summary>
     /// mdx/mdd 专用版本

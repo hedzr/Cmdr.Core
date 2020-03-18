@@ -4,9 +4,9 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using System.Xml.Serialization;
-using mdxlib.MDict.Tool;
+using HzNS.MdxLib.MDict.Tool;
 
-namespace mdxlib.models
+namespace HzNS.MdxLib.models
 {
     public enum RegisterByEnum
     {

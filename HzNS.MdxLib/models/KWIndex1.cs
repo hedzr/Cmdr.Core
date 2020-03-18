@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace mdxlib.models
+namespace HzNS.MdxLib.models
 {
     [TypeConverter(typeof(KwIndexConverter)), Description("展开以查看应用程序的拼写选项。")]
     public class KwIndex1

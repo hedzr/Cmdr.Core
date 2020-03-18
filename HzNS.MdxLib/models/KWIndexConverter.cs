@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 
-namespace mdxlib.models
+namespace HzNS.MdxLib.models
 {
     #region KWIndexConverter
 

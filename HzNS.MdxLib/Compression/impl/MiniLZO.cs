@@ -24,7 +24,7 @@ using System.Diagnostics;
  */
 
 
-namespace mdxlib.Compression.impl
+namespace HzNS.MdxLib.Compression.impl
 {
     public static class MiniLZO
     {

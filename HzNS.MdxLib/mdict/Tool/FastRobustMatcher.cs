@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace mdxlib.MDict.Tool
+namespace HzNS.MdxLib.MDict.Tool
 {
     public class FastRobustMatcher<T>
     {

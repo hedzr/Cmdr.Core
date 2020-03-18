@@ -20,7 +20,7 @@ public must be open source) or under a commercial license if such has been
 acquired (see http://www.quicklz.com/order.html).
 */
 
-namespace mdxlib.Compression.impl
+namespace HzNS.MdxLib.Compression.impl
 {
     /// <summary>
     /// http://www.codeproject.com/KB/recipes/ManagedQLZ.aspx

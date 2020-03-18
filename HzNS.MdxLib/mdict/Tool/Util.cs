@@ -4,7 +4,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace mdxlib.MDict.Tool
+namespace HzNS.MdxLib.MDict.Tool
 {
     #region class Util, Util::FromXml, Util::ToXml
 

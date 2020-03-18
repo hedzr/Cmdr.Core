@@ -22,7 +22,7 @@ public static int Adler32(byte[] bytes, int offset, int length)
 
 using System;
 
-namespace mdxlib.Compression.Aced
+namespace HzNS.MdxLib.Compression.Aced
 {
     // AcedUtils class
 

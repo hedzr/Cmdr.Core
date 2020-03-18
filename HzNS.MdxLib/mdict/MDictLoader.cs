@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using mdxlib.Compression;
-using mdxlib.Compression.impl;
-using mdxlib.MDict.Tool;
-using mdxlib.models;
+using HzNS.MdxLib.Compression;
+using HzNS.MdxLib.Compression.impl;
+using HzNS.MdxLib.MDict.Tool;
+using HzNS.MdxLib.models;
 
-namespace mdxlib.MDict
+namespace HzNS.MdxLib.MDict
 {
     public class MDictLoader : Loader
     {

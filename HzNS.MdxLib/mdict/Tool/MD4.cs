@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace mdxlib.MDict.Tool
+namespace HzNS.MdxLib.MDict.Tool
 {
     /// <summary>
     /// 标准的MD4算法。

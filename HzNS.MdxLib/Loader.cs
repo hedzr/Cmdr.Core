@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
-using mdxlib.MDict.Tool;
-using mdxlib.models;
+using HzNS.MdxLib.MDict.Tool;
+using HzNS.MdxLib.models;
 
-namespace mdxlib
+namespace HzNS.MdxLib
 {
     #region Dictionary File Loader
 

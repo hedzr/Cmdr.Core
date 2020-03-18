@@ -140,7 +140,7 @@ using System;
 // http://www.codeproject.com/KB/cs/IMCompressor.aspx
 // Better Than Zip Algorithm For Compressing In-Memory Data
 //      By Andrey Dryazgov | 24 May 2006
-namespace mdxlib.Compression.Aced
+namespace HzNS.MdxLib.Compression.Aced
 {
     // AcedCompressionLevel enumeration
 

@@ -2,15 +2,15 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using mdxlib.Compression.Aced;
-using mdxlib.Compression.impl;
+using HzNS.MdxLib.Compression.Aced;
+using HzNS.MdxLib.Compression.impl;
 using ICSharpCode.SharpZipLib.BZip2;
 using Ionic.Zlib;
 
 //using ICSharpCode.SharpZipLib.LZW;
 
 
-namespace mdxlib.Compression
+namespace HzNS.MdxLib.Compression
 {
     /// <summary>
     /// GZIP: http://blog.lugru.com/2010/06/compressing-decompressing-web-gzip-stream/
@@ -20,7 +20,7 @@ namespace mdxlib.Compression
     ///     [3] QUAZIP – http://quazip.sourceforge.net/
     /// .
     /// </summary>
-    public class CompressUtil
+    public static class CompressUtil
     {
         public static string stripPathExt(string pathName)
         {
@@ -373,118 +373,118 @@ namespace mdxlib.Compression
 
         #region IonicZip/IonicZlib Deflate
 
-        /// <summary>
-        /// IonicZlib库所实现的压缩功能
-        /// </summary>
-        /// <param name="ins"></param>
-        /// <param name="outs"></param>
-        /// <param name="level"></param>
-        public static void DeflateBufferWithIonicZlib(Stream ins, Stream outs, Ionic.Zlib.CompressionLevel level)
-        {
-            int cnt;
-            byte[] buffer = new byte[BufferSize];
-            while ((cnt = ins.Read(buffer, 0, BufferSize)) > 0)
-            {
-                DeflateBufferWithIonicZlib(buffer, cnt, outs, level);
-            }
-        }
-
-        public static void DeflateBufferWithIonicZlib(byte[] uncompressedBytes, int length, Stream outs,
-            Ionic.Zlib.CompressionLevel level)
-        {
-            //int bufferSize = 1024;
-            byte[] buffer = new byte[BufferSize];
-            ZlibCodec compressor = new ZlibCodec();
-            int rc = compressor.InitializeDeflate(level);
-
-            compressor.InputBuffer = uncompressedBytes;
-            compressor.AvailableBytesIn = length;
-            compressor.NextIn = 0;
-
-            compressor.OutputBuffer = buffer;
-
-            // pass 1: deflate 
-            do
-            {
-                compressor.NextOut = 0;
-                compressor.AvailableBytesOut = buffer.Length;
-                rc = compressor.Deflate(FlushType.None);
-
-                if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
-                    throw new Exception("deflating: " + compressor.Message);
-
-                outs.Write(compressor.OutputBuffer, 0, buffer.Length - compressor.AvailableBytesOut);
-            } while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
-
-            // pass 2: finish and flush
-            do
-            {
-                compressor.NextOut = 0;
-                compressor.AvailableBytesOut = buffer.Length;
-                rc = compressor.Deflate(FlushType.Finish);
-
-                if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
-                    throw new Exception("deflating: " + compressor.Message);
-
-                if (buffer.Length - compressor.AvailableBytesOut > 0)
-                    outs.Write(buffer, 0, buffer.Length - compressor.AvailableBytesOut);
-            } while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
-
-            compressor.EndDeflate();
-        }
-
-        private static byte[] DeflateBuffer(byte[] uncompressedBytes, Ionic.Zlib.CompressionLevel level)
-        {
-            const int bufferSize = 1024;
-            var buffer = new byte[bufferSize];
-            var compressor = new ZlibCodec();
-
-            Console.WriteLine("\n============================================");
-            Console.WriteLine("Size of Buffer to Deflate: {0} bytes.", uncompressedBytes.Length);
-            var ms = new MemoryStream();
-
-            var rc = compressor.InitializeDeflate(level);
-
-            compressor.InputBuffer = uncompressedBytes;
-            compressor.AvailableBytesIn = uncompressedBytes.Length;
-            compressor.NextIn = 0;
-
-            compressor.OutputBuffer = buffer;
-
-            // pass 1: deflate 
-            do
-            {
-                compressor.NextOut = 0;
-                compressor.AvailableBytesOut = buffer.Length;
-                rc = compressor.Deflate(FlushType.None);
-
-                if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
-                    throw new Exception("deflating: " + compressor.Message);
-
-                ms.Write(compressor.OutputBuffer, 0, buffer.Length - compressor.AvailableBytesOut);
-            } while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
-
-            // pass 2: finish and flush
-            do
-            {
-                compressor.NextOut = 0;
-                compressor.AvailableBytesOut = buffer.Length;
-                rc = compressor.Deflate(FlushType.Finish);
-
-                if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
-                    throw new Exception("deflating: " + compressor.Message);
-
-                if (buffer.Length - compressor.AvailableBytesOut > 0)
-                    ms.Write(buffer, 0, buffer.Length - compressor.AvailableBytesOut);
-            } while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
-
-            compressor.EndDeflate();
-
-            ms.Seek(0, SeekOrigin.Begin);
-            var compressedBytes = new byte[compressor.TotalBytesOut];
-            ms.Read(compressedBytes, 0, compressedBytes.Length);
-            return compressedBytes;
-        }
+        // /// <summary>
+        // /// IonicZlib库所实现的压缩功能
+        // /// </summary>
+        // /// <param name="ins"></param>
+        // /// <param name="outs"></param>
+        // /// <param name="level"></param>
+        // public static void DeflateBufferWithIonicZlib(Stream ins, Stream outs, Ionic.Zlib.CompressionLevel level)
+        // {
+        //     int cnt;
+        //     byte[] buffer = new byte[BufferSize];
+        //     while ((cnt = ins.Read(buffer, 0, BufferSize)) > 0)
+        //     {
+        //         DeflateBufferWithIonicZlib(buffer, cnt, outs, level);
+        //     }
+        // }
+        //
+        // public static void DeflateBufferWithIonicZlib(byte[] uncompressedBytes, int length, Stream outs,
+        //     Ionic.Zlib.CompressionLevel level)
+        // {
+        //     //int bufferSize = 1024;
+        //     byte[] buffer = new byte[BufferSize];
+        //     ZlibCodec compressor = new ZlibCodec();
+        //     int rc = compressor.InitializeDeflate(level);
+        //
+        //     compressor.InputBuffer = uncompressedBytes;
+        //     compressor.AvailableBytesIn = length;
+        //     compressor.NextIn = 0;
+        //
+        //     compressor.OutputBuffer = buffer;
+        //
+        //     // pass 1: deflate 
+        //     do
+        //     {
+        //         compressor.NextOut = 0;
+        //         compressor.AvailableBytesOut = buffer.Length;
+        //         rc = compressor.Deflate(FlushType.None);
+        //
+        //         if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
+        //             throw new Exception("deflating: " + compressor.Message);
+        //
+        //         outs.Write(compressor.OutputBuffer, 0, buffer.Length - compressor.AvailableBytesOut);
+        //     } while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
+        //
+        //     // pass 2: finish and flush
+        //     do
+        //     {
+        //         compressor.NextOut = 0;
+        //         compressor.AvailableBytesOut = buffer.Length;
+        //         rc = compressor.Deflate(FlushType.Finish);
+        //
+        //         if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
+        //             throw new Exception("deflating: " + compressor.Message);
+        //
+        //         if (buffer.Length - compressor.AvailableBytesOut > 0)
+        //             outs.Write(buffer, 0, buffer.Length - compressor.AvailableBytesOut);
+        //     } while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
+        //
+        //     compressor.EndDeflate();
+        // }
+        //
+        // private static byte[] DeflateBuffer(byte[] uncompressedBytes, Ionic.Zlib.CompressionLevel level)
+        // {
+        //     const int bufferSize = 1024;
+        //     var buffer = new byte[bufferSize];
+        //     var compressor = new ZlibCodec();
+        //
+        //     Console.WriteLine("\n============================================");
+        //     Console.WriteLine("Size of Buffer to Deflate: {0} bytes.", uncompressedBytes.Length);
+        //     var ms = new MemoryStream();
+        //
+        //     var rc = compressor.InitializeDeflate(level);
+        //
+        //     compressor.InputBuffer = uncompressedBytes;
+        //     compressor.AvailableBytesIn = uncompressedBytes.Length;
+        //     compressor.NextIn = 0;
+        //
+        //     compressor.OutputBuffer = buffer;
+        //
+        //     // pass 1: deflate 
+        //     do
+        //     {
+        //         compressor.NextOut = 0;
+        //         compressor.AvailableBytesOut = buffer.Length;
+        //         rc = compressor.Deflate(FlushType.None);
+        //
+        //         if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
+        //             throw new Exception("deflating: " + compressor.Message);
+        //
+        //         ms.Write(compressor.OutputBuffer, 0, buffer.Length - compressor.AvailableBytesOut);
+        //     } while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
+        //
+        //     // pass 2: finish and flush
+        //     do
+        //     {
+        //         compressor.NextOut = 0;
+        //         compressor.AvailableBytesOut = buffer.Length;
+        //         rc = compressor.Deflate(FlushType.Finish);
+        //
+        //         if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
+        //             throw new Exception("deflating: " + compressor.Message);
+        //
+        //         if (buffer.Length - compressor.AvailableBytesOut > 0)
+        //             ms.Write(buffer, 0, buffer.Length - compressor.AvailableBytesOut);
+        //     } while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
+        //
+        //     compressor.EndDeflate();
+        //
+        //     ms.Seek(0, SeekOrigin.Begin);
+        //     var compressedBytes = new byte[compressor.TotalBytesOut];
+        //     ms.Read(compressedBytes, 0, compressedBytes.Length);
+        //     return compressedBytes;
+        // }
 
         #endregion
 
@@ -603,6 +603,13 @@ namespace mdxlib.Compression
 
         #endregion
 
+        /// <summary>
+        /// InflateBufferWithPureZlib
+        /// </summary>
+        /// <param name="compressedBytes"></param>
+        /// <param name="length"></param>
+        /// <param name="outs"></param>
+        /// <exception cref="Exception"></exception>
         public static void InflateBufferWithPureZlib(byte[] compressedBytes, int length, Stream outs)
         {
             //int bufferSize = 1024;
