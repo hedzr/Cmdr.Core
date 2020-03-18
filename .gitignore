@@ -7,6 +7,10 @@ obj/
 *.log
 *.tmp
 *.lock
+ref/
+sav/
+save/
+SAVE/
 
 ### VisualStudioCode template
 .vscode/*
