@@ -2,11 +2,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mdx", "mdx\mdx.csproj", "{D9F56942-50D9-43E2-9CB2-AB8098D00B68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HzNS.MdxLib", "HzNS.MdxLib\HzNS.MdxLib.csproj", "{6252F6CF-3471-4BBA-8EBE-B1FED2E76F2E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HzNS.MdxLib.Core", "HzNS.MdxLib.Core\HzNS.MdxLib.Core.csproj", "{6252F6CF-3471-4BBA-8EBE-B1FED2E76F2E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{4B588651-C547-48BA-A2BA-94A8A9A560F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HzNS.Cmdr", "HzNS.Cmdr\HzNS.Cmdr.csproj", "{07FDB28A-58E2-42BF-95DD-93F2951AA6F8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HzNS.Cmdr.Core", "HzNS.Cmdr.Core\HzNS.Cmdr.Core.csproj", "{07FDB28A-58E2-42BF-95DD-93F2951AA6F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

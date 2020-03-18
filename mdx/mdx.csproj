@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\HzNS.Cmdr\HzNS.Cmdr.csproj" />
-        <ProjectReference Include="..\HzNS.MdxLib\HzNS.MdxLib.csproj" />
+        <ProjectReference Include="..\HzNS.Cmdr.Core\HzNS.Cmdr.Core.csproj" />
+        <ProjectReference Include="..\HzNS.MdxLib.Core\HzNS.MdxLib.Core.csproj" />
     </ItemGroup>
 
 </Project>
