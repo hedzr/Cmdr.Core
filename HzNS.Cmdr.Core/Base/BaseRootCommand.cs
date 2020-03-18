@@ -5,9 +5,23 @@ using HzNS.Cmdr.Builder;
 namespace HzNS.Cmdr.Base
 {
     [SuppressMessage("ReSharper", "ConvertToAutoPropertyWhenPossible")]
+    [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-    public class BaseRootCommand : BaseCommand, IRootCommand
+    public abstract class BaseRootCommand : BaseCommand, IRootCommand
     {
+        // ReSharper disable once PublicConstructorInAbstractClass
+        public BaseRootCommand(IAppInfo appInfo)
+        {
+            AddAppInfo(appInfo);
+        }
+
+        // ReSharper disable once PublicConstructorInAbstractClass
+        private BaseRootCommand(string shortTitle, string longTitle, string[] aliases, string description,
+            string descriptionLong, string examples) : base(shortTitle, longTitle, aliases, description,
+            descriptionLong, examples)
+        {
+        }
+
         public IAppInfo AppInfo;
 
         public IRootCommand AddAppInfo(IAppInfo appInfo)

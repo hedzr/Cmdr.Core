@@ -6,7 +6,18 @@ namespace HzNS.Cmdr.Base
 {
     [SuppressMessage("ReSharper", "ConvertToAutoPropertyWhenPossible")]
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-    public class BaseFlag : BaseOpt, IFlag
+    public abstract class BaseFlag : BaseOpt, IFlag
     {
+        // ReSharper disable once PublicConstructorInAbstractClass
+        public BaseFlag()
+        {
+        }
+
+        // ReSharper disable once PublicConstructorInAbstractClass
+        public BaseFlag(string shortTitle, string longTitle, string[] aliases, string description,
+            string descriptionLong, string examples) : base(shortTitle, longTitle, aliases, description,
+            descriptionLong, examples)
+        {
+        }
     }
 }

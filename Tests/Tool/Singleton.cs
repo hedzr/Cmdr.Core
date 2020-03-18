@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace HzNS.Cmdr.Tool
+namespace Tests.Tool
 {
     public class Singleton
     {

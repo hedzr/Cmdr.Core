@@ -51,4 +51,12 @@ namespace HzNS.Cmdr.Builder
 
         bool Match(string s, bool isLongOpt = false);
     }
+
+    public class AppInfo : IAppInfo
+    {
+        public string AppName { get; set; }
+        public string AppVersion { get; set; }
+        public int AppVersionInt { get; set; }
+        public string BuildTime { get; set; }
+    }
 }

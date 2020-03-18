@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Xml.Schema;
 using Autofac;
 using AutofacSerilogIntegration;
 using HzNS.Cmdr;
+using HzNS.Cmdr.Builder;
 using HzNS.Cmdr.Tool;
 using HzNS.MdxLib.MDict;
 using mdx.Cmd;
@@ -19,70 +23,30 @@ namespace mdx
     ///
     /// ll
     /// </summary>
+    [SuppressMessage("ReSharper", "ArrangeTypeMemberModifiers")]
+    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+    [SuppressMessage("ReSharper", "ArrangeTypeModifiers")]
     class Program
     {
-        static void MainX(string[] args)
-        {
-            foreach (var item in FilterWithoutYield())
-            {
-                Console.WriteLine(item); //3，4，5
-            }
-
-            //可以用ToList()从IEnumerable<out T>创建一个List<T>,并获得长度3
-            Console.WriteLine(FilterWithoutYield().ToList().Count());
-            Console.ReadLine();
-        }
-
-        static List<int> Data()
-        {
-            return new List<int> {1, 2, 3, 4, 5};
-        }
-
-        //这种传统方式需要额外创建一个List<int> 增加开销，而且需要把Data()全部加载到内存才能再遍历。
-        static IEnumerable<int> FilterWithoutYield()
-        {
-            List<int> result = new List<int>();
-            foreach (int i in Data())
-            {
-                if (i > 2)
-                    result.Add(i);
-            }
-
-            return result;
-        }
-
-        static IEnumerable<int> FilterWithYield()
-        {
-            foreach (int i in Data())
-            {
-                if (i > 2)
-                    yield return i;
-            }
-
-            yield break; // 迭代器代码使用yield return 语句依次返回每个元素，yield break将终止迭代。
-        }
-
-
         static void Main(string[] args)
         {
-            // using var log = new LoggerConfiguration()
-            //     .MinimumLevel.Debug()
-            //     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-            //     .Enrich.FromLogContext()
-            //     .WriteTo.File(Path.Combine("logs", @"access.log"), rollingInterval: RollingInterval.Day)
-            //     .WriteTo.Console()
-            //     .CreateLogger();
-            // log.Information("Hello, Serilog!");
-            // log.Warning("Goodbye, Serilog.");
+            // Cmdr: A CommandLine Arguments Parser
+            Entry.NewCmdrWorker()
+                //
+                // .UseSerilog((configuration) => configuration.WriteTo.Console().CreateLogger())
+                //
+                .With(RootCmd.New(new AppInfo {AppName = "mdxTool", AppVersion = "1.0.0"},
+                    (root) =>
+                    {
+                        root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
+                            .AddCommand(new TagsAddCmd { })
+                            .AddCommand(new TagsRemoveCmd { })
+                            .AddCommand(new TagsListCmd { })
+                            .AddCommand(new TagsModifyCmd { })
+                        );
+                    }))
+                .Run(args);
 
-            SingletonTest(args);
-
-            //
-            var worker = Entry.NewCmdrWorker(args);
-
-            worker.From(new RootCmd());
-            worker.Run(args);
-            
             // HzNS.MdxLib.Core.Open("*.mdx,mdd,sdx,wav,png,...") => mdxfile
             // mdxfile.Preload()
             // mdxfile.GetEntry("beta") => entryInfo.{item,index}
@@ -105,33 +69,6 @@ namespace mdx
             {
                 _log.Information("Hello!");
             }
-        }
-
-        private static void SingletonTest(string[] args)
-        {
-            // The client code.
-
-            Console.WriteLine(
-                "{0}\n{1}\n\n{2}\n",
-                "If you see the same value, then singleton was reused (yay!)",
-                "If you see different values, then 2 singletons were created (booo!!)",
-                "RESULT:"
-            );
-
-            var process1 = new Thread(() => { TestSingleton("FOO"); });
-            var process2 = new Thread(() => { TestSingleton("BAR"); });
-
-            process1.Start();
-            process2.Start();
-
-            process1.Join();
-            process2.Join();
-        }
-
-        private static void TestSingleton(string value)
-        {
-            var singleton = Singleton.GetInstance(value);
-            Console.WriteLine(singleton.Value);
         }
     }
 }

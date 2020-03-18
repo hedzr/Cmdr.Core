@@ -70,7 +70,7 @@ namespace HzNS.Cmdr
         // }
 
 
-        public static Worker NewCmdrWorker(string[] args)
+        public static Worker NewCmdrWorker(string[] args = null)
         {
             return CreateDefaultWorker(args)
                 .UseSerilog((configuration) => configuration
@@ -86,7 +86,6 @@ namespace HzNS.Cmdr
         {
             var worker = new Worker();
             worker.RunOnce();
-            // return worker.Run(args);
             return worker;
         }
     }
@@ -177,7 +176,7 @@ namespace HzNS.Cmdr
             // no logger
         }
 
-        public Worker From(IRootCommand rootCommand)
+        public Worker With(IRootCommand rootCommand)
         {
             _root = rootCommand;
             return this;
