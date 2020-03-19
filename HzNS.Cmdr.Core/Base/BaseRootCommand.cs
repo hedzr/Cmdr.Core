@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using HzNS.Cmdr.Builder;
 
@@ -9,6 +8,8 @@ namespace HzNS.Cmdr.Base
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public abstract class BaseRootCommand : BaseCommand, IRootCommand
     {
+        public IAppInfo AppInfo;
+
         // ReSharper disable once PublicConstructorInAbstractClass
         public BaseRootCommand(IAppInfo appInfo)
         {
@@ -21,8 +22,6 @@ namespace HzNS.Cmdr.Base
             descriptionLong, examples)
         {
         }
-
-        public IAppInfo AppInfo;
 
         public IRootCommand AddAppInfo(IAppInfo appInfo)
         {

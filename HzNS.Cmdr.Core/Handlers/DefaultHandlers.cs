@@ -15,10 +15,11 @@ namespace HzNS.Cmdr.Handlers
                 $"WARN: Duplicated command char FOUND: '{ch}'. Context: \"{cmd.backtraceTitles}\".");
         };
 
-        public Action<bool, string, ICommand, IBaseFlag>? OnDuplicatedFlagChar { get; set; } = (isShort, ch, cmd, flg) =>
-        {
-            Console.Error.WriteLineAsync(
-                $"WARN: Duplicated flag char FOUND: '{ch}'. Context: \"{cmd.backtraceTitles}\".");
-        };
+        public Action<bool, string, ICommand, IBaseFlag>? OnDuplicatedFlagChar { get; set; } =
+            (isShort, ch, cmd, flg) =>
+            {
+                Console.Error.WriteLineAsync(
+                    $"WARN: Duplicated flag char FOUND: '{ch}'. Context: \"{cmd.backtraceTitles}\".");
+            };
     }
 }

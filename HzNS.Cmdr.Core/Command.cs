@@ -4,6 +4,5 @@ namespace HzNS.Cmdr
 {
     public class Command : BaseCommand
     {
-        
     }
 }

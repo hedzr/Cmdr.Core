@@ -10,9 +10,10 @@ namespace HzNS.Cmdr.Tool
     // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
     public class DeveloperAttribute : Attribute
     {
+        private string level;
+
         // Private fields.
         private string name;
-        private string level;
         private bool reviewed;
 
         // This constructor defines two required parameters: name and level.
@@ -21,7 +22,7 @@ namespace HzNS.Cmdr.Tool
         {
             this.name = name;
             this.level = level;
-            this.reviewed = false;
+            reviewed = false;
         }
 
         // Define Name property.

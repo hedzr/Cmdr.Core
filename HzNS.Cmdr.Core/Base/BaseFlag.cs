@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using HzNS.Cmdr.Builder;
 
 namespace HzNS.Cmdr.Base
@@ -24,6 +23,10 @@ namespace HzNS.Cmdr.Base
         public T DefaultValue { get; set; }
         public string PlaceHolder { get; set; }
 
+        public object getDefaultValue()
+        {
+            return DefaultValue;
+        }
 
 
         public BaseFlag<T> AddDefaultValue(T val)
@@ -31,12 +34,6 @@ namespace HzNS.Cmdr.Base
             DefaultValue = val;
             return this;
         }
-
-        public object getDefaultValue()
-        {
-            return DefaultValue;
-        }
-
 
 
         public override string ToString()

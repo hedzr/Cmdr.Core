@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
 using System.Diagnostics.CodeAnalysis;
 
 namespace HzNS.Cmdr.Builder
@@ -31,22 +30,22 @@ namespace HzNS.Cmdr.Builder
         List<ICommand> SubCommands { get; set; }
         List<IBaseFlag> Flags { get; set; }
 
+        // ReSharper disable once InconsistentNaming
+        string backtraceTitles { get; }
+
         ICommand AddCommand(ICommand cmd);
         ICommand AddFlag<T>(IFlag<T> flag);
 
         IRootCommand FindRoot();
-
-        // ReSharper disable once InconsistentNaming
-        string backtraceTitles { get; }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public interface IBaseFlag : IBaseOpt
     {
-        object getDefaultValue();
         string PlaceHolder { get; set; }
+        object getDefaultValue();
     }
-    
+
     public interface IFlag<T> : IBaseFlag // , IOnSet
     {
         // IFlag AddFlag(IFlag flag);

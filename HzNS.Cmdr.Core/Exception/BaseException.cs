@@ -70,14 +70,16 @@ namespace HzNS.Cmdr.Exception
 
     public class DuplicationFlagCharException : WarnFlagException
     {
-        public DuplicationFlagCharException(bool isShort, string ch, IBaseFlag flag, ICommand owner) : base(isShort, ch, flag, owner)
+        public DuplicationFlagCharException(bool isShort, string ch, IBaseFlag flag, ICommand owner) : base(isShort, ch,
+            flag, owner)
         {
         }
     }
-    
+
     public class EmptyFlagLongFieldException : WarnFlagException
     {
-        public EmptyFlagLongFieldException(bool isShort, string ch, IBaseFlag flag, ICommand owner) : base(isShort, ch, flag, owner)
+        public EmptyFlagLongFieldException(bool isShort, string ch, IBaseFlag flag, ICommand owner) : base(isShort, ch,
+            flag, owner)
         {
         }
     }

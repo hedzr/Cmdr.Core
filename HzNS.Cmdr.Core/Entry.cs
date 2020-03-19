@@ -11,6 +11,54 @@ namespace HzNS.Cmdr
 {
     public class Entry
     {
+        public static Worker NewCmdrWorker(IRootCommand root, params Action<Worker>[] opts)
+        {
+            var worker = CreateDefaultWorker(root, null, opts);
+            return worker;
+        }
+
+        // ReSharper disable once UnusedParameter.Local
+        private static Worker CreateDefaultWorker(IRootCommand root,
+            Func<LoggerConfiguration, Logger> createLoggerFunc = null, params Action<Worker>[] opts)
+        {
+            var worker = new Worker(root);
+
+            if (createLoggerFunc != null)
+                worker.UseSerilog(createLoggerFunc);
+            else
+                worker.UseSerilog(configuration => configuration
+                    .MinimumLevel.Debug()
+                    // .MinimumLevel.Information()
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                    .Enrich.FromLogContext()
+                    .WriteTo.Console()
+                    .WriteTo.File(Path.Combine("logs", @"access.log"), rollingInterval: RollingInterval.Day)
+                    .CreateLogger());
+
+            worker.runOnce();
+
+            foreach (var opt in opts) opt(worker);
+
+            try
+            {
+                worker.log.Debug($"EnableDuplicatedCharThrows: {worker.EnableDuplicatedCharThrows}");
+                if (root != null)
+                    worker.With(root);
+            }
+            // catch (DuplicationCommandCharException)
+            // {
+            // }
+            // catch (DuplicationFlagCharException)
+            // {
+            // }
+            catch (CmdrException ex)
+            {
+                worker.log.Error(ex, "Error occurs");
+            }
+
+            return worker;
+        }
+
         #region Singleton Pattern
 
         private Entry()
@@ -31,15 +79,10 @@ namespace HzNS.Cmdr
             {
                 // Re|Sharper disable InvertIf
                 if (_instance == null)
-                {
                     lock (_lock)
                     {
-                        if (_instance == null)
-                        {
-                            _instance = new Entry();
-                        }
+                        if (_instance == null) _instance = new Entry();
                     }
-                }
                 // Re|Sharper restore InvertIf
 
                 return _instance;
@@ -69,56 +112,5 @@ namespace HzNS.Cmdr
         // }
 
         #endregion
-
-        public static Worker NewCmdrWorker(IRootCommand root, params Action<Worker>[] opts)
-        {
-            var worker = CreateDefaultWorker(root, null, opts);
-            return worker;
-        }
-
-        // ReSharper disable once UnusedParameter.Local
-        private static Worker CreateDefaultWorker(IRootCommand root,
-            Func<LoggerConfiguration, Logger> createLoggerFunc = null, params Action<Worker>[] opts)
-        {
-            var worker = new Worker(root);
-
-            if (createLoggerFunc != null)
-                worker.UseSerilog(createLoggerFunc);
-            else
-                worker.UseSerilog((configuration) => configuration
-                    .MinimumLevel.Debug()
-                    // .MinimumLevel.Information()
-                    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                    .Enrich.FromLogContext()
-                    .WriteTo.Console()
-                    .WriteTo.File(Path.Combine("logs", @"access.log"), rollingInterval: RollingInterval.Day)
-                    .CreateLogger());
-
-            worker.runOnce();
-
-            foreach (var opt in opts)
-            {
-                opt(worker);
-            }
-
-            try
-            {
-                worker.log.Debug($"EnableDuplicatedCharThrows: {worker.EnableDuplicatedCharThrows}");
-                if (root != null)
-                    worker.With(root);
-            }
-            // catch (DuplicationCommandCharException)
-            // {
-            // }
-            // catch (DuplicationFlagCharException)
-            // {
-            // }
-            catch (CmdrException ex)
-            {
-                worker.log.Error(ex, "Error occurs");
-            }
-
-            return worker;
-        }
     }
 }

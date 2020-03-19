@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -25,10 +24,72 @@ namespace HzNS.Cmdr
     [SuppressMessage("ReSharper", "UnusedMethodReturnValue.Global")]
     public sealed class Worker : DefaultHandlers
     {
+        private IRootCommand _root;
+
         public Worker(IRootCommand root)
         {
             _root = root;
             log = Log.Logger;
+        }
+
+        public int ParsedCount { get; set; }
+
+        public bool Parsed { get; set; }
+
+        public bool EnableDuplicatedCharThrows { get; set; } = false;
+        public bool EnableEmptyLongFieldThrows { get; set; } = false;
+
+
+        internal Worker runOnce()
+        {
+            // NOTE that the logger `log` is not ready yet at this time.
+            return this;
+        }
+
+        public Worker With(IRootCommand rootCommand)
+        {
+            _root = rootCommand;
+            preloadCommandDefinitions();
+            return this;
+        }
+
+        public void Run(string[] args)
+        {
+            // Entry.Log.Information("YES IT IS");
+            // log.Information("YES IT IS");
+            if (_root == null) return;
+
+            // ReSharper disable once NotAccessedVariable
+            var position = 0;
+            try
+            {
+                position = match(_root, args, position, 1);
+
+                if (position < 0)
+                {
+                    // -1-position
+                    // m 0: -1 => 0 (x+1)
+                    // m 1: -2 => 1
+                    var pos = -(1 + position);
+                    onCommandMatched(args, pos > 0 ? pos + 1 : pos, "", _root);
+                }
+
+                Parsed = true;
+            }
+            catch (WantHelpScreenException)
+            {
+                // show help screen
+            }
+            catch (CmdrException ex)
+            {
+                log.Error(ex, "Error occurs");
+            }
+        }
+
+        // ReSharper disable once InconsistentNaming
+        private void errPrint(string message)
+        {
+            Console.Error.WriteLine(message);
         }
 
         #region logger
@@ -49,7 +110,6 @@ namespace HzNS.Cmdr
         public Worker UseSerilog(Func<LoggerConfiguration, Logger>? func = null)
         {
             if (func == null)
-            {
                 log = new LoggerConfiguration()
                     .MinimumLevel.Debug()
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -57,11 +117,8 @@ namespace HzNS.Cmdr
                     .WriteTo.File(Path.Combine("logs", @"access.log"), rollingInterval: RollingInterval.Day)
                     .WriteTo.Console()
                     .CreateLogger();
-            }
             else
-            {
                 log = func.Invoke(new LoggerConfiguration());
-            }
 
             var builder = new ContainerBuilder();
             builder.RegisterLogger(autowireProperties: true);
@@ -98,29 +155,6 @@ namespace HzNS.Cmdr
 
         #endregion
 
-        public int ParsedCount { get; set; }
-
-        public bool Parsed { get; set; }
-
-        private IRootCommand _root;
-
-        public bool EnableDuplicatedCharThrows { get; set; } = false;
-        public bool EnableEmptyLongFieldThrows { get; set; } = false;
-
-
-        internal Worker runOnce()
-        {
-            // NOTE that the logger `log` is not ready yet at this time.
-            return this;
-        }
-
-        public Worker With(IRootCommand rootCommand)
-        {
-            _root = rootCommand;
-            preloadCommandDefinitions();
-            return this;
-        }
-
         #region helpers for With()
 
         #region xref class and member container
@@ -132,23 +166,6 @@ namespace HzNS.Cmdr
         // ReSharper disable once ClassNeverInstantiated.Local
         private class Xref
         {
-            #region properties
-
-            // public ICommand Command { get; set; } = null;
-            public Dictionary<string, ICommand> SubCommandsShortNames { get; set; } =
-                new Dictionary<string, ICommand>();
-
-            public Dictionary<string, ICommand> SubCommandsLongNames { get; set; } = new Dictionary<string, ICommand>();
-
-            public Dictionary<string, ICommand> SubCommandsAliasNames { get; set; } =
-                new Dictionary<string, ICommand>();
-
-            public Dictionary<string, IBaseFlag> FlagsShortNames { get; set; } = new Dictionary<string, IBaseFlag>();
-            public Dictionary<string, IBaseFlag> FlagsLongNames { get; set; } = new Dictionary<string, IBaseFlag>();
-            public Dictionary<string, IBaseFlag> FlagsAliasNames { get; set; } = new Dictionary<string, IBaseFlag>();
-
-            #endregion
-
             public void TryAddShort(Worker w, ICommand cmd)
             {
                 if (!string.IsNullOrWhiteSpace(cmd.Short))
@@ -181,9 +198,7 @@ namespace HzNS.Cmdr
             public void TryAddAliases(Worker w, ICommand cmd)
             {
                 if (cmd.Aliases != null)
-                {
                     foreach (var a in cmd.Aliases)
-                    {
                         if (!string.IsNullOrWhiteSpace(a))
                             if (!SubCommandsAliasNames.TryAdd(a, cmd))
                             {
@@ -191,8 +206,6 @@ namespace HzNS.Cmdr
                                 if (w.EnableDuplicatedCharThrows)
                                     throw new DuplicationCommandCharException(false, a, cmd);
                             }
-                    }
-                }
             }
 
             public void TryAddShort(Worker w, ICommand owner, IBaseFlag flag)
@@ -208,7 +221,8 @@ namespace HzNS.Cmdr
 
             public void TryAddLong(Worker w, ICommand owner, IBaseFlag flag)
             {
-                if (!string.IsNullOrWhiteSpace(flag.Long)){
+                if (!string.IsNullOrWhiteSpace(flag.Long))
+                {
                     if (!FlagsLongNames.TryAdd(flag.Long, flag))
                     {
                         w.OnDuplicatedFlagChar?.Invoke(false, flag.Long, owner, flag);
@@ -226,9 +240,7 @@ namespace HzNS.Cmdr
             public void TryAddAliases(Worker w, ICommand owner, IBaseFlag flag)
             {
                 if (flag.Aliases != null)
-                {
                     foreach (var a in flag.Aliases)
-                    {
                         if (!string.IsNullOrWhiteSpace(a))
                             if (!FlagsAliasNames.TryAdd(a, flag))
                             {
@@ -236,9 +248,24 @@ namespace HzNS.Cmdr
                                 if (w.EnableDuplicatedCharThrows)
                                     throw new DuplicationFlagCharException(false, a, flag, owner);
                             }
-                    }
-                }
             }
+
+            #region properties
+
+            // public ICommand Command { get; set; } = null;
+            public Dictionary<string, ICommand> SubCommandsShortNames { get; } =
+                new Dictionary<string, ICommand>();
+
+            public Dictionary<string, ICommand> SubCommandsLongNames { get; } = new Dictionary<string, ICommand>();
+
+            public Dictionary<string, ICommand> SubCommandsAliasNames { get; } =
+                new Dictionary<string, ICommand>();
+
+            public Dictionary<string, IBaseFlag> FlagsShortNames { get; } = new Dictionary<string, IBaseFlag>();
+            public Dictionary<string, IBaseFlag> FlagsLongNames { get; } = new Dictionary<string, IBaseFlag>();
+            public Dictionary<string, IBaseFlag> FlagsAliasNames { get; } = new Dictionary<string, IBaseFlag>();
+
+            #endregion
         }
 
         #endregion
@@ -267,7 +294,7 @@ namespace HzNS.Cmdr
                 _xrefs[owner].TryAddAliases(this, owner, flag);
                 return true; // return false to break the walkForFlags' loop.
             });
-            log.Debug($"_xrefs was built.");
+            log.Debug("_xrefs was built.");
         }
 
         #endregion
@@ -279,10 +306,8 @@ namespace HzNS.Cmdr
             Func<ICommand, IBaseFlag, bool>? watcher = null)
         {
             foreach (var f in parent.Flags)
-            {
                 if (watcher != null && watcher(parent, f) == false)
                     return false;
-            }
 
             if (parent.SubCommands == null) return true;
 
@@ -299,50 +324,14 @@ namespace HzNS.Cmdr
 
         private bool walkForFlags(ICommand parent, Func<ICommand, IBaseFlag, bool> watcher)
         {
-            if (parent.Flags.Any(f => watcher != null && watcher(parent, f) == false))
-            {
-                return false;
-            }
+            if (parent.Flags.Any(f => watcher != null && watcher(parent, f) == false)) return false;
 
             if (parent.SubCommands == null) return true;
 
-            return parent.SubCommands.All(cmd => walkForFlags(cmd, watcher) != false);
+            return parent.SubCommands.All(cmd => walkForFlags(cmd, watcher));
         }
 
         #endregion
-
-        public void Run(string[] args)
-        {
-            // Entry.Log.Information("YES IT IS");
-            // log.Information("YES IT IS");
-            if (_root == null) return;
-
-            // ReSharper disable once NotAccessedVariable
-            var position = 0;
-            try
-            {
-                position = match(_root, args, position, 1);
-
-                if (position < 0)
-                {
-                    // -1-position
-                    // m 0: -1 => 0 (x+1)
-                    // m 1: -2 => 1
-                    var pos = -(1 + position);
-                    onCommandMatched(args, pos > 0 ? pos + 1 : pos, "", _root);
-                }
-
-                Parsed = true;
-            }
-            catch (WantHelpScreenException)
-            {
-                // show help screen
-            }
-            catch (CmdrException ex)
-            {
-                log.Error(ex, "Error occurs");
-            }
-        }
 
         #region helpers for Run()
 
@@ -370,10 +359,7 @@ namespace HzNS.Cmdr
 
                         if (cmd.SubCommands.Count > 0)
                         {
-                            if (i == arg.Length - 1)
-                            {
-                                throw new WantHelpScreenException();
-                            }
+                            if (i == arg.Length - 1) throw new WantHelpScreenException();
 
                             return match(cmd, args, i + 1, level + 1);
                         }
@@ -402,10 +388,7 @@ namespace HzNS.Cmdr
                         break;
                     }
 
-                    if (!ok)
-                    {
-                        onFlagCannotMatched(args, i, fragment, longOpt, command);
-                    }
+                    if (!ok) onFlagCannotMatched(args, i, fragment, longOpt, command);
                 }
 
                 // if (ok) continue;
@@ -449,10 +432,7 @@ namespace HzNS.Cmdr
         // ReSharper disable once MemberCanBeMadeStatic.Local
         private void collect(ICommand command)
         {
-            foreach (var cmd in command.SubCommands)
-            {
-                collect(cmd);
-            }
+            foreach (var cmd in command.SubCommands) collect(cmd);
 
             foreach (var flg in command.Flags)
             {
@@ -463,7 +443,8 @@ namespace HzNS.Cmdr
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-        private void onFlagMatched(IEnumerable<string> args, int position, string fragment, in bool longOpt, IBaseFlag flag)
+        private void onFlagMatched(IEnumerable<string> args, int position, string fragment, in bool longOpt,
+            IBaseFlag flag)
         {
             var remainArgs = args.Where((it, idx) => idx >= position).ToArray();
 
@@ -506,11 +487,5 @@ namespace HzNS.Cmdr
         }
 
         #endregion
-
-        // ReSharper disable once InconsistentNaming
-        private void errPrint(string message)
-        {
-            Console.Error.WriteLine(message);
-        }
     }
 }
