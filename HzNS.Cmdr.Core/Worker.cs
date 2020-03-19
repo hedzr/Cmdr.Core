@@ -128,6 +128,7 @@ namespace HzNS.Cmdr
         #region Xref class
 
         [SuppressMessage("ReSharper", "InvertIf")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Local")]
         // ReSharper disable once ClassNeverInstantiated.Local
         private class Xref
         {
@@ -142,9 +143,9 @@ namespace HzNS.Cmdr
             public Dictionary<string, ICommand> SubCommandsAliasNames { get; set; } =
                 new Dictionary<string, ICommand>();
 
-            public Dictionary<string, IFlag> FlagsShortNames { get; set; } = new Dictionary<string, IFlag>();
-            public Dictionary<string, IFlag> FlagsLongNames { get; set; } = new Dictionary<string, IFlag>();
-            public Dictionary<string, IFlag> FlagsAliasNames { get; set; } = new Dictionary<string, IFlag>();
+            public Dictionary<string, IBaseFlag> FlagsShortNames { get; set; } = new Dictionary<string, IBaseFlag>();
+            public Dictionary<string, IBaseFlag> FlagsLongNames { get; set; } = new Dictionary<string, IBaseFlag>();
+            public Dictionary<string, IBaseFlag> FlagsAliasNames { get; set; } = new Dictionary<string, IBaseFlag>();
 
             #endregion
 
@@ -194,7 +195,7 @@ namespace HzNS.Cmdr
                 }
             }
 
-            public void TryAddShort(Worker w, ICommand owner, IFlag flag)
+            public void TryAddShort(Worker w, ICommand owner, IBaseFlag flag)
             {
                 if (!string.IsNullOrWhiteSpace(flag.Short))
                     if (!FlagsShortNames.TryAdd(flag.Short, flag))
@@ -205,7 +206,7 @@ namespace HzNS.Cmdr
                     }
             }
 
-            public void TryAddLong(Worker w, ICommand owner, IFlag flag)
+            public void TryAddLong(Worker w, ICommand owner, IBaseFlag flag)
             {
                 if (!string.IsNullOrWhiteSpace(flag.Long)){
                     if (!FlagsLongNames.TryAdd(flag.Long, flag))
@@ -222,7 +223,7 @@ namespace HzNS.Cmdr
                 }
             }
 
-            public void TryAddAliases(Worker w, ICommand owner, IFlag flag)
+            public void TryAddAliases(Worker w, ICommand owner, IBaseFlag flag)
             {
                 if (flag.Aliases != null)
                 {
@@ -275,7 +276,7 @@ namespace HzNS.Cmdr
 
         private bool walkFor(ICommand parent,
             Func<ICommand, ICommand, bool>? commandsWatcher = null,
-            Func<ICommand, IFlag, bool>? watcher = null)
+            Func<ICommand, IBaseFlag, bool>? watcher = null)
         {
             foreach (var f in parent.Flags)
             {
@@ -296,7 +297,7 @@ namespace HzNS.Cmdr
             return true;
         }
 
-        private bool walkForFlags(ICommand parent, Func<ICommand, IFlag, bool> watcher)
+        private bool walkForFlags(ICommand parent, Func<ICommand, IBaseFlag, bool> watcher)
         {
             if (parent.Flags.Any(f => watcher != null && watcher(parent, f) == false))
             {
@@ -462,7 +463,7 @@ namespace HzNS.Cmdr
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-        private void onFlagMatched(IEnumerable<string> args, int position, string fragment, in bool longOpt, IFlag flag)
+        private void onFlagMatched(IEnumerable<string> args, int position, string fragment, in bool longOpt, IBaseFlag flag)
         {
             var remainArgs = args.Where((it, idx) => idx >= position).ToArray();
 
@@ -471,7 +472,7 @@ namespace HzNS.Cmdr
 
             try
             {
-                flag.OnSet?.Invoke(this, flag.DefaultValue, flag.DefaultValue);
+                flag.OnSet?.Invoke(this, flag.getDefaultValue(), flag.getDefaultValue());
 
                 // ReSharper disable once SuspiciousTypeConversion.Global
                 // ReSharper disable once UseNegatedPatternMatching

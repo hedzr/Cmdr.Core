@@ -7,7 +7,7 @@ namespace HzNS.Cmdr.Handlers
 {
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Local")]
-    public class DefaultHandlers
+    public abstract class DefaultHandlers
     {
         public Action<bool, string, ICommand>? OnDuplicatedCommandChar { get; set; } = (isShort, ch, cmd) =>
         {
@@ -15,7 +15,7 @@ namespace HzNS.Cmdr.Handlers
                 $"WARN: Duplicated command char FOUND: '{ch}'. Context: \"{cmd.backtraceTitles}\".");
         };
 
-        public Action<bool, string, ICommand, IFlag>? OnDuplicatedFlagChar { get; set; } = (isShort, ch, cmd, flg) =>
+        public Action<bool, string, ICommand, IBaseFlag>? OnDuplicatedFlagChar { get; set; } = (isShort, ch, cmd, flg) =>
         {
             Console.Error.WriteLineAsync(
                 $"WARN: Duplicated flag char FOUND: '{ch}'. Context: \"{cmd.backtraceTitles}\".");

@@ -1,8 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
         <RootNamespace>HzNS.Cmdr</RootNamespace>
+        <TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Authors>Hedzr Yeh</Authors>
+        <PackageTags>cmdr, commandline, commandline-arguments</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

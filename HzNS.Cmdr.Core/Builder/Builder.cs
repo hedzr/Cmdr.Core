@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HzNS.Cmdr.Builder
 {
@@ -28,10 +29,10 @@ namespace HzNS.Cmdr.Builder
     public interface ICommand : IBaseOpt
     {
         List<ICommand> SubCommands { get; set; }
-        List<IFlag> Flags { get; set; }
+        List<IBaseFlag> Flags { get; set; }
 
         ICommand AddCommand(ICommand cmd);
-        ICommand AddFlag(IFlag flag);
+        ICommand AddFlag<T>(IFlag<T> flag);
 
         IRootCommand FindRoot();
 
@@ -39,11 +40,17 @@ namespace HzNS.Cmdr.Builder
         string backtraceTitles { get; }
     }
 
-    public interface IFlag : IBaseOpt // , IOnSet
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public interface IBaseFlag : IBaseOpt
+    {
+        object getDefaultValue();
+        string PlaceHolder { get; set; }
+    }
+    
+    public interface IFlag<T> : IBaseFlag // , IOnSet
     {
         // IFlag AddFlag(IFlag flag);
-        object DefaultValue { get; set; }
-        string PlaceHolder { get; set; }
+        T DefaultValue { get; set; }
     }
 
     public interface IBaseOpt

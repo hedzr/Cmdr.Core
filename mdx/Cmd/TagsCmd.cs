@@ -39,7 +39,7 @@ namespace mdx.Cmd
             Action = (worker, remainArgs) => { Console.WriteLine("[HIT] modify a tag."); };
             
             // adds flags here
-            this.AddFlag(new Flag{Long=""});
+            this.AddFlag(new Flag<string>{Long="name",DefaultValue="test-redis"});
 
             // adds sub-commands here
         }

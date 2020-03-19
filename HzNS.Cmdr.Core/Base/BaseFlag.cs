@@ -6,7 +6,8 @@ namespace HzNS.Cmdr.Base
 {
     [SuppressMessage("ReSharper", "ConvertToAutoPropertyWhenPossible")]
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-    public abstract class BaseFlag : BaseOpt, IFlag
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public abstract class BaseFlag<T> : BaseOpt, IFlag<T>
     {
         // ReSharper disable once PublicConstructorInAbstractClass
         public BaseFlag()
@@ -20,8 +21,22 @@ namespace HzNS.Cmdr.Base
         {
         }
 
-        public object DefaultValue { get; set; }
+        public T DefaultValue { get; set; }
         public string PlaceHolder { get; set; }
+
+
+
+        public BaseFlag<T> AddDefaultValue(T val)
+        {
+            DefaultValue = val;
+            return this;
+        }
+
+        public object getDefaultValue()
+        {
+            return DefaultValue;
+        }
+
 
 
         public override string ToString()
