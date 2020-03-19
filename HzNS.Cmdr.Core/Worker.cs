@@ -105,6 +105,7 @@ namespace HzNS.Cmdr
         private IRootCommand _root;
 
         public bool EnableDuplicatedCharThrows { get; set; } = false;
+        public bool EnableEmptyLongFieldThrows { get; set; } = false;
 
 
         internal Worker runOnce()
@@ -161,12 +162,19 @@ namespace HzNS.Cmdr
             public void TryAddLong(Worker w, ICommand cmd)
             {
                 if (!string.IsNullOrWhiteSpace(cmd.Long))
+                {
                     if (!SubCommandsLongNames.TryAdd(cmd.Long, cmd))
                     {
                         w.OnDuplicatedCommandChar?.Invoke(false, cmd.Long, cmd);
                         if (w.EnableDuplicatedCharThrows)
                             throw new DuplicationCommandCharException(false, cmd.Long, cmd);
                     }
+                }
+                else
+                {
+                    if (w.EnableEmptyLongFieldThrows)
+                        throw new EmptyCommandLongFieldException(false, cmd.Long, cmd);
+                }
             }
 
             public void TryAddAliases(Worker w, ICommand cmd)
@@ -199,13 +207,19 @@ namespace HzNS.Cmdr
 
             public void TryAddLong(Worker w, ICommand owner, IFlag flag)
             {
-                if (!string.IsNullOrWhiteSpace(flag.Long))
+                if (!string.IsNullOrWhiteSpace(flag.Long)){
                     if (!FlagsLongNames.TryAdd(flag.Long, flag))
                     {
                         w.OnDuplicatedFlagChar?.Invoke(false, flag.Long, owner, flag);
                         if (w.EnableDuplicatedCharThrows)
                             throw new DuplicationFlagCharException(false, flag.Long, flag, owner);
                     }
+                }
+                else
+                {
+                    if (w.EnableEmptyLongFieldThrows)
+                        throw new EmptyFlagLongFieldException(false, flag.Long, flag, owner);
+                }
             }
 
             public void TryAddAliases(Worker w, ICommand owner, IFlag flag)

@@ -51,9 +51,9 @@ namespace HzNS.Cmdr.Exception
 
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    public class DuplicationFlagCharException : CmdrException
+    public class WarnFlagException : CmdrException
     {
-        public DuplicationFlagCharException(bool isShort, string ch, IFlag flag, ICommand owner)
+        public WarnFlagException(bool isShort, string ch, IFlag flag, ICommand owner)
         {
             IsShort = isShort;
             Char = ch;
@@ -67,11 +67,25 @@ namespace HzNS.Cmdr.Exception
         public ICommand Owner { get; internal set; }
     }
 
+    public class DuplicationFlagCharException : WarnFlagException
+    {
+        public DuplicationFlagCharException(bool isShort, string ch, IFlag flag, ICommand owner) : base(isShort, ch, flag, owner)
+        {
+        }
+    }
+    
+    public class EmptyFlagLongFieldException : WarnFlagException
+    {
+        public EmptyFlagLongFieldException(bool isShort, string ch, IFlag flag, ICommand owner) : base(isShort, ch, flag, owner)
+        {
+        }
+    }
+
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    public class DuplicationCommandCharException : CmdrException
+    public class WarnCommandException : CmdrException
     {
-        public DuplicationCommandCharException(bool isShort, string ch, ICommand cmd)
+        public WarnCommandException(bool isShort, string ch, ICommand cmd)
         {
             IsShort = isShort;
             Char = ch;
@@ -81,5 +95,19 @@ namespace HzNS.Cmdr.Exception
         public bool IsShort { get; internal set; }
         public string Char { get; internal set; }
         public ICommand Cmd { get; internal set; }
+    }
+
+    public class DuplicationCommandCharException : WarnCommandException
+    {
+        public DuplicationCommandCharException(bool isShort, string ch, ICommand cmd) : base(isShort, ch, cmd)
+        {
+        }
+    }
+
+    public class EmptyCommandLongFieldException : WarnCommandException
+    {
+        public EmptyCommandLongFieldException(bool isShort, string ch, ICommand cmd) : base(isShort, ch, cmd)
+        {
+        }
     }
 }
