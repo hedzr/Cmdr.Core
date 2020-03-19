@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using HzNS.MdxLib.Compression;
@@ -10,6 +11,7 @@ using HzNS.MdxLib.models;
 
 namespace HzNS.MdxLib.MDict
 {
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class MDictLoader : Loader
     {
         public MDictLoader()
@@ -75,8 +77,11 @@ namespace HzNS.MdxLib.MDict
         {
             base.Open(dictFileName);
 
-            _fsLog?.Dispose();
-            _fsLog = File.Create(dictFileName + ".log");
+            if (File.Exists(dictFileName))
+            {
+                _fsLog?.Dispose();
+                _fsLog = File.Create(dictFileName + ".log");
+            }
 
             // this.Process();
         }

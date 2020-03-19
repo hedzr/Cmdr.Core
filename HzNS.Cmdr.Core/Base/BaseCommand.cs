@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -23,8 +24,8 @@ namespace HzNS.Cmdr.Base
             //
         }
 
-        private List<ICommand> _subCommands;
-        private List<IFlag> _flags;
+        private List<ICommand> _subCommands = new List<ICommand>();
+        private List<IFlag> _flags = new List<IFlag>();
 
         public List<ICommand> SubCommands
         {
@@ -56,6 +57,29 @@ namespace HzNS.Cmdr.Base
             flag.Owner = this;
             _flags.Add(flag);
             return this;
+        }
+
+        public IRootCommand FindRoot()
+        {
+            ICommand o = this;
+            while (o.Owner != null) o = o.Owner;
+            return o as IRootCommand;
+        }
+
+        public string backtraceTitles
+        {
+            get
+            {
+                ICommand o = this;
+                var titles = new List<string>();
+                while (o.Owner != null)
+                {
+                    titles.Insert(0, o.Long);
+                    o = o.Owner;
+                }
+
+                return string.Join(" ", titles);
+            }
         }
     }
 }

@@ -11,4 +11,8 @@
         <ProjectReference Include="..\HzNS.MdxLib.Core\HzNS.MdxLib.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="logs" />
+    </ItemGroup>
+
 </Project>

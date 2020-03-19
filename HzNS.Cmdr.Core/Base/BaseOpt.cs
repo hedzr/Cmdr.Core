@@ -1,3 +1,6 @@
+#nullable enable
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HzNS.Cmdr.Builder;
@@ -26,15 +29,19 @@ namespace HzNS.Cmdr.Base
             Examples = examples;
         }
 
-        public string Short { get; set; }
-        public string Long { get; set; }
-        public string[] Aliases { get; set; }
-        public string Description { get; set; }
-        public string DescriptionLong { get; set; }
-        public string Examples { get; set; }
+        public string Short { get; set; } = "";
+        public string Long { get; set; } = "";
+        public string[] Aliases { get; set; } = { };
+        public string Description { get; set; } = "";
+        public string DescriptionLong { get; set; } = "";
+        public string Examples { get; set; } = "";
+        public Func<Worker, IEnumerable<string>, bool>? PreAction { get; set; }
+        public Action<Worker, IEnumerable<string>>? PostAction { get; set; }
+        public Action<Worker, IEnumerable<string>>? Action { get; set; }
+        public Action<Worker, object, object>? OnSet { get; set; }
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public ICommand Owner { get; set; }
+        public ICommand? Owner { get; set; } = null;
 
         public bool Match(string s, bool isLongOpt = false)
         {

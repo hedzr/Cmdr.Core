@@ -19,5 +19,8 @@ namespace HzNS.Cmdr.Base
             descriptionLong, examples)
         {
         }
+
+        public object DefaultValue { get; set; }
+        public string PlaceHolder { get; set; }
     }
 }

@@ -17,6 +17,7 @@ namespace mdx.Cmd
             {
                 if (string.IsNullOrEmpty(filename)) continue;
 
+                w.log.Information($"loading {filename} ...");
                 using var l = new MDictLoader(filename);
                 try
                 {
@@ -31,7 +32,7 @@ namespace mdx.Cmd
                 finally
                 {
                     w.ParsedCount++;
-                    w.log.Information($"#{w.ParsedCount} parsed.");
+                    // w.log.Information($"#{w.ParsedCount} parsed.");
 
                     // l.Dispose();
                 }

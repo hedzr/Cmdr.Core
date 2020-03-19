@@ -11,6 +11,7 @@ ref/
 sav/
 save/
 SAVE/
+logs?/
 
 ### VisualStudioCode template
 .vscode/*
