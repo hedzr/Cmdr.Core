@@ -26,25 +26,31 @@ namespace mdx
     [SuppressMessage("ReSharper", "ArrangeTypeMemberModifiers")]
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
     [SuppressMessage("ReSharper", "ArrangeTypeModifiers")]
+    [SuppressMessage("ReSharper", "CommentTypo")]
     class Program
     {
         static void Main(string[] args)
         {
             // Cmdr: A CommandLine Arguments Parser
-            Entry.NewCmdrWorker()
-                //
-                // .UseSerilog((configuration) => configuration.WriteTo.Console().CreateLogger())
-                //
-                .With(RootCmd.New(new AppInfo {AppName = "mdxTool", AppVersion = "1.0.0"},
-                    (root) =>
+            Entry.NewCmdrWorker(RootCmd.New(new AppInfo {AppName = "mdxTool", AppVersion = "1.0.0"}, (root) =>
                     {
                         root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
                             .AddCommand(new TagsAddCmd { })
                             .AddCommand(new TagsRemoveCmd { })
+                            // .AddCommand(new TagsAddCmd { }) // dup-test
                             .AddCommand(new TagsListCmd { })
                             .AddCommand(new TagsModifyCmd { })
                         );
-                    }))
+                    }), // <- RootCmd
+                    // Options ->
+                    (w) =>
+                    {
+                        //
+                        // w.UseSerilog((configuration) => configuration.WriteTo.Console().CreateLogger())
+                        //
+                        
+                        // w.EnableDuplicatedCharThrows = true;
+                    })
                 .Run(args);
 
             // HzNS.MdxLib.Core.Open("*.mdx,mdd,sdx,wav,png,...") => mdxfile

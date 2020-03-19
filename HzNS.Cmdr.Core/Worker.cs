@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -8,38 +10,43 @@ using AutofacSerilogIntegration;
 using HzNS.Cmdr.Action;
 using HzNS.Cmdr.Builder;
 using HzNS.Cmdr.Exception;
+using HzNS.Cmdr.Handlers;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 
 namespace HzNS.Cmdr
 {
-    [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Local")]
+    [SuppressMessage("ReSharper", "MemberCanBeMadeStatic")]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public sealed class Worker
+    [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
+    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+    [SuppressMessage("ReSharper", "UnusedMethodReturnValue.Global")]
+    public sealed class Worker : DefaultHandlers
     {
+        public Worker(IRootCommand root)
+        {
+            _root = root;
+            log = Log.Logger;
+        }
+
         #region logger
-        
+
         // public Worker(ILogger log)
         // {
         //     this.log = log;
         // }
 
-        //         // ReSharper disable once NotAccessedField.Local
-        //         // ReSharper disable once InconsistentNaming
         // #pragma warning disable 649
         //         internal ILogger _log;
         // #pragma warning restore 649
         //
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        // ReSharper disable once MemberCanBePrivate.Global
         // public ILogger Log { get; set; }
 
-        // ReSharper disable once InconsistentNaming
         public ILogger log;
 
-        // ReSharper disable once IdentifierTypo
-        public Worker UseSerilog(Func<LoggerConfiguration, Logger> func = null)
+        public Worker UseSerilog(Func<LoggerConfiguration, Logger>? func = null)
         {
             if (func == null)
             {
@@ -90,17 +97,15 @@ namespace HzNS.Cmdr
         }
 
         #endregion
-        
-        // ReSharper disable once MemberCanBePrivate.Global
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+
         public int ParsedCount { get; set; }
 
-        // ReSharper disable once MemberCanBePrivate.Global
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        // ReSharper disable once UnusedMember.Global
         public bool Parsed { get; set; }
 
         private IRootCommand _root;
+
+        public bool EnableDuplicatedCharThrows { get; set; } = false;
+
 
         internal Worker runOnce()
         {
@@ -111,16 +116,184 @@ namespace HzNS.Cmdr
         public Worker With(IRootCommand rootCommand)
         {
             _root = rootCommand;
-            preloadCommands();
+            preloadCommandDefinitions();
             return this;
         }
 
         #region helpers for With()
-        
-        private void preloadCommands()
+
+        #region xref class and member container
+
+        #region Xref class
+
+        [SuppressMessage("ReSharper", "InvertIf")]
+        // ReSharper disable once ClassNeverInstantiated.Local
+        private class Xref
         {
+            #region properties
+
+            // public ICommand Command { get; set; } = null;
+            public Dictionary<string, ICommand> SubCommandsShortNames { get; set; } =
+                new Dictionary<string, ICommand>();
+
+            public Dictionary<string, ICommand> SubCommandsLongNames { get; set; } = new Dictionary<string, ICommand>();
+
+            public Dictionary<string, ICommand> SubCommandsAliasNames { get; set; } =
+                new Dictionary<string, ICommand>();
+
+            public Dictionary<string, IFlag> FlagsShortNames { get; set; } = new Dictionary<string, IFlag>();
+            public Dictionary<string, IFlag> FlagsLongNames { get; set; } = new Dictionary<string, IFlag>();
+            public Dictionary<string, IFlag> FlagsAliasNames { get; set; } = new Dictionary<string, IFlag>();
+
+            #endregion
+
+            public void TryAddShort(Worker w, ICommand cmd)
+            {
+                if (!string.IsNullOrWhiteSpace(cmd.Short))
+                    if (!SubCommandsShortNames.TryAdd(cmd.Short, cmd))
+                    {
+                        w.OnDuplicatedCommandChar?.Invoke(true, cmd.Short, cmd);
+                        if (w.EnableDuplicatedCharThrows)
+                            throw new DuplicationCommandCharException(true, cmd.Short, cmd);
+                    }
+            }
+
+            public void TryAddLong(Worker w, ICommand cmd)
+            {
+                if (!string.IsNullOrWhiteSpace(cmd.Long))
+                    if (!SubCommandsLongNames.TryAdd(cmd.Long, cmd))
+                    {
+                        w.OnDuplicatedCommandChar?.Invoke(false, cmd.Long, cmd);
+                        if (w.EnableDuplicatedCharThrows)
+                            throw new DuplicationCommandCharException(false, cmd.Long, cmd);
+                    }
+            }
+
+            public void TryAddAliases(Worker w, ICommand cmd)
+            {
+                if (cmd.Aliases != null)
+                {
+                    foreach (var a in cmd.Aliases)
+                    {
+                        if (!string.IsNullOrWhiteSpace(a))
+                            if (!SubCommandsAliasNames.TryAdd(a, cmd))
+                            {
+                                w.OnDuplicatedCommandChar?.Invoke(false, a, cmd);
+                                if (w.EnableDuplicatedCharThrows)
+                                    throw new DuplicationCommandCharException(false, a, cmd);
+                            }
+                    }
+                }
+            }
+
+            public void TryAddShort(Worker w, ICommand owner, IFlag flag)
+            {
+                if (!string.IsNullOrWhiteSpace(flag.Short))
+                    if (!FlagsShortNames.TryAdd(flag.Short, flag))
+                    {
+                        w.OnDuplicatedFlagChar?.Invoke(true, flag.Short, owner, flag);
+                        if (w.EnableDuplicatedCharThrows)
+                            throw new DuplicationFlagCharException(true, flag.Short, flag, owner);
+                    }
+            }
+
+            public void TryAddLong(Worker w, ICommand owner, IFlag flag)
+            {
+                if (!string.IsNullOrWhiteSpace(flag.Long))
+                    if (!FlagsLongNames.TryAdd(flag.Long, flag))
+                    {
+                        w.OnDuplicatedFlagChar?.Invoke(false, flag.Long, owner, flag);
+                        if (w.EnableDuplicatedCharThrows)
+                            throw new DuplicationFlagCharException(false, flag.Long, flag, owner);
+                    }
+            }
+
+            public void TryAddAliases(Worker w, ICommand owner, IFlag flag)
+            {
+                if (flag.Aliases != null)
+                {
+                    foreach (var a in flag.Aliases)
+                    {
+                        if (!string.IsNullOrWhiteSpace(a))
+                            if (!FlagsAliasNames.TryAdd(a, flag))
+                            {
+                                w.OnDuplicatedFlagChar?.Invoke(false, a, owner, flag);
+                                if (w.EnableDuplicatedCharThrows)
+                                    throw new DuplicationFlagCharException(false, a, flag, owner);
+                            }
+                    }
+                }
+            }
         }
-        
+
+        #endregion
+
+        // ReSharper disable once CollectionNeverUpdated.Local
+        private readonly Dictionary<ICommand, Xref> _xrefs = new Dictionary<ICommand, Xref>();
+
+        #endregion
+
+        [SuppressMessage("ReSharper", "InvertIf")]
+        private void preloadCommandDefinitions()
+        {
+            walkFor(_root, (owner, cmd) =>
+            {
+                if (!_xrefs.ContainsKey(owner)) _xrefs.TryAdd(owner, new Xref());
+                if (!_xrefs.ContainsKey(cmd)) _xrefs.TryAdd(cmd, new Xref());
+                _xrefs[owner].TryAddShort(this, cmd);
+                _xrefs[owner].TryAddLong(this, cmd);
+                _xrefs[owner].TryAddAliases(this, cmd);
+                return true;
+            }, (owner, flag) =>
+            {
+                if (!_xrefs.ContainsKey(owner)) _xrefs.TryAdd(owner, new Xref());
+                _xrefs[owner].TryAddShort(this, owner, flag);
+                _xrefs[owner].TryAddLong(this, owner, flag);
+                _xrefs[owner].TryAddAliases(this, owner, flag);
+                return true; // return false to break the walkForFlags' loop.
+            });
+            log.Debug($"_xrefs was built.");
+        }
+
+        #endregion
+
+        #region helpers for Walk()
+
+        private bool walkFor(ICommand parent,
+            Func<ICommand, ICommand, bool>? commandsWatcher = null,
+            Func<ICommand, IFlag, bool>? watcher = null)
+        {
+            foreach (var f in parent.Flags)
+            {
+                if (watcher != null && watcher(parent, f) == false)
+                    return false;
+            }
+
+            if (parent.SubCommands == null) return true;
+
+            foreach (var cmd in parent.SubCommands)
+            {
+                if (commandsWatcher != null && commandsWatcher.Invoke(parent, cmd) == false)
+                    return false;
+                if (walkFor(cmd, commandsWatcher, watcher) == false)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool walkForFlags(ICommand parent, Func<ICommand, IFlag, bool> watcher)
+        {
+            if (parent.Flags.Any(f => watcher != null && watcher(parent, f) == false))
+            {
+                return false;
+            }
+
+            if (parent.SubCommands == null) return true;
+
+            return parent.SubCommands.All(cmd => walkForFlags(cmd, watcher) != false);
+        }
+
         #endregion
 
         public void Run(string[] args)
@@ -318,7 +491,7 @@ namespace HzNS.Cmdr
         }
 
         #endregion
-        
+
         // ReSharper disable once InconsistentNaming
         private void errPrint(string message)
         {

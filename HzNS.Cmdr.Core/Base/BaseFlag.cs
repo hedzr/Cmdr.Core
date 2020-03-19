@@ -22,5 +22,11 @@ namespace HzNS.Cmdr.Base
 
         public object DefaultValue { get; set; }
         public string PlaceHolder { get; set; }
+
+
+        public override string ToString()
+        {
+            return $"Flag['{Long}', For:'{Owner?.backtraceTitles}']";
+        }
     }
 }

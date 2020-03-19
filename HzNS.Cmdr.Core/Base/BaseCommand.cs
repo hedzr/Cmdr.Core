@@ -81,5 +81,10 @@ namespace HzNS.Cmdr.Base
                 return string.Join(" ", titles);
             }
         }
+
+        public override string ToString()
+        {
+            return $"Command['{Long}', For:'{backtraceTitles}']";
+        }
     }
 }
