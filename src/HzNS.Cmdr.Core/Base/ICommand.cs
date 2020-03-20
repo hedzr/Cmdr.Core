@@ -13,6 +13,8 @@ namespace HzNS.Cmdr.Base
         ICommand AddCommand(ICommand cmd);
         ICommand AddFlag<T>(IFlag<T> flag);
 
+        bool IsRoot { get; }
         IRootCommand? FindRoot();
+        int FindLevel();
     }
 }

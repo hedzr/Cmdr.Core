@@ -6,7 +6,7 @@ namespace HzNS.Cmdr.Base
     public interface IBaseOpt
     {
         string Long { get; set; }
-        
+
         string Short { get; set; }
         string[] Aliases { get; set; }
 
@@ -17,7 +17,7 @@ namespace HzNS.Cmdr.Base
         string Group { get; set; }
 
         bool Hidden { get; set; }
-        
+
         string[] EnvVars { get; set; }
 
         /// <summary>
@@ -25,6 +25,7 @@ namespace HzNS.Cmdr.Base
         /// Another way is to raise a `ShouldBeStopException` exception in your Action/Pre/PostAction.
         /// </summary>
         Func<Worker, IEnumerable<string>, bool>? PreAction { get; set; }
+
         Action<Worker, IEnumerable<string>>? PostAction { get; set; }
         Action<Worker, IEnumerable<string>>? Action { get; set; }
         Action<Worker, object?, object?>? OnSet { get; set; }

@@ -20,6 +20,7 @@ namespace HzNS.Cmdr.Tool.Colorify.Terminal
                 Line(ref line, item);
                 Item(ref line, item);
             }
+
             if (!String.IsNullOrEmpty(line.ToString().Trim()))
             {
                 Out.WriteLine($"{line.ToString().TrimEnd()}");
@@ -47,6 +48,7 @@ namespace HzNS.Cmdr.Tool.Colorify.Terminal
                     Out.WriteLine($" {line.ToString().TrimEnd()}");
                     line.Clear();
                 }
+
                 int chunkSize = item.Length - _screenWidth;
                 string chunk = item.Substring(0, _screenWidth);
                 line.Append($"{chunk} ");

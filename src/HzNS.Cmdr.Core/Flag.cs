@@ -15,6 +15,5 @@ namespace HzNS.Cmdr
         public Flag()
         {
         }
-        
     }
 }

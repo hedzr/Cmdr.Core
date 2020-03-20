@@ -1,4 +1,5 @@
 // ReSharper disable once RedundantUsingDirective
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using HzNS.Cmdr.Tool.Colorify;
@@ -10,9 +11,9 @@ namespace HzNS.Cmdr.Tool
     public abstract class ColorifyEnabler
     {
 #pragma warning disable CS8618
-        public static Format Colorify {get; set;}
+        public static Format Colorify { get; set; }
 #pragma warning restore CS8618
-        
+
         /// <summary>
         ///
         /// see also:

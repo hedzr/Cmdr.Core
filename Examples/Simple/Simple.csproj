@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\HzNS.Cmdr.Core\HzNS.Cmdr.Core.csproj" />
+        <ProjectReference Include="..\..\src\HzNS.Cmdr.Core\HzNS.Cmdr.Core.csproj" />
     </ItemGroup>
 
 </Project>

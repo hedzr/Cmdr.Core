@@ -12,15 +12,15 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Remove="logs\**" />
+        <Compile Remove="logs\**" />
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Remove="logs\**" />
+        <EmbeddedResource Remove="logs\**" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="logs\**" />
+        <None Remove="logs\**" />
     </ItemGroup>
 
 </Project>

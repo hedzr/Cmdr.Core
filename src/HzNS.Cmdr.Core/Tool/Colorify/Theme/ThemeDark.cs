@@ -53,4 +53,3 @@ namespace HzNS.Cmdr.Tool.Colorify.Theme
         }
     }
 }
-

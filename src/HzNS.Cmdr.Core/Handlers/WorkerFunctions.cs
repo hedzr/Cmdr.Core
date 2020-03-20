@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Colorify;
 
@@ -11,6 +12,8 @@ namespace HzNS.Cmdr.Handlers
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
     [SuppressMessage("ReSharper", "ImplicitlyCapturedClosure")]
+    [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Local")]
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public abstract class WorkerFunctions : DefaultHandlers
     {
         public void ShowVersions(Worker w, params string[] remainArgs)
@@ -23,7 +26,8 @@ namespace HzNS.Cmdr.Handlers
             //
         }
 
-        private void ShowOne(SortedDictionary<string, List<TwoString>> lines, Format writer, int tabStop)
+        // ReSharper disable once UnusedParameter.Local
+        private void ShowOne(SortedDictionary<string, List<TwoString>> lines, Format writer, int tabStop, int level = 0)
         {
             foreach (var (group, twoStrings) in lines)
             {
@@ -68,19 +72,39 @@ namespace HzNS.Cmdr.Handlers
 
 
         [SuppressMessage("ReSharper", "InvertIf")]
+        [SuppressMessage("ReSharper", "ConvertIfStatementToConditionalTernaryExpression")]
         private void ShowIt(SortedDictionary<string, List<TwoString>> commandLines,
-            SortedDictionary<string, List<TwoString>> optionLines, Format writer, int tabStop, bool treeMode = false)
+            SortedDictionary<int, CmdFlags> optionLines,
+            Format writer, int tabStop, bool treeMode = false)
         {
             if (commandLines.Count > 0)
             {
-                if (!treeMode) writer.WriteLine("\nCommands:"); else writer.WriteLine("\nCommands Tree:"); 
+                if (!treeMode) writer.WriteLine("\nCommands:");
+                else writer.WriteLine("\nCommands Tree:");
                 ShowOne(commandLines, writer, tabStop);
             }
 
             if (optionLines.Count > 0)
             {
-                if (!treeMode) writer.WriteLine("\nOptions:");
-                ShowOne(optionLines, writer, tabStop);
+                var step = 0;
+                foreach (var (lvl, cf) in optionLines)
+                {
+                    if (!treeMode)
+                    {
+                        // writer.WriteLine($"\nOptions {UpperBoundLevel - lvl}:");
+                        if (step == 0)
+                            writer.WriteLine($"\nOptions:");
+                        else if (cf.cmd.IsRoot)
+                            writer.WriteLine($"\nGlobal Options:");
+                        else if (step == 1)
+                            writer.WriteLine($"\nParent Options ({cf.cmd.backtraceTitles}):");
+                        else
+                            writer.WriteLine($"\nParents Options ({cf.cmd.backtraceTitles}):");
+                    }
+
+                    ShowOne(cf.lines, writer, tabStop, step);
+                    step++;
+                }
             }
         }
 
@@ -90,7 +114,7 @@ namespace HzNS.Cmdr.Handlers
         {
             var writer = ColorifyEnabler.Colorify; // Console.Out;
             var commandLines = new SortedDictionary<string, List<TwoString>>();
-            var optionLines = new SortedDictionary<string, List<TwoString>>();
+            var optionLines = new SortedDictionary<int, CmdFlags>();
             var tabStop = w.TabStop;
 
             w.Walk(w.ParsedCommand,
@@ -129,12 +153,25 @@ namespace HzNS.Cmdr.Handlers
                     if (!string.IsNullOrWhiteSpace(flag.Description)) sb2.Append(flag.Description);
                     else if (!string.IsNullOrWhiteSpace(flag.DescriptionLong)) sb2.Append(flag.DescriptionLong);
 
-                    if (!optionLines.ContainsKey(flag.Group))
-                        optionLines.TryAdd(flag.Group, new List<TwoString>());
+                    var lvl = UpperBoundLevel - owner.FindLevel();
+                    if (!optionLines.ContainsKey(lvl))
+                        optionLines.TryAdd(lvl,
+                            new CmdFlags {cmd = owner, lines = new SortedDictionary<string, List<TwoString>>()});
+                    if (!optionLines[lvl].lines.ContainsKey(flag.Group))
+                        optionLines[lvl].lines.TryAdd(flag.Group, new List<TwoString>());
 
                     if (sb.Length >= tabStop) tabStop = sb.Length + 1;
-                    optionLines[flag.Group].Add(new TwoString
-                        {Level = level, Part1 = sb.ToString(), Part2 = sb2.ToString()});
+                    optionLines[lvl].lines[flag.Group].Add(new TwoString
+                        {Level = level, Flag = flag, Part1 = sb.ToString(), Part2 = sb2.ToString()});
+
+                    // if (!optionLines.ContainsKey(level))
+                    //     optionLines.TryAdd(level, new CmdFlags{cmd=owner,lines= new SortedDictionary<string, List<TwoString>>(),}};
+                    // if (!optionLines[level].ContainsKey(flag.Group))
+                    //     optionLines[level].TryAdd(flag.Group, new List<TwoString>());
+                    //
+                    // if (sb.Length >= tabStop) tabStop = sb.Length + 1;
+                    // optionLines[level][flag.Group].Add(new TwoString
+                    //     {Level = level, Part1 = sb.ToString(), Part2 = sb2.ToString()});
 
                     return true;
                 });
@@ -148,12 +185,16 @@ namespace HzNS.Cmdr.Handlers
 
         #endregion
 
+        // ReSharper disable once InconsistentNaming
+        private bool noBacktrace;
+
         public void ShowHelpScreen(Worker w, params string[] remainArgs)
         {
             var commandLines = new SortedDictionary<string, List<TwoString>>();
-            var optionLines = new SortedDictionary<string, List<TwoString>>();
+            var optionLines = new SortedDictionary<int, CmdFlags>();
             var writer = ColorifyEnabler.Colorify; // Console.Out;
             var tabStop = w.TabStop;
+            noBacktrace = false;
 
             w.Walk(w.ParsedCommand,
                 (owner, cmd, level) =>
@@ -174,32 +215,12 @@ namespace HzNS.Cmdr.Handlers
                         commandLines.TryAdd(cmd.Group, new List<TwoString>());
 
                     if (sb.Length >= tabStop) tabStop = sb.Length + 1;
-                    commandLines[cmd.Group].Add(new TwoString {Part1 = sb.ToString(), Part2 = sb2.ToString()});
+                    commandLines[cmd.Group].Add(new TwoString
+                        {Level = level, Part1 = sb.ToString(), Part2 = sb2.ToString()});
 
                     return true;
                 },
-                flagsWatcher: (owner, flag, level) =>
-                {
-                    if (level > 0) return true;
-                    if (flag.Hidden) return true;
-
-                    var sb = new StringBuilder("  ");
-                    if (!string.IsNullOrWhiteSpace(flag.Short)) sb.Append($"{flag.Short}, ");
-                    if (!string.IsNullOrWhiteSpace(flag.Long)) sb.Append($"{flag.Long}, ");
-                    if (flag.Aliases.Length > 0) sb.AppendJoin(',', flag.Aliases);
-
-                    var sb2 = new StringBuilder();
-                    if (!string.IsNullOrWhiteSpace(flag.Description)) sb2.Append(flag.Description);
-                    else if (!string.IsNullOrWhiteSpace(flag.DescriptionLong)) sb2.Append(flag.DescriptionLong);
-
-                    if (!optionLines.ContainsKey(flag.Group))
-                        optionLines.TryAdd(flag.Group, new List<TwoString>());
-
-                    if (sb.Length >= tabStop) tabStop = sb.Length + 1;
-                    optionLines[flag.Group].Add(new TwoString {Part1 = sb.ToString(), Part2 = sb2.ToString()});
-
-                    return true;
-                });
+                flagsWatcher(w, optionLines, tabStop));
 
             ShowIt(commandLines, optionLines, writer, tabStop);
 
@@ -212,7 +233,7 @@ namespace HzNS.Cmdr.Handlers
 
             var writer = ColorifyEnabler.Colorify; // Console.Out;
             var commandLines = new SortedDictionary<string, List<TwoString>>();
-            var optionLines = new SortedDictionary<string, List<TwoString>>();
+            var optionLines = new SortedDictionary<int, CmdFlags>();
             var tabStop = w.TabStop;
 
             w.Walk(w.ParsedCommand,
@@ -220,7 +241,7 @@ namespace HzNS.Cmdr.Handlers
                 {
                     if (cmd.Hidden) return true;
 
-                    var sb = new StringBuilder("  ");
+                    var sb = new StringBuilder(new string(' ', (1 + level) * 2));
                     if (!string.IsNullOrWhiteSpace(cmd.Short)) sb.Append($"{cmd.Short}, ");
                     if (!string.IsNullOrWhiteSpace(cmd.Long)) sb.Append($"{cmd.Long},");
                     if (cmd.Aliases.Length > 0) sb.AppendJoin(',', cmd.Aliases);
@@ -234,48 +255,102 @@ namespace HzNS.Cmdr.Handlers
 
                     if (sb.Length >= tabStop) tabStop = sb.Length + 1;
                     commandLines[cmd.Group].Add(new TwoString
-                        {Part1 = new string(' ', level * 2) + sb.ToString(), Part2 = sb2.ToString()});
+                        {Part1 = sb.ToString(), Part2 = sb2.ToString()});
 
                     return true;
                 },
-                (owner, flag, level) =>
-                {
-                    if (level >= 0) return true;
-                    if (flag.Hidden) return true;
-
-                    var sb = new StringBuilder("  ");
-                    if (!string.IsNullOrWhiteSpace(flag.Short)) sb.Append($"{flag.Short}, ");
-                    if (!string.IsNullOrWhiteSpace(flag.Long)) sb.Append($"{flag.Long},");
-                    if (flag.Aliases.Length > 0) sb.AppendJoin(',', flag.Aliases);
-
-                    var sb2 = new StringBuilder();
-                    if (!string.IsNullOrWhiteSpace(flag.Description)) sb2.Append(flag.Description);
-                    else if (!string.IsNullOrWhiteSpace(flag.DescriptionLong)) sb2.Append(flag.DescriptionLong);
-
-                    if (!optionLines.ContainsKey(flag.Group))
-                        optionLines.TryAdd(flag.Group, new List<TwoString>());
-
-                    if (sb.Length >= tabStop) tabStop = sb.Length + 1;
-                    optionLines[flag.Group].Add(new TwoString {Part1 = sb.ToString(), Part2 = sb2.ToString()});
-
-                    return true;
-                });
+                (owner, flag, level) => true);
 
             ShowIt(commandLines, optionLines, writer, tabStop, true);
 
             writer.WriteLine("");
         }
 
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once MemberCanBeMadeStatic.Local
+        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
+        private Func<ICommand, IFlag, int /*level*/, bool> flagsWatcher(Worker w,
+            // SortedDictionary<string, List<TwoString>> commandLines,
+            SortedDictionary<int /*level*/, CmdFlags> optionLines,
+            int tabStop)
+        {
+            return (owner, flag, level) =>
+            {
+                if (level > 0) return true;
+                if (flag.Hidden) return true;
+
+                var sb = new StringBuilder("  ");
+                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+                if (!string.IsNullOrWhiteSpace(flag.Short))
+                    sb.Append($"{Util.SwitchChar(false)}{flag.Short}, ");
+                else
+                    sb.Append("    ");
+                if (!string.IsNullOrWhiteSpace(flag.Long)) sb.Append($"{Util.SwitchChar(true)}{flag.Long}, ");
+                if (flag.Aliases.Length > 0) sb.Append("--").AppendJoin(",--", flag.Aliases);
+
+                var sb2 = new StringBuilder();
+                if (!string.IsNullOrWhiteSpace(flag.Description)) sb2.Append(flag.Description);
+                else if (!string.IsNullOrWhiteSpace(flag.DescriptionLong)) sb2.Append(flag.DescriptionLong);
+
+                // if (!optionLines.ContainsKey(flag.Group))
+                //     optionLines.TryAdd(flag.Group, new List<TwoString>());
+                //
+                // if (sb.Length >= tabStop) tabStop = sb.Length + 1;
+                // optionLines[flag.Group].Add(new TwoString {Part1 = sb.ToString(), Part2 = sb2.ToString()});
+
+                var lvl = UpperBoundLevel - owner.FindLevel();
+                if (!optionLines.ContainsKey(lvl))
+                    optionLines.TryAdd(lvl,
+                        new CmdFlags {cmd = owner, lines = new SortedDictionary<string, List<TwoString>>()});
+                if (!optionLines[lvl].lines.ContainsKey(flag.Group))
+                    optionLines[lvl].lines.TryAdd(flag.Group, new List<TwoString>());
+
+                if (sb.Length >= tabStop) tabStop = sb.Length + 1;
+                optionLines[lvl].lines[flag.Group].Add(new TwoString
+                    {Level = level, Flag = flag, Part1 = sb.ToString(), Part2 = sb2.ToString()});
+
+                // ReSharper disable once InvertIf
+                if (!noBacktrace)
+                {
+                    noBacktrace = true;
+                    var oo = owner.Owner;
+                    while (oo != null && oo.Owner != oo)
+                    {
+                        w.Walk(oo,
+                            (o, c, l) => true,
+                            flagsWatcher(w, optionLines, tabStop)
+                        );
+                        oo = oo.Owner;
+                    }
+                }
+
+                return true;
+            };
+        }
+
+        private class CmdFlags
+        {
+#pragma warning disable CS8618
+            internal ICommand cmd { get; set; }
+            internal SortedDictionary<string /*group*/, List<TwoString>> lines { get; set; }
+#pragma warning restore CS8618
+        }
+
         private class TwoString
         {
+#pragma warning disable CS8618
             internal int Level { get; set; }
+            internal IFlag Flag { get; set; }
             internal string Part1 { get; set; } = "";
             internal string Part2 { get; set; } = "";
+#pragma warning restore CS8618
         }
 
         private const string ColorDesc = Colors.txtMuted;
         private const string ColorGroup = Colors.txtMuted;
         private const string ColorNormal = Colors.txtPrimary;
+
+        private const int UpperBoundLevel = int.MaxValue;
 
         private static void Test()
         {

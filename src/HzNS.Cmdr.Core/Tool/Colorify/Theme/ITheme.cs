@@ -13,4 +13,3 @@ namespace HzNS.Cmdr.Tool.Colorify.Theme
         void SetComponents();
     }
 }
-

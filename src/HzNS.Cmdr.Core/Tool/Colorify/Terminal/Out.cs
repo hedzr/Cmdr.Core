@@ -16,14 +16,17 @@ namespace HzNS.Cmdr.Tool.Colorify.Terminal
             {
                 size = size - Console.CursorLeft;
             }
+
             if (size < text.Length)
             {
                 size = Console.WindowWidth + size;
             }
+
             if (size < 0)
             {
                 size = text.Length;
             }
+
             Console.WriteLine($"{text.PadRight(size)}");
         }
 
@@ -40,8 +43,8 @@ namespace HzNS.Cmdr.Tool.Colorify.Terminal
         public static void AlignCenter(string text)
         {
             decimal size = Console.WindowWidth - 1 - text.Length;
-            int rightSize = (int)Math.Round(size / 2);
-            int leftSize = (int)(size - rightSize);
+            int rightSize = (int) Math.Round(size / 2);
+            int leftSize = (int) (size - rightSize);
             string leftMargin = new String(' ', leftSize);
             string rightMargin = new String(' ', rightSize);
 
@@ -53,8 +56,8 @@ namespace HzNS.Cmdr.Tool.Colorify.Terminal
         public static void Extreme(string left, string right)
         {
             decimal size = Console.WindowWidth - 1;
-            int rightMargin = (int)Math.Round(size / 2);
-            int leftMargin = (int)(size - rightMargin);
+            int rightMargin = (int) Math.Round(size / 2);
+            int leftMargin = (int) (size - rightMargin);
 
             Console.Write($"{left}".PadRight(rightMargin));
             Console.WriteLine($"{right}".PadLeft(leftMargin));

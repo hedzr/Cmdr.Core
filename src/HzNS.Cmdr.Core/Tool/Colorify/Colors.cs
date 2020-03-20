@@ -26,4 +26,3 @@ namespace HzNS.Cmdr.Tool.Colorify
         }
     }
 }
-

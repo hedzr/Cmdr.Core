@@ -13,10 +13,11 @@ namespace HzNS.Cmdr.Base
         {
         }
 #pragma warning restore CS8618
-        
+
         // ReSharper disable once PublicConstructorInAbstractClass
         public BaseFlag(string shortTitle, string longTitle, string[] aliases, string description,
-            string descriptionLong, string examples, T defaultValue, string placeholder) : base(shortTitle, longTitle, aliases, description,
+            string descriptionLong, string examples, T defaultValue, string placeholder) : base(shortTitle, longTitle,
+            aliases, description,
             descriptionLong, examples)
         {
             DefaultValue = defaultValue;
@@ -27,7 +28,7 @@ namespace HzNS.Cmdr.Base
         public string PlaceHolder { get; set; }
 
         public string ToggleGroup { get; set; } = "";
-        
+
         public object? getDefaultValue()
         {
             return DefaultValue;

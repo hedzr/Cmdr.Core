@@ -394,13 +394,14 @@ namespace HzNS.Cmdr
         }
 
         // ReSharper disable once UnusedMember.Local
-        private bool walkForFlags(ICommand parent, Func<ICommand, IFlag, bool> watcher)
+        [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
+        private bool walkForFlags(ICommand parent, Func<ICommand, IFlag, int, bool> watcher, int level = 0)
         {
-            if (parent.Flags.Any(f => watcher != null && watcher(parent, f) == false)) return false;
+            if (parent.Flags.Any(f => watcher != null && watcher(parent, f, level) == false)) return false;
 
             if (parent.SubCommands == null) return true;
 
-            return parent.SubCommands.All(cmd => walkForFlags(cmd, watcher));
+            return parent.SubCommands.All(cmd => walkForFlags(cmd, watcher, level + 1));
         }
 
         #endregion

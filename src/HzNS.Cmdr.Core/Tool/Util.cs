@@ -18,14 +18,14 @@ namespace HzNS.Cmdr.Tool
         public static string StripFirstKnobble(string s)
         {
             var pos = s.IndexOf('.');
-            if(pos>=0)
+            if (pos >= 0)
             {
                 return s.Substring(pos + 1);
             }
 
             return s;
         }
-        
+
         #region About Json
 
         public static string JsonSerializer<T>(T t)

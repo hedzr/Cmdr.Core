@@ -43,7 +43,7 @@ namespace Simple
         public static SimpleRootCmd New(IAppInfo appInfo, params Action<SimpleRootCmd>[] opts)
         {
             var r = new SimpleRootCmd(appInfo);
-            
+
             foreach (var opt in opts)
             {
                 opt(r);

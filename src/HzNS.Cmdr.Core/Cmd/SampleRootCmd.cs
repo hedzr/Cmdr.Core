@@ -29,7 +29,7 @@ namespace HzNS.Cmdr.Cmd
         {
             throw new NotImplementedException();
         }
-        
+
         private SampleRootCmd(IAppInfo appInfo) : base(appInfo)
         {
         }
@@ -45,6 +45,5 @@ namespace HzNS.Cmdr.Cmd
 
             return r;
         }
-
     }
 }

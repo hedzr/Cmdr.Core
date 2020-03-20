@@ -35,7 +35,7 @@ namespace commander
                         //
                         // w.UseSerilog((configuration) => configuration.WriteTo.Console().CreateLogger())
                         //
-                        
+
                         // w.EnableDuplicatedCharThrows = true;
                     })
                 .Run(args);
