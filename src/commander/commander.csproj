@@ -12,7 +12,15 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="logs" />
+      <Compile Remove="logs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="logs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="logs\**" />
     </ItemGroup>
 
 </Project>

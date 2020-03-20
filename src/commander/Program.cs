@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using commander.Cmd;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
-using mdx.Cmd;
 using Serilog;
 
-namespace mdx
+namespace commander
 {
     /// <summary>
     ///
@@ -19,7 +19,7 @@ namespace mdx
         static void Main(string[] args)
         {
             // Cmdr: A CommandLine Arguments Parser
-            Entry.NewCmdrWorker(RootCmd.New(new AppInfo {AppName = "mdxTool", AppVersion = "1.0.0"}, (root) =>
+            Cmdr.NewWorker(RootCommand.New(new AppInfo {AppName = "commander", AppVersion = "1.0.0"}, (root) =>
                     {
                         root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
                             .AddCommand(new TagsAddCmd())

@@ -9,9 +9,9 @@ using Serilog.Events;
 
 namespace HzNS.Cmdr
 {
-    public class Entry
+    public class Cmdr
     {
-        public static Worker NewCmdrWorker(IRootCommand root, params Action<Worker>[] opts)
+        public static Worker NewWorker(IRootCommand root, params Action<Worker>[] opts)
         {
             var worker = CreateDefaultWorker(root, null, opts);
             return worker;
@@ -61,12 +61,12 @@ namespace HzNS.Cmdr
 
         #region Singleton Pattern
 
-        private Entry()
+        private Cmdr()
         {
         }
 
         // ReSharper disable once RedundantDefaultMemberInitializer
-        private static Entry _instance = null!;
+        private static Cmdr _instance = null!;
 
         // ReSharper disable once InconsistentNaming
         private static readonly object _lock = new object();
@@ -74,7 +74,7 @@ namespace HzNS.Cmdr
         [SuppressMessage("ReSharper", "UseObjectOrCollectionInitializer")]
         [SuppressMessage("ReSharper", "InvertIf")]
         // ReSharper disable once UnusedMember.Global
-        public static Entry Instance
+        public static Cmdr Instance
         {
             get
             {
@@ -82,7 +82,7 @@ namespace HzNS.Cmdr
                 if (_instance == null)
                     lock (_lock)
                     {
-                        if (_instance == null) _instance = new Entry();
+                        if (_instance == null) _instance = new Cmdr();
                     }
                 // Re|Sharper restore InvertIf
 

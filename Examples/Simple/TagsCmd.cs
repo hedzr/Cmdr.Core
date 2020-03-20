@@ -4,8 +4,7 @@ using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
 
 // ReSharper disable MemberCanBePrivate.Global
-
-namespace commander.Cmd
+namespace Simple
 {
     public class TagsAddCmd : BaseCommand
     {
