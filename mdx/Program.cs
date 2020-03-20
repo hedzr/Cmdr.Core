@@ -10,6 +10,7 @@ using System.Xml.Schema;
 using Autofac;
 using AutofacSerilogIntegration;
 using HzNS.Cmdr;
+using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Builder;
 using HzNS.Cmdr.Tool;
 using HzNS.MdxLib.MDict;

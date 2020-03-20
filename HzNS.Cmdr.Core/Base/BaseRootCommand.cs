@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using HzNS.Cmdr.Builder;
 
 namespace HzNS.Cmdr.Base
 {

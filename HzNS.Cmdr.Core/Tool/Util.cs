@@ -10,6 +10,13 @@ namespace HzNS.Cmdr.Tool
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
     public static class Util
     {
+        public static string SwitchChar(bool longOpt)
+        {
+            return longOpt ? "--" : "-";
+        }
+
+        #region About Json
+
         public static string JsonSerializer<T>(T t)
         {
             var ser = new DataContractJsonSerializer(typeof(T));
@@ -44,5 +51,7 @@ namespace HzNS.Cmdr.Tool
             public int Age { get; set; }
         }
 #pragma warning restore CS8618, CS3021
+
+        #endregion
     }
 }

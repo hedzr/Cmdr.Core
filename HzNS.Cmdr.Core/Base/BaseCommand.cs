@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using HzNS.Cmdr.Builder;
 
 namespace HzNS.Cmdr.Base
 {
@@ -9,7 +8,7 @@ namespace HzNS.Cmdr.Base
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public abstract class BaseCommand : BaseOpt, ICommand
     {
-        private List<IBaseFlag> _flags = new List<IBaseFlag>();
+        private List<IFlag> _flags = new List<IFlag>();
 
         private List<ICommand> _subCommands = new List<ICommand>();
 
@@ -32,7 +31,7 @@ namespace HzNS.Cmdr.Base
             set => _subCommands = value;
         }
 
-        public List<IBaseFlag> Flags
+        public List<IFlag> Flags
         {
             get => _flags;
             set => _flags = value;
@@ -51,7 +50,7 @@ namespace HzNS.Cmdr.Base
         public ICommand AddFlag<T>(IFlag<T> flag)
         {
             if (_flags == null)
-                _flags = new List<IBaseFlag>();
+                _flags = new List<IFlag>();
 
             flag.Owner = this;
             _flags.Add(flag);

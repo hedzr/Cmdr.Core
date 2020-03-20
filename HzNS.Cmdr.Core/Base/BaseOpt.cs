@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using HzNS.Cmdr.Builder;
 
 namespace HzNS.Cmdr.Base
 {
@@ -29,6 +28,7 @@ namespace HzNS.Cmdr.Base
             Examples = examples;
         }
 
+        
         public string Short { get; set; } = "";
         public string Long { get; set; } = "";
         public string[] Aliases { get; set; } = { };

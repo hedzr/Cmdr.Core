@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 using System.Diagnostics.CodeAnalysis;
-using HzNS.Cmdr.Builder;
+using HzNS.Cmdr.Base;
 
 namespace HzNS.Cmdr.Handlers
 {
@@ -15,7 +15,7 @@ namespace HzNS.Cmdr.Handlers
                 $"WARN: Duplicated command char FOUND: '{ch}'. Context: \"{cmd.backtraceTitles}\".");
         };
 
-        public Action<bool, string, ICommand, IBaseFlag>? OnDuplicatedFlagChar { get; set; } =
+        public Action<bool, string, ICommand, IFlag>? OnDuplicatedFlagChar { get; set; } =
             (isShort, ch, cmd, flg) =>
             {
                 Console.Error.WriteLineAsync(

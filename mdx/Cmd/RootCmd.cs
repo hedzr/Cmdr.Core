@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
-using HzNS.Cmdr.Builder;
 using HzNS.MdxLib.MDict;
 
 namespace mdx.Cmd

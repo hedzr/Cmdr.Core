@@ -1,7 +1,7 @@
 #nullable enable
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
-using HzNS.Cmdr.Builder;
+using HzNS.Cmdr.Base;
 
 namespace HzNS.Cmdr.Exception
 {
@@ -54,7 +54,7 @@ namespace HzNS.Cmdr.Exception
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
     public class WarnFlagException : CmdrException
     {
-        public WarnFlagException(bool isShort, string ch, IBaseFlag flag, ICommand owner)
+        public WarnFlagException(bool isShort, string ch, IFlag flag, ICommand owner)
         {
             IsShort = isShort;
             Char = ch;
@@ -64,13 +64,13 @@ namespace HzNS.Cmdr.Exception
 
         public bool IsShort { get; internal set; }
         public string Char { get; internal set; }
-        public IBaseFlag Flag { get; internal set; }
+        public IFlag Flag { get; internal set; }
         public ICommand Owner { get; internal set; }
     }
 
     public class DuplicationFlagCharException : WarnFlagException
     {
-        public DuplicationFlagCharException(bool isShort, string ch, IBaseFlag flag, ICommand owner) : base(isShort, ch,
+        public DuplicationFlagCharException(bool isShort, string ch, IFlag flag, ICommand owner) : base(isShort, ch,
             flag, owner)
         {
         }
@@ -78,7 +78,7 @@ namespace HzNS.Cmdr.Exception
 
     public class EmptyFlagLongFieldException : WarnFlagException
     {
-        public EmptyFlagLongFieldException(bool isShort, string ch, IBaseFlag flag, ICommand owner) : base(isShort, ch,
+        public EmptyFlagLongFieldException(bool isShort, string ch, IFlag flag, ICommand owner) : base(isShort, ch,
             flag, owner)
         {
         }

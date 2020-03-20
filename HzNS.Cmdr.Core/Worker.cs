@@ -7,9 +7,9 @@ using System.Linq;
 using Autofac;
 using AutofacSerilogIntegration;
 using HzNS.Cmdr.Base;
-using HzNS.Cmdr.Builder;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Handlers;
+using HzNS.Cmdr.Tool;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -155,7 +155,7 @@ namespace HzNS.Cmdr
 
         #endregion
 
-        #region helpers for With()
+        #region helpers for With(), Xref
 
         #region xref class and member container
 
@@ -208,7 +208,7 @@ namespace HzNS.Cmdr
                             }
             }
 
-            public void TryAddShort(Worker w, ICommand owner, IBaseFlag flag)
+            public void TryAddShort(Worker w, ICommand owner, IFlag flag)
             {
                 if (!string.IsNullOrWhiteSpace(flag.Short))
                     if (!FlagsShortNames.TryAdd(flag.Short, flag))
@@ -219,7 +219,7 @@ namespace HzNS.Cmdr
                     }
             }
 
-            public void TryAddLong(Worker w, ICommand owner, IBaseFlag flag)
+            public void TryAddLong(Worker w, ICommand owner, IFlag flag)
             {
                 if (!string.IsNullOrWhiteSpace(flag.Long))
                 {
@@ -237,7 +237,7 @@ namespace HzNS.Cmdr
                 }
             }
 
-            public void TryAddAliases(Worker w, ICommand owner, IBaseFlag flag)
+            public void TryAddAliases(Worker w, ICommand owner, IFlag flag)
             {
                 if (flag.Aliases != null)
                     foreach (var a in flag.Aliases)
@@ -261,9 +261,9 @@ namespace HzNS.Cmdr
             public Dictionary<string, ICommand> SubCommandsAliasNames { get; } =
                 new Dictionary<string, ICommand>();
 
-            public Dictionary<string, IBaseFlag> FlagsShortNames { get; } = new Dictionary<string, IBaseFlag>();
-            public Dictionary<string, IBaseFlag> FlagsLongNames { get; } = new Dictionary<string, IBaseFlag>();
-            public Dictionary<string, IBaseFlag> FlagsAliasNames { get; } = new Dictionary<string, IBaseFlag>();
+            public Dictionary<string, IFlag> FlagsShortNames { get; } = new Dictionary<string, IFlag>();
+            public Dictionary<string, IFlag> FlagsLongNames { get; } = new Dictionary<string, IFlag>();
+            public Dictionary<string, IFlag> FlagsAliasNames { get; } = new Dictionary<string, IFlag>();
 
             #endregion
         }
@@ -275,10 +275,19 @@ namespace HzNS.Cmdr
 
         #endregion
 
+        #region Preloading, Build Xref
+
         [SuppressMessage("ReSharper", "InvertIf")]
         private void preloadCommandDefinitions()
         {
-            walkFor(_root, (owner, cmd) =>
+            collectAndBuildXref(_root);
+        }
+
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once MemberCanBeMadeStatic.Local
+        private void collectAndBuildXref(ICommand command)
+        {
+            walkFor(command, (owner, cmd) =>
             {
                 if (!_xrefs.ContainsKey(owner)) _xrefs.TryAdd(owner, new Xref());
                 if (!_xrefs.ContainsKey(cmd)) _xrefs.TryAdd(cmd, new Xref());
@@ -299,11 +308,13 @@ namespace HzNS.Cmdr
 
         #endregion
 
+        #endregion
+
         #region helpers for Walk()
 
         private bool walkFor(ICommand parent,
             Func<ICommand, ICommand, bool>? commandsWatcher = null,
-            Func<ICommand, IBaseFlag, bool>? watcher = null)
+            Func<ICommand, IFlag, bool>? watcher = null)
         {
             foreach (var f in parent.Flags)
                 if (watcher != null && watcher(parent, f) == false)
@@ -322,7 +333,8 @@ namespace HzNS.Cmdr
             return true;
         }
 
-        private bool walkForFlags(ICommand parent, Func<ICommand, IBaseFlag, bool> watcher)
+        // ReSharper disable once UnusedMember.Local
+        private bool walkForFlags(ICommand parent, Func<ICommand, IFlag, bool> watcher)
         {
             if (parent.Flags.Any(f => watcher != null && watcher(parent, f) == false)) return false;
 
@@ -343,7 +355,7 @@ namespace HzNS.Cmdr
             // ReSharper disable once ForCanBeConvertedToForeach
             for (var i = position; i < args.Length; i++)
             {
-                var ok = false;
+                bool ok;
                 var arg = args[i];
                 var isOpt = arg.StartsWith("-");
                 var longOpt = arg.StartsWith("--");
@@ -403,6 +415,7 @@ namespace HzNS.Cmdr
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         // ReSharper disable once SuggestBaseTypeForParameter
+        // ReSharper disable once UnusedParameter.Local
         private void onCommandMatched(IEnumerable<string> args, int position, string arg, ICommand cmd)
         {
             var remainArgs = args.Where((it, idx) => idx >= position).ToArray();
@@ -415,10 +428,10 @@ namespace HzNS.Cmdr
 
             try
             {
-                if (!(cmd is IAction action))
-                    cmd.Action?.Invoke(this, remainArgs);
-                else
+                if (cmd is IAction action)
                     action.Invoke(this, remainArgs);
+                else
+                    cmd.Action?.Invoke(this, remainArgs);
             }
             finally
             {
@@ -431,21 +444,9 @@ namespace HzNS.Cmdr
 
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
-        private void collect(ICommand command)
-        {
-            foreach (var cmd in command.SubCommands) collect(cmd);
-
-            foreach (var flg in command.Flags)
-            {
-            }
-        }
-
-
-        // ReSharper disable once InconsistentNaming
-        // ReSharper disable once MemberCanBeMadeStatic.Local
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
         private void onFlagMatched(IEnumerable<string> args, int position, string fragment, in bool longOpt,
-            IBaseFlag flag)
+            IFlag flag)
         {
             var remainArgs = args.Where((it, idx) => idx >= position).ToArray();
 
@@ -454,6 +455,8 @@ namespace HzNS.Cmdr
 
             try
             {
+                var sw = Util.SwitchChar(longOpt);
+                log.Debug($"  flag matched: {sw}{fragment}");
                 flag.OnSet?.Invoke(this, flag.getDefaultValue(), flag.getDefaultValue());
 
                 // ReSharper disable once SuspiciousTypeConversion.Global
@@ -471,20 +474,25 @@ namespace HzNS.Cmdr
         }
 
         // ReSharper disable once MemberCanBeMadeStatic.Local
+        // ReSharper disable once UnusedParameter.Local
         // ReSharper disable once InconsistentNaming
+        // ReSharper disable once SuggestBaseTypeForParameter
         private void onCommandCannotMatched(string[] args, in int position, string arg, ICommand command)
         {
             // throw new NotImplementedException();
-            errPrint($"- cannot parsed command: '{arg}'. context: '{command.backtraceTitles}'.");
+            errPrint($"- cannot parsed argument for command(arg): '{args[position]}'. context: '{command.backtraceTitles}'.");
         }
 
+        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
-        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
+        // ReSharper disable once SuggestBaseTypeForParameter
+        // ReSharper disable once UnusedParameter.Local
         private void onFlagCannotMatched(string[] args, in int position, string fragment, in bool longOpt,
             ICommand command)
         {
-            errPrint($"- cannot parsed command: '{args[position]}'. context: '{command.backtraceTitles}'");
+            var sw = Util.SwitchChar(longOpt);
+            errPrint($"- cannot parsed argument for flag({sw}{fragment}): '{args[position]}'. context: '{command.backtraceTitles}'");
         }
 
         #endregion

@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using HzNS.Cmdr.Builder;
+using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
 using Serilog;
 using Serilog.Core;
@@ -65,6 +65,7 @@ namespace HzNS.Cmdr
         {
         }
 
+        // ReSharper disable once RedundantDefaultMemberInitializer
         private static Entry _instance = null!;
 
         // ReSharper disable once InconsistentNaming

@@ -1,4 +1,4 @@
-namespace HzNS.Cmdr.Builder
+namespace HzNS.Cmdr.Base
 {
     public class AppInfo : IAppInfo
     {
