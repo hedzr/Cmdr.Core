@@ -73,20 +73,27 @@ namespace HzNS.Cmdr.Handlers
 
         [SuppressMessage("ReSharper", "InvertIf")]
         [SuppressMessage("ReSharper", "ConvertIfStatementToConditionalTernaryExpression")]
-        private void ShowIt(SortedDictionary<string, List<TwoString>> commandLines,
+        private void ShowIt(ICommand cmd,
+            SortedDictionary<string, List<TwoString>> commandLines,
             SortedDictionary<int, CmdFlags> optionLines,
             Format writer, int tabStop, bool treeMode = false)
         {
             if (commandLines.Count > 0)
             {
                 if (!treeMode) writer.WriteLine("\nCommands:");
-                else writer.WriteLine("\nCommands Tree:");
+                else
+                {
+                    var title = cmd.IsRoot ? "-ROOT-" : cmd.backtraceTitles;
+                    writer.WriteLine($"\nCommands Tree For '{title}':");
+                }
+
                 ShowOne(commandLines, writer, tabStop);
             }
 
             if (optionLines.Count > 0)
             {
                 var step = 0;
+                // ReSharper disable once UnusedVariable
                 foreach (var (lvl, cf) in optionLines)
                 {
                     if (!treeMode)
@@ -176,7 +183,7 @@ namespace HzNS.Cmdr.Handlers
                     return true;
                 });
 
-            ShowIt(commandLines, optionLines, writer, tabStop);
+            ShowIt(w.ParsedCommand ?? w.RootCommand, commandLines, optionLines, writer, tabStop);
 
             writer.WriteLine("");
 
@@ -222,7 +229,7 @@ namespace HzNS.Cmdr.Handlers
                 },
                 flagsWatcher(w, optionLines, tabStop));
 
-            ShowIt(commandLines, optionLines, writer, tabStop);
+            ShowIt(w.ParsedCommand ?? w.RootCommand, commandLines, optionLines, writer, tabStop);
 
             writer.WriteLine("");
         }
@@ -261,7 +268,14 @@ namespace HzNS.Cmdr.Handlers
                 },
                 (owner, flag, level) => true);
 
-            ShowIt(commandLines, optionLines, writer, tabStop, true);
+            if (commandLines.Count > 0)
+                ShowIt(w.ParsedCommand ?? w.RootCommand, commandLines, optionLines, writer, tabStop, true);
+            else
+            {
+                var cmd = w.ParsedCommand ?? w.RootCommand;
+                var title = cmd.IsRoot ? "-ROOT-" : cmd.backtraceTitles;
+                writer.WriteLine($"\nNO SUB-COMMANDS For '{title}'");
+            }
 
             writer.WriteLine("");
         }

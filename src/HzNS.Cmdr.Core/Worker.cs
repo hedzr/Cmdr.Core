@@ -413,6 +413,7 @@ namespace HzNS.Cmdr
         // ReSharper disable once SuggestBaseTypeForParameter
         private int match(ICommand command, string[] args, int position, int level)
         {
+            log.Debug($"  - match for command: {command.backtraceTitles}");
             var matchedPosition = -1;
             // ReSharper disable once ForCanBeConvertedToForeach
             for (var i = position; i < args.Length; i++)
@@ -422,6 +423,7 @@ namespace HzNS.Cmdr
                 var isOpt = arg.StartsWith("-");
                 var longOpt = arg.StartsWith("--");
 
+                log.Debug($"    -> arg {i}: '{arg}'");
                 if (!isOpt && command.SubCommands != null)
                 {
                     foreach (var cmd in command.SubCommands)
@@ -431,46 +433,66 @@ namespace HzNS.Cmdr
                         if (!ok) ok = cmd.Match(arg, true);
                         if (!ok) continue;
 
+                        log.Debug($"    ++ command matched: {cmd.backtraceTitles}");
+
                         ParsedCommand = cmd;
                         ParsedFlag = null;
 
+                        var pos = i + 1;
                         if (cmd.SubCommands.Count > 0)
                         {
                             if (i == arg.Length - 1) throw new WantHelpScreenException();
 
-                            var pos = match(cmd, args, i + 1, level + 1);
-                            if (pos > 0) return pos;
+                            pos = match(cmd, args, i + 1, level + 1);
+                            // if (pos > 0) return pos;
                         }
 
                         // onCommandMatched(args, i + 1, arg, cmd);
 
-                        matchedPosition = i + 1;
+                        matchedPosition = pos;
+                        command = cmd;
                         break;
                     }
 
-                    if (matchedPosition >= 0) continue;
-
-                    onCommandCannotMatched(args, i, arg, command);
-                    return -position - 1;
+                    if (matchedPosition < 0)
+                    {
+                        onCommandCannotMatched(args, i, arg, command);
+                        return -position - 1;
+                    }
                 }
 
                 // if (ok) continue;
 
                 // ReSharper disable once InvertIf
-                if (isOpt && command.Flags != null)
+                if (isOpt)
                 {
                     var fragment = longOpt ? arg.Substring(2) : arg.Substring(1);
+                    var cmd = command;
+                    parentFlags:
                     ok = false;
-                    foreach (var flg in command.Flags)
+                    foreach (var flg in cmd.Flags)
                     {
                         ok = flg.Match(fragment, longOpt);
                         if (!ok) continue;
 
+                        log.Debug($"    ++ flag matched: {Util.SwitchChar(longOpt)}{flg.Long}");
                         onFlagMatched(args, i + 1, fragment, longOpt, flg);
                         break;
                     }
 
-                    if (!ok) onFlagCannotMatched(args, i, fragment, longOpt, command);
+                    // ReSharper disable once InvertIf
+                    if (!ok)
+                    {
+                        if (cmd.Owner != null && cmd.Owner != cmd)
+                        {
+                            cmd = cmd.Owner;
+                            log.Debug($"    - try finding flags for its parent: {cmd.backtraceTitles}");
+                            goto parentFlags;
+                        }
+
+                        log.Debug($"can't match a flag: '{arg}'/fragment='{fragment}'.");
+                        onFlagCannotMatched(args, i, fragment, longOpt, command);
+                    }
                 }
 
                 // if (ok) continue;

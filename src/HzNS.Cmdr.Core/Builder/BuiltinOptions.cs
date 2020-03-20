@@ -70,7 +70,15 @@ namespace HzNS.Cmdr.Builder
         {
             root.AddFlag(new Flag<bool>
             {
-                DefaultValue = false, Long = "help", Short = "h", Aliases = new[] {"info", "usage", "?", "helpme"},
+                DefaultValue = false, Long = "help", Short = "h", Aliases = new[] {"info", "usage", "helpme"},
+                Description = "Show this help screen",
+                Hidden = true,
+                Group = Worker.SysMgmtGroup,
+                PreAction = (worker, remainArgs) => throw new WantHelpScreenException(remainArgs.ToArray()),
+            });
+            root.AddFlag(new Flag<bool>
+            {
+                DefaultValue = false, Long = "help-ext", Short = "?",
                 Description = "Show this help screen",
                 Hidden = true,
                 Group = Worker.SysMgmtGroup,
