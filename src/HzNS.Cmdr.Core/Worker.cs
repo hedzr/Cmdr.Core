@@ -7,6 +7,7 @@ using System.Linq;
 using Autofac;
 using AutofacSerilogIntegration;
 using HzNS.Cmdr.Base;
+using HzNS.Cmdr.Builder;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Handlers;
 using HzNS.Cmdr.Tool;
@@ -22,8 +23,12 @@ namespace HzNS.Cmdr
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
     [SuppressMessage("ReSharper", "UnusedMethodReturnValue.Global")]
-    public sealed class Worker : DefaultHandlers
+    public sealed class Worker : WorkerFunctions
     {
+        public const string SysMgmtGroup = "z099.System";
+        public const string SysMiscGroup = "z000.Misc";
+
+        
         private IRootCommand _root;
 
         public Worker(IRootCommand root)
@@ -71,7 +76,10 @@ namespace HzNS.Cmdr
                     // m 0: -1 => 0 (x+1)
                     // m 1: -2 => 1
                     var pos = -(1 + position);
-                    onCommandMatched(args, pos > 0 ? pos + 1 : pos, "", _root);
+                    if (!onCommandMatched(args, pos > 0 ? pos + 1 : pos, "", _root))
+                    {
+                        throw new WantHelpScreenException();
+                    }
                 }
 
                 Parsed = true;
@@ -79,6 +87,7 @@ namespace HzNS.Cmdr
             catch (WantHelpScreenException)
             {
                 // show help screen
+                log.Debug("showing the help screen ...");
             }
             catch (CmdrException ex)
             {
@@ -86,11 +95,15 @@ namespace HzNS.Cmdr
             }
         }
 
+        #region debug helpers
+
         // ReSharper disable once InconsistentNaming
         private void errPrint(string message)
         {
             Console.Error.WriteLine(message);
         }
+
+        #endregion
 
         #region logger
 
@@ -280,6 +293,7 @@ namespace HzNS.Cmdr
         [SuppressMessage("ReSharper", "InvertIf")]
         private void preloadCommandDefinitions()
         {
+            BuiltinOptions.InsertAll(_root);
             collectAndBuildXref(_root);
         }
 
@@ -412,26 +426,37 @@ namespace HzNS.Cmdr
             return -position - 1;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="position"></param>
+        /// <param name="arg"></param>
+        /// <param name="cmd"></param>
+        /// <returns>false means no action triggered.</returns>
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         // ReSharper disable once SuggestBaseTypeForParameter
         // ReSharper disable once UnusedParameter.Local
-        private void onCommandMatched(IEnumerable<string> args, int position, string arg, ICommand cmd)
+        private bool onCommandMatched(IEnumerable<string> args, int position, string arg, ICommand cmd)
         {
             var remainArgs = args.Where((it, idx) => idx >= position).ToArray();
 
             var root = cmd.FindRoot();
             if (root?.PreAction != null && !root.PreAction.Invoke(this, remainArgs))
-                return;
+                return false;
             if (root != cmd && cmd.PreAction != null && !cmd.PreAction.Invoke(this, remainArgs))
-                return;
+                return false;
 
             try
             {
                 if (cmd is IAction action)
                     action.Invoke(this, remainArgs);
+                else if (cmd.Action != null)
+                    cmd.Action.Invoke(this, remainArgs);
                 else
-                    cmd.Action?.Invoke(this, remainArgs);
+                    return false;
+                return true;
             }
             finally
             {
@@ -480,7 +505,8 @@ namespace HzNS.Cmdr
         private void onCommandCannotMatched(string[] args, in int position, string arg, ICommand command)
         {
             // throw new NotImplementedException();
-            errPrint($"- cannot parsed argument for command(arg): '{args[position]}'. context: '{command.backtraceTitles}'.");
+            errPrint(
+                $"- cannot parsed argument for command(arg): '{args[position]}'. context: '{command.backtraceTitles}'.");
         }
 
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
@@ -492,9 +518,12 @@ namespace HzNS.Cmdr
             ICommand command)
         {
             var sw = Util.SwitchChar(longOpt);
-            errPrint($"- cannot parsed argument for flag({sw}{fragment}): '{args[position]}'. context: '{command.backtraceTitles}'");
+            errPrint(
+                $"- cannot parsed argument for flag({sw}{fragment}): '{args[position]}'. context: '{command.backtraceTitles}'");
         }
 
         #endregion
     }
+    
+
 }

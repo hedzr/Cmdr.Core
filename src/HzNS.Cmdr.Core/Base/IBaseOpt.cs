@@ -5,13 +5,21 @@ namespace HzNS.Cmdr.Base
 {
     public interface IBaseOpt
     {
-        string Short { get; set; }
         string Long { get; set; }
+        
+        string Short { get; set; }
         string[] Aliases { get; set; }
 
         string Description { get; set; }
         string DescriptionLong { get; set; }
         string Examples { get; set; }
+
+        string Group { get; set; }
+        string ToggleGroup { get; set; }
+
+        bool Hidden { get; set; }
+        
+        string[] EnvVars { get; set; }
 
         Func<Worker, IEnumerable<string>, bool>? PreAction { get; set; }
         Action<Worker, IEnumerable<string>>? PostAction { get; set; }

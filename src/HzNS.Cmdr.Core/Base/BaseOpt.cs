@@ -9,6 +9,7 @@ namespace HzNS.Cmdr.Base
     [SuppressMessage("ReSharper", "ConvertToAutoPropertyWhenPossible")]
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
     public abstract class BaseOpt : IBaseOpt
     {
         // ReSharper disable once PublicConstructorInAbstractClass
@@ -28,13 +29,18 @@ namespace HzNS.Cmdr.Base
             Examples = examples;
         }
 
-        
-        public string Short { get; set; } = "";
+
         public string Long { get; set; } = "";
+        public string Short { get; set; } = "";
         public string[] Aliases { get; set; } = { };
         public string Description { get; set; } = "";
         public string DescriptionLong { get; set; } = "";
         public string Examples { get; set; } = "";
+        public string Group { get; set; } = "";
+        public string ToggleGroup { get; set; } = "";
+        public bool Hidden { get; set; } = false;
+        public string[] EnvVars { get; set; } = { };
+
         public Func<Worker, IEnumerable<string>, bool>? PreAction { get; set; }
         public Action<Worker, IEnumerable<string>>? PostAction { get; set; }
         public Action<Worker, IEnumerable<string>>? Action { get; set; }

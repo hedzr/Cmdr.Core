@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
 
 namespace Simple
 {
-    public class RootCmd : BaseRootCommand
+    public class SimpleRootCmd : BaseRootCommand
     {
         // public void Invoke(Worker w, IEnumerable<string> remainsArgs)
         // {
@@ -39,13 +36,13 @@ namespace Simple
         //         w.log.Warning("Nothing to parsed.");
         // }
 
-        private RootCmd(IAppInfo appInfo) : base(appInfo)
+        private SimpleRootCmd(IAppInfo appInfo) : base(appInfo)
         {
         }
 
-        public static RootCmd New(IAppInfo appInfo, params Action<RootCmd>[] opts)
+        public static SimpleRootCmd New(IAppInfo appInfo, params Action<SimpleRootCmd>[] opts)
         {
-            var r = new RootCmd(appInfo);
+            var r = new SimpleRootCmd(appInfo);
             
             foreach (var opt in opts)
             {
