@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace HzNS.Cmdr.Tool
+namespace HzNS.Cmdr.Tool.Attr
 {
     [AttributeUsage(AttributeTargets.All)]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
@@ -58,9 +58,7 @@ namespace HzNS.Cmdr.Tool
         private static void GetAttribute(Type t)
         {
             // Get instance of the attribute.
-            var myAttribute = (DeveloperAttribute) Attribute.GetCustomAttribute(t, typeof(DeveloperAttribute));
-
-            if (myAttribute == null)
+            if (!(Attribute.GetCustomAttribute(t, typeof(DeveloperAttribute)) is DeveloperAttribute myAttribute))
             {
                 Console.WriteLine("The attribute was not found.");
             }

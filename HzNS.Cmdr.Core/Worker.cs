@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using Autofac;
 using AutofacSerilogIntegration;
-using HzNS.Cmdr.Action;
+using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Builder;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Handlers;
@@ -396,6 +396,7 @@ namespace HzNS.Cmdr
                 // 
             }
 
+            log.Debug($"level {level}: returning {-position - 1}");
             return -position - 1;
         }
 

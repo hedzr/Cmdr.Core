@@ -7,6 +7,7 @@ using System.Text;
 namespace HzNS.Cmdr.Tool
 {
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
     public static class Util
     {
         public static string JsonSerializer<T>(T t)
@@ -36,10 +37,12 @@ namespace HzNS.Cmdr.Tool
             Console.Write(pp);
         }
 
+#pragma warning disable CS8618, CS3021
         public class Person
         {
             public string Name { get; set; }
             public int Age { get; set; }
         }
+#pragma warning restore CS8618, CS3021
     }
 }

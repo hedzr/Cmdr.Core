@@ -19,7 +19,7 @@ namespace HzNS.Cmdr
 
         // ReSharper disable once UnusedParameter.Local
         private static Worker CreateDefaultWorker(IRootCommand root,
-            Func<LoggerConfiguration, Logger> createLoggerFunc = null, params Action<Worker>[] opts)
+            Func<LoggerConfiguration, Logger>? createLoggerFunc = null, params Action<Worker>[] opts)
         {
             var worker = new Worker(root);
 
@@ -65,7 +65,7 @@ namespace HzNS.Cmdr
         {
         }
 
-        private static Entry _instance;
+        private static Entry _instance = null!;
 
         // ReSharper disable once InconsistentNaming
         private static readonly object _lock = new object();

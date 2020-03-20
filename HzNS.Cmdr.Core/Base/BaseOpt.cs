@@ -38,7 +38,7 @@ namespace HzNS.Cmdr.Base
         public Func<Worker, IEnumerable<string>, bool>? PreAction { get; set; }
         public Action<Worker, IEnumerable<string>>? PostAction { get; set; }
         public Action<Worker, IEnumerable<string>>? Action { get; set; }
-        public Action<Worker, object, object>? OnSet { get; set; }
+        public Action<Worker, object?, object?>? OnSet { get; set; }
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public ICommand? Owner { get; set; } = null;

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace HzNS.Cmdr.Action
+namespace HzNS.Cmdr.Base
 {
     public interface IAction
     {

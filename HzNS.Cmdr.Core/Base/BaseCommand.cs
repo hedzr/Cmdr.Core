@@ -58,11 +58,11 @@ namespace HzNS.Cmdr.Base
             return this;
         }
 
-        public IRootCommand FindRoot()
+        public IRootCommand? FindRoot()
         {
-            ICommand o = this;
-            while (o.Owner != null) o = o.Owner;
-            return o as IRootCommand;
+            ICommand? o = this;
+            while (o?.Owner != null) o = o?.Owner;
+            return (IRootCommand?) o;
         }
 
         public string backtraceTitles

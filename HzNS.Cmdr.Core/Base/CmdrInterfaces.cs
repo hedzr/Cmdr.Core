@@ -1,28 +1,14 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace HzNS.Cmdr.Builder
 {
-    public interface IBuilder
-    {
-        IRootCommand Root();
-    }
-
     public interface IRootCommand : ICommand
     {
         IRootCommand AddAppInfo(IAppInfo appInfo);
 
         // Worker Build();
-    }
-
-    public interface IAppInfo
-    {
-        string AppName { get; set; }
-        string AppVersion { get; set; }
-        int AppVersionInt { get; set; }
-        string BuildTime { get; set; }
     }
 
     public interface ICommand : IBaseOpt
@@ -39,17 +25,17 @@ namespace HzNS.Cmdr.Builder
         IRootCommand? FindRoot();
     }
 
+    public interface IFlag<T> : IBaseFlag // , IOnSet
+    {
+        // IFlag AddFlag(IFlag flag);
+        T DefaultValue { get; set; }
+    }
+
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public interface IBaseFlag : IBaseOpt
     {
         string PlaceHolder { get; set; }
         object? getDefaultValue();
-    }
-
-    public interface IFlag<T> : IBaseFlag // , IOnSet
-    {
-        // IFlag AddFlag(IFlag flag);
-        T DefaultValue { get; set; }
     }
 
     public interface IBaseOpt
@@ -67,16 +53,20 @@ namespace HzNS.Cmdr.Builder
         Action<Worker, IEnumerable<string>>? Action { get; set; }
         Action<Worker, object?, object?>? OnSet { get; set; }
 
+        /// <summary>
+        /// To point to the owner of an option, an ICommand object.
+        /// </summary>
         ICommand? Owner { get; set; }
 
         bool Match(string s, bool isLongOpt = false);
     }
-
-    public class AppInfo : IAppInfo
+    
+    public interface IAppInfo
     {
-        public string AppName { get; set; } = "";
-        public string AppVersion { get; set; } = "";
-        public int AppVersionInt { get; set; } = 0;
-        public string BuildTime { get; set; } = "";
+        string AppName { get; set; }
+        string AppVersion { get; set; }
+        int AppVersionInt { get; set; }
+        string BuildTime { get; set; }
     }
+
 }
