@@ -130,4 +130,18 @@ namespace HzNS.Cmdr.Exception
         {
         }
     }
+    
+    public class UnknownCommandException : WarnCommandException
+    {
+        public UnknownCommandException(bool isShort, string ch, ICommand cmd) : base(isShort, ch, cmd)
+        {
+        }
+    }
+    
+    public class UnknownFlagException : WarnCommandException
+    {
+        public UnknownFlagException(bool isShort, string ch, ICommand cmd) : base(isShort, ch, cmd)
+        {
+        }
+    }
 }

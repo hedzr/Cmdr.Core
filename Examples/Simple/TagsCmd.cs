@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Linq;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
 
@@ -36,7 +37,10 @@ namespace Simple
         // ReSharper disable once StringLiteralTypo
         public TagsModifyCmd() : base("m", "modify", new[] {"mod", "modi", "update"}, "", "", "")
         {
-            Action = (worker, remainArgs) => { Console.WriteLine("[HIT] modify a tag."); };
+            Action = (worker, remainArgs) =>
+            {
+                Console.WriteLine($"[HIT] modify a tag. remains: '{string.Join(",", remainArgs)}'");
+            };
 
             // adds flags here
 

@@ -53,6 +53,8 @@ namespace HzNS.Cmdr
 
         public bool EnableDuplicatedCharThrows { get; set; } = false;
         public bool EnableEmptyLongFieldThrows { get; set; } = false;
+        public bool EnableUnknownCommandThrows { get; set; } = false;
+        public bool EnableUnknownFlagThrows { get; set; } = false;
         public int TabStop { get; set; } = 45;
 
 
@@ -88,7 +90,7 @@ namespace HzNS.Cmdr
                     // m 0: -1 => 0 (x+1)
                     // m 1: -2 => 1
                     var pos = -(1 + position);
-                    if (!onCommandMatched(args, pos > 0 ? pos + 1 : pos, "", _root))
+                    if (!onCommandMatched(args, pos > 0 ? pos + 1 : pos, "", ParsedCommand ?? _root))
                         throw new WantHelpScreenException();
                 }
                 else
@@ -424,75 +426,98 @@ namespace HzNS.Cmdr
                 var longOpt = arg.StartsWith("--");
 
                 log.Debug($"    -> arg {i}: '{arg}'");
-                if (!isOpt && command.SubCommands != null)
+                if (!isOpt)
                 {
-                    foreach (var cmd in command.SubCommands)
+                    #region matching command
+
+                    if (command.SubCommands != null && command.SubCommands.Count > 0)
                     {
-                        // ReSharper disable once RedundantArgumentDefaultValue
-                        ok = cmd.Match(arg, false);
-                        if (!ok) ok = cmd.Match(arg, true);
-                        if (!ok) continue;
-
-                        log.Debug($"    ++ command matched: {cmd.backtraceTitles}");
-
-                        ParsedCommand = cmd;
-                        ParsedFlag = null;
-
                         var pos = i + 1;
-                        if (cmd.SubCommands.Count > 0)
+                        foreach (var cmd in command.SubCommands)
                         {
-                            if (i == arg.Length - 1) throw new WantHelpScreenException();
+                            // ReSharper disable once RedundantArgumentDefaultValue
+                            ok = cmd.Match(arg, false);
+                            if (!ok) ok = cmd.Match(arg, true);
+                            if (!ok) continue;
 
-                            pos = match(cmd, args, i + 1, level + 1);
-                            // if (pos > 0) return pos;
+                            log.Debug($"    ++ command matched: {cmd.backtraceTitles}");
+
+                            ParsedCommand = cmd;
+                            ParsedFlag = null;
+
+                            pos = i + 1;
+                            if (cmd.SubCommands.Count > 0)
+                            {
+                                if (i == arg.Length - 1) throw new WantHelpScreenException();
+
+                                var pos1 = match(cmd, args, i + 1, level + 1);
+                                if (pos1 < 0) matchedPosition = pos;
+                                pos = pos1;
+                            }
+
+                            // onCommandMatched(args, i + 1, arg, cmd);
+
+                            if (matchedPosition < 0 || pos > 0)
+                                matchedPosition = pos;
+                            command = cmd;
+                            break;
                         }
 
-                        // onCommandMatched(args, i + 1, arg, cmd);
+                        if (matchedPosition < 0)
+                        {
+                            log.Debug($"level {level} (cmd can't matched): returning {-position - 1}");
+                            onCommandCannotMatched(args, i, arg, command);
+                            return -position - 1;
+                        }
 
-                        matchedPosition = pos;
-                        command = cmd;
-                        break;
+                        if (pos < 0 && matchedPosition > 0)
+                            return pos;
                     }
-
-                    if (matchedPosition < 0)
+                    else
                     {
+                        log.Debug($"level {level} (no sub-cmds): returning {matchedPosition}");
                         onCommandCannotMatched(args, i, arg, command);
-                        return -position - 1;
+                        return matchedPosition;
                     }
+
+                    #endregion
+
+                    continue;
                 }
 
-                // if (ok) continue;
+                // matching for flags of 'command'
+
+                var fragment = longOpt ? arg.Substring(2) : arg.Substring(1);
+                var cc = command;
+                parentFlags:
+                ok = false;
+                foreach (var flg in cc.Flags)
+                {
+                    ok = flg.Match(fragment, longOpt);
+                    if (!ok) continue;
+
+                    log.Debug($"    ++ flag matched: {Util.SwitchChar(longOpt)}{flg.Long}");
+
+                    ParsedFlag = flg;
+
+                    onFlagMatched(args, i + 1, fragment, longOpt, flg);
+
+                    matchedPosition = i + 1;
+                    break;
+                }
 
                 // ReSharper disable once InvertIf
-                if (isOpt)
+                if (!ok)
                 {
-                    var fragment = longOpt ? arg.Substring(2) : arg.Substring(1);
-                    var cmd = command;
-                    parentFlags:
-                    ok = false;
-                    foreach (var flg in cmd.Flags)
+                    if (cc.Owner != null && cc.Owner != cc)
                     {
-                        ok = flg.Match(fragment, longOpt);
-                        if (!ok) continue;
-
-                        log.Debug($"    ++ flag matched: {Util.SwitchChar(longOpt)}{flg.Long}");
-                        onFlagMatched(args, i + 1, fragment, longOpt, flg);
-                        break;
+                        cc = cc.Owner;
+                        log.Debug($"    - try finding flags for its parent: {cc.backtraceTitles}");
+                        goto parentFlags;
                     }
 
-                    // ReSharper disable once InvertIf
-                    if (!ok)
-                    {
-                        if (cmd.Owner != null && cmd.Owner != cmd)
-                        {
-                            cmd = cmd.Owner;
-                            log.Debug($"    - try finding flags for its parent: {cmd.backtraceTitles}");
-                            goto parentFlags;
-                        }
-
-                        log.Debug($"can't match a flag: '{arg}'/fragment='{fragment}'.");
-                        onFlagCannotMatched(args, i, fragment, longOpt, command);
-                    }
+                    log.Debug($"can't match a flag: '{arg}'/fragment='{fragment}'.");
+                    onFlagCannotMatched(args, i, fragment, longOpt, command);
                 }
 
                 // if (ok) continue;
@@ -500,8 +525,14 @@ namespace HzNS.Cmdr
                 // 
             }
 
-            log.Debug($"level {level}: returning {-position - 1}");
-            return -position - 1;
+            // ReSharper disable once InvertIf
+            if (matchedPosition < 0)
+            {
+                log.Debug($"level {level}: returning {-position - 1}");
+                return -position - 1;
+            }
+
+            return matchedPosition;
         }
 
         /// <summary>
@@ -528,6 +559,8 @@ namespace HzNS.Cmdr
 
             try
             {
+                log.Debug($"---> matched command: '{cmd}', remains: '{string.Join(",", remainArgs)}'");
+
                 if (cmd is IAction action)
                     action.Invoke(this, remainArgs);
                 else if (cmd.Action != null)
@@ -552,8 +585,6 @@ namespace HzNS.Cmdr
             IFlag flag)
         {
             var remainArgs = args.Where((it, idx) => idx >= position).ToArray();
-
-            ParsedFlag = flag;
 
             if (flag.PreAction != null && !flag.PreAction.Invoke(this, remainArgs))
                 throw new ShouldBeStopException();
@@ -582,11 +613,13 @@ namespace HzNS.Cmdr
         // ReSharper disable once UnusedParameter.Local
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once SuggestBaseTypeForParameter
-        private void onCommandCannotMatched(string[] args, in int position, string arg, ICommand command)
+        private void onCommandCannotMatched(string[] args, in int position, string arg, ICommand cmd)
         {
             // throw new NotImplementedException();
-            errPrint(
-                $"- cannot parsed argument for command(arg): '{args[position]}'. context: '{command.backtraceTitles}'.");
+            errPrint($"- Unknown command(arg): '{args[position]}'. context: '{cmd.backtraceTitles}'.");
+            suggestCommands(args, position, arg, cmd);
+            if (EnableUnknownCommandThrows)
+                throw new UnknownCommandException(false, arg, cmd);
         }
 
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
@@ -594,14 +627,50 @@ namespace HzNS.Cmdr
         // ReSharper disable once MemberCanBeMadeStatic.Local
         // ReSharper disable once SuggestBaseTypeForParameter
         // ReSharper disable once UnusedParameter.Local
-        private void onFlagCannotMatched(string[] args, in int position, string fragment, in bool longOpt,
-            ICommand command)
+        private void onFlagCannotMatched(string[] args, in int position, string fragment, in bool longOpt, ICommand cmd)
         {
             var sw = Util.SwitchChar(longOpt);
-            errPrint(
-                $"- cannot parsed argument for flag({sw}{fragment}): '{args[position]}'. context: '{command.backtraceTitles}'");
+            errPrint($"- Unknown flag({sw}{fragment}): '{args[position]}'. context: '{cmd.backtraceTitles}'");
+            suggestFlags(args, position, fragment, longOpt, cmd);
+            if (EnableUnknownFlagThrows)
+                throw new UnknownFlagException(!longOpt, fragment, cmd);
         }
 
+        #endregion
+
+        #region suggestions
+
+        private void suggestCommands(string[] args, in int position, string tag, ICommand cmd)
+        {
+            var xref = _xrefs[cmd];
+            suggestFor(tag, xref.SubCommandsLongNames);
+            suggestFor(tag, xref.SubCommandsAliasNames);
+            suggestFor(tag, xref.SubCommandsShortNames);
+        }
+
+        private void suggestFlags(string[] args, in int position, string fragment, in bool longOpt, ICommand cmd)
+        {
+            var xref = _xrefs[cmd];
+            if (longOpt)
+            {
+                suggestFor(fragment, xref.FlagsLongNames);
+                suggestFor(fragment, xref.FlagsAliasNames);
+            }
+            else
+            {
+                suggestFor(fragment,xref.FlagsShortNames);
+            }
+        }
+
+        private void suggestFor(string tag, Dictionary<string,ICommand> dataset)
+        {
+            
+        }
+
+        private void suggestFor(string tag, Dictionary<string,IFlag> dataset)
+        {
+            
+        }
         #endregion
     }
 }

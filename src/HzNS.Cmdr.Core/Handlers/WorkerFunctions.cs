@@ -78,16 +78,24 @@ namespace HzNS.Cmdr.Handlers
             SortedDictionary<int, CmdFlags> optionLines,
             Format writer, int tabStop, bool treeMode = false)
         {
-            if (commandLines.Count > 0)
+            if (treeMode)
             {
-                if (!treeMode) writer.WriteLine("\nCommands:");
-                else
+                var title = cmd.IsRoot ? "-ROOT-" : cmd.backtraceTitles;
+                if (commandLines.Count > 0)
                 {
-                    var title = cmd.IsRoot ? "-ROOT-" : cmd.backtraceTitles;
                     writer.WriteLine($"\nCommands Tree For '{title}':");
+                    ShowOne(commandLines, writer, tabStop);
                 }
-
-                ShowOne(commandLines, writer, tabStop);
+                else
+                    writer.WriteLine($"\nNO SUB-COMMANDS For '{title}'");
+            }
+            else
+            {
+                if (commandLines.Count > 0)
+                {
+                    writer.WriteLine("\nCommands:");
+                    ShowOne(commandLines, writer, tabStop);
+                }
             }
 
             if (optionLines.Count > 0)
@@ -267,16 +275,9 @@ namespace HzNS.Cmdr.Handlers
                     return true;
                 },
                 (owner, flag, level) => true);
-
-            if (commandLines.Count > 0)
-                ShowIt(w.ParsedCommand ?? w.RootCommand, commandLines, optionLines, writer, tabStop, true);
-            else
-            {
-                var cmd = w.ParsedCommand ?? w.RootCommand;
-                var title = cmd.IsRoot ? "-ROOT-" : cmd.backtraceTitles;
-                writer.WriteLine($"\nNO SUB-COMMANDS For '{title}'");
-            }
-
+            
+            ShowIt(w.ParsedCommand ?? w.RootCommand, commandLines, optionLines, writer, tabStop, true);
+            
             writer.WriteLine("");
         }
 
