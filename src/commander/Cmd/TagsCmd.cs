@@ -8,7 +8,7 @@ namespace mdx.Cmd
 {
     public class TagsAddCmd : BaseCommand
     {
-        public TagsAddCmd() : base("a", "add", new string[] {"create", "new"}, "", "", "")
+        public TagsAddCmd() : base("a", "add", new[] {"create", "new"}, "", "", "")
         {
             Action = (worker, remainArgs) => { Console.WriteLine("[HIT] add a tag."); };
         }
@@ -16,7 +16,7 @@ namespace mdx.Cmd
 
     public class TagsRemoveCmd : BaseCommand
     {
-        public TagsRemoveCmd() : base("rm", "remove", new string[] {"delete", "del", "erase"}, "", "", "")
+        public TagsRemoveCmd() : base("rm", "remove", new[] {"delete", "del", "erase"}, "", "", "")
         {
             Action = (worker, remainArgs) => { Console.WriteLine("[HIT] remove a tag."); };
         }
@@ -24,7 +24,7 @@ namespace mdx.Cmd
 
     public class TagsListCmd : BaseCommand
     {
-        public TagsListCmd() : base("l", "list", new string[] {"ls", "lst"}, "", "", "")
+        public TagsListCmd() : base("l", "list", new[] {"ls", "lst"}, "", "", "")
         {
             Action = (worker, remainArgs) => { Console.WriteLine("[HIT] list all tags."); };
         }
@@ -34,12 +34,12 @@ namespace mdx.Cmd
     public class TagsModifyCmd : BaseCommand
     {
         // ReSharper disable once StringLiteralTypo
-        public TagsModifyCmd() : base("m", "modify", new string[] {"mod", "modi", "update"}, "", "", "")
+        public TagsModifyCmd() : base("m", "modify", new[] {"mod", "modi", "update"}, "", "", "")
         {
             Action = (worker, remainArgs) => { Console.WriteLine("[HIT] modify a tag."); };
             
             // adds flags here
-            this.AddFlag(new Flag<string>{Long="name",DefaultValue="test-redis"});
+            AddFlag(new Flag<string>{Long="name",DefaultValue="test-redis"});
 
             // adds sub-commands here
         }

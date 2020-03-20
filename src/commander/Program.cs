@@ -1,22 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Xml.Schema;
-using Autofac;
-using AutofacSerilogIntegration;
+﻿using System.Diagnostics.CodeAnalysis;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
-using HzNS.Cmdr.Builder;
-using HzNS.Cmdr.Tool;
-using HzNS.MdxLib.MDict;
 using mdx.Cmd;
 using Serilog;
-using Serilog.Events;
 
 namespace mdx
 {
@@ -36,11 +22,11 @@ namespace mdx
             Entry.NewCmdrWorker(RootCmd.New(new AppInfo {AppName = "mdxTool", AppVersion = "1.0.0"}, (root) =>
                     {
                         root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
-                            .AddCommand(new TagsAddCmd { })
-                            .AddCommand(new TagsRemoveCmd { })
+                            .AddCommand(new TagsAddCmd())
+                            .AddCommand(new TagsRemoveCmd())
                             // .AddCommand(new TagsAddCmd { }) // dup-test
-                            .AddCommand(new TagsListCmd { })
-                            .AddCommand(new TagsModifyCmd { })
+                            .AddCommand(new TagsListCmd())
+                            .AddCommand(new TagsModifyCmd())
                         );
                     }), // <- RootCmd
                     // Options ->
@@ -67,11 +53,13 @@ namespace mdx
             // Console.ReadKey();
         }
 
+        // ReSharper disable once UnusedType.Local
         private class Example
         {
             // ReSharper disable once ArrangeTypeMemberModifiers
             readonly ILogger _log = Log.ForContext<Example>();
 
+            // ReSharper disable once UnusedMember.Local
             public void Show()
             {
                 _log.Information("Hello!");

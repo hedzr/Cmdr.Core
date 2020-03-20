@@ -34,12 +34,12 @@ namespace Tests
 
             void Actual() => stringCalculator.Add(maximumResult);
 
-            Assert.Throws<OverflowException>((Action) Actual);
+            Assert.Throws<OverflowException>(Actual);
         }
 
         private class StringCalculator
         {
-            private int _value = 0;
+            private int _value;
 
             public int Add(string s)
             {
@@ -84,6 +84,7 @@ namespace Tests
             MainX(null);
         }
 
+        // ReSharper disable once UnusedParameter.Local
         static void MainX(string[] args)
         {
             foreach (var item in FilterWithoutYield())
@@ -114,6 +115,8 @@ namespace Tests
             return result;
         }
 
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable once ArrangeTypeMemberModifiers
         static IEnumerable<int> FilterWithYield()
         {
             foreach (int i in Data())
@@ -122,6 +125,7 @@ namespace Tests
                     yield return i;
             }
 
+            // ReSharper disable once RedundantJumpStatement
             yield break; // 迭代器代码使用yield return 语句依次返回每个元素，yield break将终止迭代。
         }
     }
@@ -135,6 +139,7 @@ namespace Tests
             SingletonTest(null);
         }
 
+        // ReSharper disable once UnusedParameter.Local
         private static void SingletonTest(string[] args)
         {
             // The client code.
