@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using HzNS.Cmdr.Base;
 
 namespace HzNS.Cmdr
 {
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
     public class Flag<T> : BaseFlag<T>
     {
         public Flag(string shortTitle, string longTitle, string[] aliases, string description, string descriptionLong,
@@ -13,5 +15,6 @@ namespace HzNS.Cmdr
         public Flag()
         {
         }
+        
     }
 }

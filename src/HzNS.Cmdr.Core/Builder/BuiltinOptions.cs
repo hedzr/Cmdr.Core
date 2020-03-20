@@ -74,7 +74,7 @@ namespace HzNS.Cmdr.Builder
                 Description = "Show this help screen",
                 Hidden = true,
                 Group = Worker.SysMgmtGroup,
-                PreAction = (worker, remainArgs) => throw new WantHelpScreenException(),
+                PreAction = (worker, remainArgs) => throw new WantHelpScreenException(remainArgs.ToArray()),
             });
             root.AddFlag(new Flag<bool>
             {
@@ -133,8 +133,7 @@ namespace HzNS.Cmdr.Builder
         {
             root.AddFlag(new Flag<bool>
             {
-                DefaultValue = false,
-                Long = "verbose", Short = "v",
+                DefaultValue = false, Long = "verbose", Short = "v",
                 Description = "Show more information.",
                 Group = Worker.SysMgmtGroup,
                 EnvVars = new[] {"VERBOSE"},

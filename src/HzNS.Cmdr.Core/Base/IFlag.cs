@@ -6,6 +6,8 @@ namespace HzNS.Cmdr.Base
     public interface IFlag : IBaseOpt
     {
         string PlaceHolder { get; set; }
+        string ToggleGroup { get; set; }
+
         object? getDefaultValue();
     }
 

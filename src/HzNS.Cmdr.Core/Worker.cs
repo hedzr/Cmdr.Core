@@ -23,12 +23,15 @@ namespace HzNS.Cmdr
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
     [SuppressMessage("ReSharper", "UnusedMethodReturnValue.Global")]
+    [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Local")]
     public sealed class Worker : WorkerFunctions
     {
-        public const string SysMgmtGroup = "z099.System";
-        public const string SysMiscGroup = "z000.Misc";
+        public const string FirstUnsortedGroup = "0111.Unsorted";
+        public const string SysMgmtGroup = "y099.System";
+        public const string SysMiscGroup = "y000.Misc";
+        public const string LastUnsortedGroup = "z111.Unsorted";
 
-        
+
         private IRootCommand _root;
 
         public Worker(IRootCommand root)
@@ -41,13 +44,22 @@ namespace HzNS.Cmdr
 
         public bool Parsed { get; set; }
 
+        public ICommand? ParsedCommand { get; internal set; }
+        public IFlag? ParsedFlag { get; internal set; }
+
+        // ReSharper disable once ConvertToAutoPropertyWithPrivateSetter
+        // ReSharper disable once UnusedMember.Global
+        public IRootCommand RootCommand => _root;
+
         public bool EnableDuplicatedCharThrows { get; set; } = false;
         public bool EnableEmptyLongFieldThrows { get; set; } = false;
+        public int TabStop { get; set; } = 45;
 
 
         internal Worker runOnce()
         {
             // NOTE that the logger `log` is not ready yet at this time.
+            ColorifyEnabler.Enable();
             return this;
         }
 
@@ -77,23 +89,43 @@ namespace HzNS.Cmdr
                     // m 1: -2 => 1
                     var pos = -(1 + position);
                     if (!onCommandMatched(args, pos > 0 ? pos + 1 : pos, "", _root))
-                    {
                         throw new WantHelpScreenException();
-                    }
+                }
+                else
+                {
+                    if (!onCommandMatched(args, position, args[position], ParsedCommand ?? _root))
+                        throw new WantHelpScreenException();
                 }
 
                 Parsed = true;
             }
-            catch (WantHelpScreenException)
+            catch (WantHelpScreenException ex)
             {
                 // show help screen
                 log.Debug("showing the help screen ...");
+                ShowHelpScreen(this, ex.RemainArgs);
+            }
+            catch (ShouldBeStopException)
+            {
+                // not error
             }
             catch (CmdrException ex)
             {
                 log.Error(ex, "Error occurs");
             }
+            finally
+            {
+                ColorifyEnabler.Reset();
+            }
         }
+
+        public bool Walk(ICommand? parent = null,
+            Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
+            Func<ICommand, IFlag, int, bool>? flagsWatcher = null)
+        {
+            return walkFor(parent ?? _root, commandsWatcher, flagsWatcher);
+        }
+
 
         #region debug helpers
 
@@ -301,17 +333,29 @@ namespace HzNS.Cmdr
         // ReSharper disable once MemberCanBeMadeStatic.Local
         private void collectAndBuildXref(ICommand command)
         {
-            walkFor(command, (owner, cmd) =>
+            walkFor(command, (owner, cmd, level) =>
             {
                 if (!_xrefs.ContainsKey(owner)) _xrefs.TryAdd(owner, new Xref());
                 if (!_xrefs.ContainsKey(cmd)) _xrefs.TryAdd(cmd, new Xref());
+
+                if (cmd.Owner != owner) cmd.Owner = owner;
+                if (string.IsNullOrWhiteSpace(cmd.Group))
+                    cmd.Group = FirstUnsortedGroup;
+
                 _xrefs[owner].TryAddShort(this, cmd);
                 _xrefs[owner].TryAddLong(this, cmd);
                 _xrefs[owner].TryAddAliases(this, cmd);
                 return true;
-            }, (owner, flag) =>
+            }, (owner, flag, level) =>
             {
                 if (!_xrefs.ContainsKey(owner)) _xrefs.TryAdd(owner, new Xref());
+
+                if (flag.Owner != owner) flag.Owner = owner;
+                if (string.IsNullOrWhiteSpace(flag.Group) && !string.IsNullOrWhiteSpace(flag.ToggleGroup))
+                    flag.Group = flag.ToggleGroup;
+                if (string.IsNullOrWhiteSpace(flag.Group))
+                    flag.Group = FirstUnsortedGroup;
+
                 _xrefs[owner].TryAddShort(this, owner, flag);
                 _xrefs[owner].TryAddLong(this, owner, flag);
                 _xrefs[owner].TryAddAliases(this, owner, flag);
@@ -327,20 +371,22 @@ namespace HzNS.Cmdr
         #region helpers for Walk()
 
         private bool walkFor(ICommand parent,
-            Func<ICommand, ICommand, bool>? commandsWatcher = null,
-            Func<ICommand, IFlag, bool>? watcher = null)
+            Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
+            Func<ICommand, IFlag, int, bool>? flagsWatcher = null,
+            int level = 0)
         {
+            // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
             foreach (var f in parent.Flags)
-                if (watcher != null && watcher(parent, f) == false)
+                if (flagsWatcher != null && flagsWatcher(parent, f, level) == false)
                     return false;
 
             if (parent.SubCommands == null) return true;
 
             foreach (var cmd in parent.SubCommands)
             {
-                if (commandsWatcher != null && commandsWatcher.Invoke(parent, cmd) == false)
+                if (commandsWatcher != null && commandsWatcher.Invoke(parent, cmd, level) == false)
                     return false;
-                if (walkFor(cmd, commandsWatcher, watcher) == false)
+                if (walkFor(cmd, commandsWatcher, flagsWatcher, level + 1) == false)
                     return false;
             }
 
@@ -366,6 +412,7 @@ namespace HzNS.Cmdr
         // ReSharper disable once SuggestBaseTypeForParameter
         private int match(ICommand command, string[] args, int position, int level)
         {
+            var matchedPosition = -1;
             // ReSharper disable once ForCanBeConvertedToForeach
             for (var i = position; i < args.Length; i++)
             {
@@ -383,16 +430,24 @@ namespace HzNS.Cmdr
                         if (!ok) ok = cmd.Match(arg, true);
                         if (!ok) continue;
 
+                        ParsedCommand = cmd;
+                        ParsedFlag = null;
+
                         if (cmd.SubCommands.Count > 0)
                         {
                             if (i == arg.Length - 1) throw new WantHelpScreenException();
 
-                            return match(cmd, args, i + 1, level + 1);
+                            var pos = match(cmd, args, i + 1, level + 1);
+                            if (pos > 0) return pos;
                         }
 
-                        onCommandMatched(args, i + 1, arg, cmd);
-                        return i + 1;
+                        // onCommandMatched(args, i + 1, arg, cmd);
+
+                        matchedPosition = i + 1;
+                        break;
                     }
+
+                    if (matchedPosition >= 0) continue;
 
                     onCommandCannotMatched(args, i, arg, command);
                     return -position - 1;
@@ -444,9 +499,9 @@ namespace HzNS.Cmdr
 
             var root = cmd.FindRoot();
             if (root?.PreAction != null && !root.PreAction.Invoke(this, remainArgs))
-                return false;
+                throw new ShouldBeStopException();
             if (root != cmd && cmd.PreAction != null && !cmd.PreAction.Invoke(this, remainArgs))
-                return false;
+                throw new ShouldBeStopException();
 
             try
             {
@@ -475,8 +530,10 @@ namespace HzNS.Cmdr
         {
             var remainArgs = args.Where((it, idx) => idx >= position).ToArray();
 
+            ParsedFlag = flag;
+
             if (flag.PreAction != null && !flag.PreAction.Invoke(this, remainArgs))
-                return;
+                throw new ShouldBeStopException();
 
             try
             {
@@ -524,6 +581,4 @@ namespace HzNS.Cmdr
 
         #endregion
     }
-    
-
 }

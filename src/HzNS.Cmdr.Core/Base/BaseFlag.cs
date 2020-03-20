@@ -26,6 +26,8 @@ namespace HzNS.Cmdr.Base
         public T DefaultValue { get; set; }
         public string PlaceHolder { get; set; }
 
+        public string ToggleGroup { get; set; } = "";
+        
         public object? getDefaultValue()
         {
             return DefaultValue;

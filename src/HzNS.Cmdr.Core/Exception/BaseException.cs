@@ -47,6 +47,22 @@ namespace HzNS.Cmdr.Exception
 
     public class WantHelpScreenException : CmdrException
     {
+        public WantHelpScreenException()
+        {
+        }
+
+        public WantHelpScreenException(params string[] remainArgs)
+        {
+            RemainArgs = remainArgs;
+        }
+
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public string[] RemainArgs { get; private set; } = { };
+    }
+
+    public class ShouldBeStopException : CmdrException
+    {
     }
 
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]

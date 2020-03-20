@@ -15,12 +15,15 @@ namespace HzNS.Cmdr.Base
         string Examples { get; set; }
 
         string Group { get; set; }
-        string ToggleGroup { get; set; }
 
         bool Hidden { get; set; }
         
         string[] EnvVars { get; set; }
 
+        /// <summary>
+        /// Return false will terminate the command-line arguments parsing and exit the application.
+        /// Another way is to raise a `ShouldBeStopException` exception in your Action/Pre/PostAction.
+        /// </summary>
         Func<Worker, IEnumerable<string>, bool>? PreAction { get; set; }
         Action<Worker, IEnumerable<string>>? PostAction { get; set; }
         Action<Worker, IEnumerable<string>>? Action { get; set; }

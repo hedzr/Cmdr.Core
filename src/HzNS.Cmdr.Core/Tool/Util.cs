@@ -15,6 +15,17 @@ namespace HzNS.Cmdr.Tool
             return longOpt ? "--" : "-";
         }
 
+        public static string StripFirstKnobble(string s)
+        {
+            var pos = s.IndexOf('.');
+            if(pos>=0)
+            {
+                return s.Substring(pos + 1);
+            }
+
+            return s;
+        }
+        
         #region About Json
 
         public static string JsonSerializer<T>(T t)

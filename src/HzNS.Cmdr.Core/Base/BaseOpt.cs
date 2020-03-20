@@ -37,7 +37,6 @@ namespace HzNS.Cmdr.Base
         public string DescriptionLong { get; set; } = "";
         public string Examples { get; set; } = "";
         public string Group { get; set; } = "";
-        public string ToggleGroup { get; set; } = "";
         public bool Hidden { get; set; } = false;
         public string[] EnvVars { get; set; } = { };
 
