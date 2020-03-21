@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using commander.Cmd;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
@@ -18,6 +19,8 @@ namespace commander
     {
         static void Main(string[] args)
         {
+            // throw new Exception("sys");
+
             // Cmdr: A CommandLine Arguments Parser
             Cmdr.NewWorker(RootCommand.New(new AppInfo {AppName = "commander", AppVersion = "1.0.0"}, (root) =>
                     {

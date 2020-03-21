@@ -37,21 +37,24 @@ cmdr has rich features:
   - [x] Multiple option groups each containing a set of options
   - [ ] Supports the compat short options `-aux` == `-a -u -x`
   - [ ] Supports namespaces for (nested) option groups
+    _see also: option store and hirarchy data_
 
 - Automatic help screen generation (*Generates and prints well-formatted help message*)
 
 - Strict Mode (`-`)
 
-  - *false*: Ignoring unknown command line options (default)
-  - *true*: Report error on unknown commands and options if strict mode enabled (optional)
-    enable strict mode:
-    - env var `APP_STRICT_MODE=true`
-    - hidden option: `--strict-mode` (if `cmdr.EnableCmdrCommands == true`)
-    - entry in config file:
-      ```yaml
-      app:
-        strict-mode: true
-      ```
+  - `EnableUnknownCommandThrows` & `EnableUnknownFlagThrows`
+  - Old/Abandoned:
+    - *false*: Ignoring unknown command line options (default)
+    - *true*: Report error on unknown commands and options if strict mode enabled (optional)
+      enable strict mode:
+      - env var `APP_STRICT_MODE=true`
+      - hidden option: `--strict-mode` (if `cmdr.EnableCmdrCommands == true`)
+      - entry in config file:
+        ```yaml
+        app:
+          strict-mode: true
+        ```
 
 - Supports for unlimited multi-level sub-commands.
 

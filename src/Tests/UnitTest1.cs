@@ -76,6 +76,7 @@ namespace Tests
         }
     }
 
+    [SuppressMessage("ReSharper", "ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator")]
     public class UnitTest2
     {
         [Fact]
@@ -119,6 +120,7 @@ namespace Tests
         // ReSharper disable once ArrangeTypeMemberModifiers
         static IEnumerable<int> FilterWithYield()
         {
+            // ReSharper disable once SuggestVarOrType_BuiltInTypes
             foreach (int i in Data())
             {
                 if (i > 2)
@@ -126,7 +128,7 @@ namespace Tests
             }
 
             // ReSharper disable once RedundantJumpStatement
-            yield break; // 迭代器代码使用yield return 语句依次返回每个元素，yield break将终止迭代。
+            yield break; // 迭代器代码使用 yield return 语句依次返回每个元素，yield break将终止迭代。
         }
     }
 

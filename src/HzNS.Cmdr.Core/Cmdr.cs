@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
+using HzNS.Cmdr.Tool.Enrichers;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -19,7 +20,8 @@ namespace HzNS.Cmdr
 
         // ReSharper disable once UnusedParameter.Local
         private static Worker CreateDefaultWorker(IRootCommand root,
-            Func<LoggerConfiguration, Logger>? createLoggerFunc = null, params Action<Worker>[] opts)
+            Func<LoggerConfiguration, Logger>? createLoggerFunc = null,
+            params Action<Worker>[] opts)
         {
             var worker = new Worker(root);
 
@@ -31,9 +33,16 @@ namespace HzNS.Cmdr
                     // .MinimumLevel.Information()
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                     .Enrich.FromLogContext()
-                    .WriteTo.Console()
+                    .Enrich.WithCaller()
+                    .WriteTo.Console(
+                        outputTemplate:
+                        "[{Timestamp:HH:mm:ss} {Level:u3}] {Message} (at {Caller} in {SourceFileName}:line {SourceFileLineNumber}){NewLine}{Exception}")
+                    // .WriteTo.Console()
                     .WriteTo.File(Path.Combine("logs", @"access.log"), rollingInterval: RollingInterval.Day)
                     .CreateLogger());
+
+            // Serilog.Debugging.SelfLog.Enable(msg => Debug.WriteLine(msg));
+            // Serilog.Debugging.SelfLog.Enable(Console.Error);
 
             worker.runOnce();
 

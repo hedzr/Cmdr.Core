@@ -11,6 +11,8 @@ using HzNS.Cmdr.Builder;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Handlers;
 using HzNS.Cmdr.Tool;
+using HzNS.Cmdr.Tool.Enrichers;
+using HzNS.Cmdr.Tool.ExLog;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -24,6 +26,7 @@ namespace HzNS.Cmdr
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
     [SuppressMessage("ReSharper", "UnusedMethodReturnValue.Global")]
     [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Local")]
+    [SuppressMessage("ReSharper", "UnusedParameter.Local")]
     public sealed class Worker : WorkerFunctions
     {
         public const string FirstUnsortedGroup = "0111.Unsorted";
@@ -72,11 +75,20 @@ namespace HzNS.Cmdr
             return this;
         }
 
+        private void f4()
+        {
+            log.Information("YES IT IS");
+            // B /= A;
+            throw new System.Exception("test");
+        }
+
         public void Run(string[] args)
         {
             // Entry.Log.Information("YES IT IS");
             // log.Information("YES IT IS");
-            if (_root == null) return;
+            // f4();
+            if (_root == null)
+                return;
 
             // ReSharper disable once NotAccessedVariable
             var position = 0;
@@ -103,13 +115,14 @@ namespace HzNS.Cmdr
             }
             catch (WantHelpScreenException ex)
             {
+                f4();
                 // show help screen
                 log.Debug("showing the help screen ...");
                 ShowHelpScreen(this, ex.RemainArgs);
             }
             catch (ShouldBeStopException)
             {
-                // not error
+                // not an error
             }
             catch (CmdrException ex)
             {
@@ -153,6 +166,7 @@ namespace HzNS.Cmdr
         // public ILogger Log { get; set; }
 
         public ILogger log;
+        // public LogWrapper log;
 
         public Worker UseSerilog(Func<LoggerConfiguration, Logger>? func = null)
         {
@@ -161,8 +175,12 @@ namespace HzNS.Cmdr
                     .MinimumLevel.Debug()
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                     .Enrich.FromLogContext()
+                    .Enrich.WithCaller()
+                    .WriteTo.Console(
+                        outputTemplate:
+                        "[{Timestamp:HH:mm:ss} {Level:u3}] {Message} (at {Caller} in {SourceFileName}:line {SourceFileLineNumber}){NewLine}{Exception}")
                     .WriteTo.File(Path.Combine("logs", @"access.log"), rollingInterval: RollingInterval.Day)
-                    .WriteTo.Console()
+                    //.WriteTo.Console()
                     .CreateLogger();
             else
                 log = func.Invoke(new LoggerConfiguration());
@@ -408,14 +426,14 @@ namespace HzNS.Cmdr
 
         #endregion
 
-        #region helpers for Run()
+        #region helpers for Run() - match
 
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         // ReSharper disable once SuggestBaseTypeForParameter
         private int match(ICommand command, string[] args, int position, int level)
         {
-            log.Debug($"  - match for command: {command.backtraceTitles}");
+            log.Debug("  - match for command: {CommandTitle}", command.backtraceTitles);
             var matchedPosition = -1;
             // ReSharper disable once ForCanBeConvertedToForeach
             for (var i = position; i < args.Length; i++)
@@ -425,7 +443,7 @@ namespace HzNS.Cmdr
                 var isOpt = arg.StartsWith("-");
                 var longOpt = arg.StartsWith("--");
 
-                log.Debug($"    -> arg {i}: '{arg}'");
+                log.Debug("    -> arg {Index}: {Argument}", i, arg);
                 if (!isOpt)
                 {
                     #region matching command
@@ -440,7 +458,7 @@ namespace HzNS.Cmdr
                             if (!ok) ok = cmd.Match(arg, true);
                             if (!ok) continue;
 
-                            log.Debug($"    ++ command matched: {cmd.backtraceTitles}");
+                            log.Debug("    ++ command matched: {CommandTitle}", cmd.backtraceTitles);
 
                             ParsedCommand = cmd;
                             ParsedFlag = null;
@@ -465,7 +483,7 @@ namespace HzNS.Cmdr
 
                         if (matchedPosition < 0)
                         {
-                            log.Debug($"level {level} (cmd can't matched): returning {-position - 1}");
+                            log.Debug("level {Level} (cmd can't matched): returning {Position}", level, -position - 1);
                             onCommandCannotMatched(args, i, arg, command);
                             return -position - 1;
                         }
@@ -475,7 +493,7 @@ namespace HzNS.Cmdr
                     }
                     else
                     {
-                        log.Debug($"level {level} (no sub-cmds): returning {matchedPosition}");
+                        log.Debug("level {Level} (no sub-cmds): returning {Position}", level, matchedPosition);
                         onCommandCannotMatched(args, i, arg, command);
                         return matchedPosition;
                     }
@@ -496,7 +514,7 @@ namespace HzNS.Cmdr
                     ok = flg.Match(fragment, longOpt);
                     if (!ok) continue;
 
-                    log.Debug($"    ++ flag matched: {Util.SwitchChar(longOpt)}{flg.Long}");
+                    log.Debug("    ++ flag matched: {SW}{flgLong}", Util.SwitchChar(longOpt), flg.Long);
 
                     ParsedFlag = flg;
 
@@ -512,11 +530,11 @@ namespace HzNS.Cmdr
                     if (cc.Owner != null && cc.Owner != cc)
                     {
                         cc = cc.Owner;
-                        log.Debug($"    - try finding flags for its parent: {cc.backtraceTitles}");
+                        log.Debug("    - try finding flags for its parent: {CommandTitle}", cc.backtraceTitles);
                         goto parentFlags;
                     }
 
-                    log.Debug($"can't match a flag: '{arg}'/fragment='{fragment}'.");
+                    log.Debug("can't match a flag: '{Argument}'/fragment='{Fragment}'.", arg, fragment);
                     onFlagCannotMatched(args, i, fragment, longOpt, command);
                 }
 
@@ -528,12 +546,16 @@ namespace HzNS.Cmdr
             // ReSharper disable once InvertIf
             if (matchedPosition < 0)
             {
-                log.Debug($"level {level}: returning {-position - 1}");
+                log.Debug("level {Level}: returning {Position}", level, -position - 1);
                 return -position - 1;
             }
 
             return matchedPosition;
         }
+
+        #endregion
+
+        #region helpers for Run() - match
 
         /// <summary>
         /// 
@@ -559,7 +581,7 @@ namespace HzNS.Cmdr
 
             try
             {
-                log.Debug($"---> matched command: '{cmd}', remains: '{string.Join(",", remainArgs)}'");
+                log.Debug("---> matched command: {cmd}, remains: {Args}", cmd, string.Join(",", remainArgs));
 
                 if (cmd is IAction action)
                     action.Invoke(this, remainArgs);
@@ -591,8 +613,9 @@ namespace HzNS.Cmdr
 
             try
             {
+                // ReSharper disable once UnusedVariable
                 var sw = Util.SwitchChar(longOpt);
-                log.Debug($"  flag matched: {sw}{fragment}");
+                log.Debug("  ---> flag matched: {SW}{Fragment}", sw, fragment);
                 flag.OnSet?.Invoke(this, flag.getDefaultValue(), flag.getDefaultValue());
 
                 // ReSharper disable once SuspiciousTypeConversion.Global
@@ -640,6 +663,7 @@ namespace HzNS.Cmdr
 
         #region suggestions
 
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         private void suggestCommands(string[] args, in int position, string tag, ICommand cmd)
         {
             var xref = _xrefs[cmd];
@@ -648,6 +672,7 @@ namespace HzNS.Cmdr
             suggestFor(tag, xref.SubCommandsShortNames);
         }
 
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         private void suggestFlags(string[] args, in int position, string fragment, in bool longOpt, ICommand cmd)
         {
             var xref = _xrefs[cmd];
@@ -658,19 +683,20 @@ namespace HzNS.Cmdr
             }
             else
             {
-                suggestFor(fragment,xref.FlagsShortNames);
+                suggestFor(fragment, xref.FlagsShortNames);
             }
         }
 
-        private void suggestFor(string tag, Dictionary<string,ICommand> dataset)
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
+        private void suggestFor(string tag, Dictionary<string, ICommand> dataset)
         {
-            
         }
 
-        private void suggestFor(string tag, Dictionary<string,IFlag> dataset)
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
+        private void suggestFor(string tag, Dictionary<string, IFlag> dataset)
         {
-            
         }
+
         #endregion
     }
 }

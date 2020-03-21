@@ -9,6 +9,7 @@ namespace Simple
     [SuppressMessage("ReSharper", "ArrangeTypeMemberModifiers")]
     class Program
     {
+        [SuppressMessage("ReSharper", "RedundantExplicitArrayCreation")]
         static void Main(string[] args)
         {
             // Console.WriteLine("Hello World!");
