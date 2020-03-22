@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
+using HzNS.Cmdr.Internal;
 
 namespace HzNS.Cmdr.Builder
 {
@@ -24,7 +25,7 @@ namespace HzNS.Cmdr.Builder
                 Description = "Show the version of this app.",
                 Hidden = true,
                 Group = Worker.SysMgmtGroup,
-                Action = (worker, remainArgs) => worker.ShowVersions(worker, remainArgs.ToArray()),
+                Action = (worker, sender, remainArgs) => worker.ShowVersions(worker, remainArgs.ToArray()),
             });
             root.AddFlag(new Flag<bool>
             {
@@ -32,7 +33,7 @@ namespace HzNS.Cmdr.Builder
                 Description = "Show the version of this app.",
                 Hidden = true,
                 Group = Worker.SysMgmtGroup,
-                PreAction = delegate(Worker worker, IEnumerable<string> remainArgs)
+                PreAction = delegate(IBaseWorker worker, IBaseOpt sender, IEnumerable<string> remainArgs)
                 {
                     worker.ShowVersions(worker, remainArgs.ToArray());
                     return false;
@@ -45,7 +46,7 @@ namespace HzNS.Cmdr.Builder
                 Hidden = true,
                 Group = Worker.SysMgmtGroup,
                 // ReSharper disable once UnusedAnonymousMethodSignature
-                Action = delegate(Worker worker, IEnumerable<string> remainArgs)
+                Action = delegate(IBaseWorker worker, IBaseOpt sender, IEnumerable<string> remainArgs)
                 {
                     // conf.Version = GetStringR("version-sim");
                     // Set("version", conf.Version); // set into option 'app.     version' too.
@@ -58,7 +59,7 @@ namespace HzNS.Cmdr.Builder
                 Description = "Show the building information of this app.",
                 Hidden = true,
                 Group = Worker.SysMgmtGroup,
-                PreAction = (worker, remainArgs) =>
+                PreAction = (worker, sender, remainArgs) =>
                 {
                     worker.ShowBuildInfo(worker, remainArgs.ToArray());
                     return false;
@@ -74,7 +75,7 @@ namespace HzNS.Cmdr.Builder
                 Description = "Show this help screen",
                 Hidden = true,
                 Group = Worker.SysMgmtGroup,
-                PreAction = (worker, remainArgs) => throw new WantHelpScreenException(remainArgs.ToArray()),
+                PreAction = (worker, sender, remainArgs) => throw new WantHelpScreenException(remainArgs.ToArray()),
             });
             root.AddFlag(new Flag<bool>
             {
@@ -82,7 +83,7 @@ namespace HzNS.Cmdr.Builder
                 Description = "Show this help screen",
                 Hidden = true,
                 Group = Worker.SysMgmtGroup,
-                PreAction = (worker, remainArgs) => throw new WantHelpScreenException(remainArgs.ToArray()),
+                PreAction = (worker, sender, remainArgs) => throw new WantHelpScreenException(remainArgs.ToArray()),
             });
             root.AddFlag(new Flag<bool>
             {
@@ -115,7 +116,7 @@ namespace HzNS.Cmdr.Builder
                 Description = "show a tree for all commands",
                 Hidden = true,
                 Group = Worker.SysMgmtGroup,
-                PreAction = ((worker, remainArgs) =>
+                PreAction = ((worker, sender, remainArgs) =>
                 {
                     worker.DumpTreeForAllCommands(worker, remainArgs.ToArray());
                     return false;

@@ -25,6 +25,8 @@ namespace Simple
                                 // .AddCommand(new TagsAddCmd { }) // dup-test
                                 .AddCommand(new TagsListCmd())
                                 .AddCommand(new TagsModifyCmd())
+                                .AddCommand(new TagsModeCmd())
+                                .AddCommand(new TagsToggleCmd())
                                 .AddFlag(new Flag<string>
                                 {
                                     DefaultValue = "consul.ops.local",
@@ -36,6 +38,7 @@ namespace Simple
                                 .AddFlag(new Flag<string>
                                 {
                                     DefaultValue = "",
+                                    // ReSharper disable once StringLiteralTypo
                                     Long = "cacert", Short = "", Aliases = new string[] {"ca-cert"},
                                     Description = "Consul Client CA cert)",
                                     PlaceHolder = "FILE",

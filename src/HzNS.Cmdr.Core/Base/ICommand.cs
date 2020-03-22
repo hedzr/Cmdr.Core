@@ -16,5 +16,8 @@ namespace HzNS.Cmdr.Base
         bool IsRoot { get; }
         IRootCommand? FindRoot();
         int FindLevel();
+
+        bool IsEqual(string title);
+        bool IsEqual(ICommand command);
     }
 }

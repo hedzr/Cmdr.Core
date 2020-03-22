@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using HzNS.Cmdr.Internal;
 
 namespace HzNS.Cmdr.Base
 {
@@ -24,17 +25,19 @@ namespace HzNS.Cmdr.Base
         /// Return false will terminate the command-line arguments parsing and exit the application.
         /// Another way is to raise a `ShouldBeStopException` exception in your Action/Pre/PostAction.
         /// </summary>
-        Func<Worker, IEnumerable<string>, bool>? PreAction { get; set; }
+        Func<IBaseWorker, IBaseOpt, IEnumerable<string>, bool>? PreAction { get; set; }
 
-        Action<Worker, IEnumerable<string>>? PostAction { get; set; }
-        Action<Worker, IEnumerable<string>>? Action { get; set; }
-        Action<Worker, object?, object?>? OnSet { get; set; }
+        Action<IBaseWorker, IBaseOpt, IEnumerable<string>>? PostAction { get; set; }
+        Action<IBaseWorker, IBaseOpt, IEnumerable<string>>? Action { get; set; }
+        Action<IBaseWorker, IBaseOpt, object?, object?>? OnSet { get; set; }
 
         /// <summary>
         /// To point to the owner of an option, an ICommand object.
         /// </summary>
         ICommand? Owner { get; set; }
 
-        bool Match(string s, bool isLongOpt = false);
+        bool Match(string s, bool isLongOpt = false, bool aliasAsLong = true);
+        bool Match(string str, int pos, int len, bool isLong = false, bool aliasAsLong = true);
+        bool Match(ref string s, string input, int pos, bool isLong = false, bool aliasAsLong = true);
     }
 }

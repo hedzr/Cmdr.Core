@@ -7,6 +7,10 @@ using Serilog;
 
 namespace HzNS.Cmdr.Tool.ExLog
 {
+    /// <summary>
+    /// not work
+    /// </summary>
+    [Deprecated("all", "not completed")]
     internal static class Ext
     {
         internal static string FormatForException(this string message, System.Exception ex)

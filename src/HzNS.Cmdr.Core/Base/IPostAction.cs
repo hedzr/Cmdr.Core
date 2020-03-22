@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using HzNS.Cmdr.Internal;
 
 namespace HzNS.Cmdr.Base
 {
     public interface IPostAction
     {
-        void PostInvoke(Worker w, IEnumerable<string> remainsArgs);
+        void PostInvoke(IBaseWorker w, IEnumerable<string> remainsArgs);
     }
 }

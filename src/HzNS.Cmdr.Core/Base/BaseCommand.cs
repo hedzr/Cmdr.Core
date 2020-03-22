@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
@@ -6,11 +7,32 @@ namespace HzNS.Cmdr.Base
     [SuppressMessage("ReSharper", "ConvertToAutoPropertyWhenPossible")]
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-    public abstract class BaseCommand : BaseOpt, ICommand
+    [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
+    public abstract class BaseCommand : BaseOpt, ICommand, IEquatable<BaseCommand>
     {
-        private List<IFlag> _flags = new List<IFlag>();
+        public bool Equals(BaseCommand? other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return _flags.Equals(other._flags) && _subCommands.Equals(other._subCommands);
+        }
 
-        private List<ICommand> _subCommands = new List<ICommand>();
+        public override bool Equals(object? obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((BaseCommand) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_flags, _subCommands);
+        }
+
+        private readonly List<IFlag> _flags = new List<IFlag>();
+
+        private readonly List<ICommand> _subCommands = new List<ICommand>();
 
         // ReSharper disable once PublicConstructorInAbstractClass
         public BaseCommand()
@@ -28,20 +50,25 @@ namespace HzNS.Cmdr.Base
         public List<ICommand> SubCommands
         {
             get => _subCommands;
-            set => _subCommands = value;
+            set
+            {
+                _subCommands.Clear();
+                _subCommands.AddRange(value);
+            }
         }
 
         public List<IFlag> Flags
         {
             get => _flags;
-            set => _flags = value;
+            set
+            {
+                _flags.Clear();
+                _flags.AddRange(value);
+            }
         }
 
         public ICommand AddCommand(ICommand cmd)
         {
-            if (_subCommands == null)
-                _subCommands = new List<ICommand>();
-
             cmd.Owner = this;
             _subCommands.Add(cmd);
             return this;
@@ -49,15 +76,12 @@ namespace HzNS.Cmdr.Base
 
         public ICommand AddFlag<T>(IFlag<T> flag)
         {
-            if (_flags == null)
-                _flags = new List<IFlag>();
-
             flag.Owner = this;
             _flags.Add(flag);
             return this;
         }
 
-        public bool IsRoot => Owner == null || Owner == this;
+        public bool IsRoot => Owner == null || Equals(this, Owner);
 
         public IRootCommand? FindRoot()
         {
@@ -79,6 +103,17 @@ namespace HzNS.Cmdr.Base
             return lvl;
         }
 
+        public bool IsEqual(string title)
+        {
+            return Match(title) || Match(title, true);
+        }
+
+        public bool IsEqual(ICommand command)
+        {
+            return Equals(this, command);
+        }
+
+
         public string backtraceTitles
         {
             get
@@ -94,6 +129,10 @@ namespace HzNS.Cmdr.Base
                 return string.Join(" ", titles);
             }
         }
+
+        // public static bool operator ==(BaseCommand a, string s) => a != null && (a.Match(s) || a.Match(s, true));
+
+        // public static bool operator !=(BaseCommand a, string s) => (a == null || (!a.Match(s) && !a.Match(s, true)));
 
         public override string ToString()
         {

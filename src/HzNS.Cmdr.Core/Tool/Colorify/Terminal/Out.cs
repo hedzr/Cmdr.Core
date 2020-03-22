@@ -1,4 +1,5 @@
 ﻿using System;
+using HzNS.Cmdr.Tool.Ext;
 
 namespace HzNS.Cmdr.Tool.Colorify.Terminal
 {
@@ -45,8 +46,8 @@ namespace HzNS.Cmdr.Tool.Colorify.Terminal
             decimal size = Console.WindowWidth - 1 - text.Length;
             int rightSize = (int) Math.Round(size / 2);
             int leftSize = (int) (size - rightSize);
-            string leftMargin = new String(' ', leftSize);
-            string rightMargin = new String(' ', rightSize);
+            string leftMargin = " ".Repeat(leftSize);
+            string rightMargin = " ".Repeat(rightSize);
 
             Console.Write(leftMargin);
             Console.Write(text);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HzNS.Cmdr.Base;
+using HzNS.Cmdr.Internal;
 
 namespace HzNS.Cmdr.Cmd
 {
@@ -10,22 +11,22 @@ namespace HzNS.Cmdr.Cmd
     /// </summary>
     public class SampleRootCmd : BaseRootCommand, IAction, IPreAction, IPostAction, IOnSet
     {
-        public void PreInvoke(Worker w, IEnumerable<string> remainsArgs)
+        public void PreInvoke(IBaseWorker w, IEnumerable<string> remainsArgs)
         {
             Console.WriteLine($"{w}: {remainsArgs}");
         }
 
-        public void Invoke(Worker w, IEnumerable<string> remainsArgs)
+        public void Invoke(IBaseWorker w, IEnumerable<string> remainsArgs)
         {
             Console.WriteLine($"{w}: {remainsArgs}");
         }
 
-        public void PostInvoke(Worker w, IEnumerable<string> remainsArgs)
+        public void PostInvoke(IBaseWorker w, IEnumerable<string> remainsArgs)
         {
             Console.WriteLine($"{w}: {remainsArgs}");
         }
 
-        public void OnSetHandler(Worker w, object newValue, object oldValue)
+        public void OnSetHandler(IBaseWorker w, object newValue, object oldValue)
         {
             throw new NotImplementedException();
         }

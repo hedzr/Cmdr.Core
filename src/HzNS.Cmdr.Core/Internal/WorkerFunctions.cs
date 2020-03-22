@@ -5,23 +5,43 @@ using System.Text;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Colorify;
+using HzNS.Cmdr.Tool.Ext;
 
-namespace HzNS.Cmdr.Handlers
+namespace HzNS.Cmdr.Internal
 {
+    public interface IWorkerFunctions
+    {
+        void ShowVersions(IBaseWorker w, params string[] remainArgs);
+
+        void ShowBuildInfo(IBaseWorker w, params string[] remainArgs);
+
+        void ShowHelpScreen(IBaseWorker w, params string[] remainArgs);
+
+        void DumpTreeForAllCommands(IBaseWorker w, params string[] remainArgs);
+
+        public bool Walk(ICommand? parent = null,
+            Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
+            Func<ICommand, IFlag, int, bool>? flagsWatcher = null);
+    }
+
+
     [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
     [SuppressMessage("ReSharper", "ImplicitlyCapturedClosure")]
     [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Local")]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public abstract class WorkerFunctions : DefaultHandlers
+    public abstract class WorkerFunctions : IWorkerFunctions
     {
-        public void ShowVersions(Worker w, params string[] remainArgs)
+        public abstract bool Walk(ICommand? parent = null, Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
+            Func<ICommand, IFlag, int, bool>? flagsWatcher = null);
+
+        public void ShowVersions(IBaseWorker w, params string[] remainArgs)
         {
             //
         }
 
-        public void ShowBuildInfo(Worker w, params string[] remainArgs)
+        public void ShowBuildInfo(IBaseWorker w, params string[] remainArgs)
         {
             //
         }
@@ -43,7 +63,7 @@ namespace HzNS.Cmdr.Handlers
                 foreach (var ts in twoStrings)
                 {
                     writer.Write(ts.Part1, ColorNormal);
-                    writer.Write(new string(' ', tabStop - ts.Part1.Length));
+                    writer.Write(" ".Repeat(tabStop - ts.Part1.Length));
 
                     var c = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.Gray;
@@ -54,12 +74,17 @@ namespace HzNS.Cmdr.Handlers
                         while (start < ts.Part2.Length)
                         {
                             if (start + width > ts.Part2.Length) width = ts.Part2.Length - start;
-                            writer.WriteLine(ts.Part2.Substring(start, width), ColorDesc);
-                            start += width;
-                            if (start < ts.Part2.Length)
+                            writer.WriteLine(width < 0 ? ts.Part2 : ts.Part2.Substring(start, width), ColorDesc);
+                            if (width > 0)
                             {
-                                writer.Write(new string(' ', tabStop));
+                                start += width;
+                                if (start < ts.Part2.Length)
+                                {
+                                    writer.Write(" ".Repeat(tabStop));
+                                }
                             }
+                            else
+                                start = ts.Part2.Length;
                         }
                     }
                     else
@@ -203,7 +228,7 @@ namespace HzNS.Cmdr.Handlers
         // ReSharper disable once InconsistentNaming
         private bool noBacktrace;
 
-        public void ShowHelpScreen(Worker w, params string[] remainArgs)
+        public void ShowHelpScreen(IBaseWorker w, params string[] remainArgs)
         {
             var commandLines = new SortedDictionary<string, List<TwoString>>();
             var optionLines = new SortedDictionary<int, CmdFlags>();
@@ -242,7 +267,7 @@ namespace HzNS.Cmdr.Handlers
             writer.WriteLine("");
         }
 
-        public void DumpTreeForAllCommands(Worker w, params string[] remainArgs)
+        public void DumpTreeForAllCommands(IBaseWorker w, params string[] remainArgs)
         {
             w.log.Debug("dump tree");
 
@@ -256,7 +281,7 @@ namespace HzNS.Cmdr.Handlers
                 {
                     if (cmd.Hidden) return true;
 
-                    var sb = new StringBuilder(new string(' ', (1 + level) * 2));
+                    var sb = new StringBuilder("  ".Repeat(1 + level));
                     if (!string.IsNullOrWhiteSpace(cmd.Short)) sb.Append($"{cmd.Short}, ");
                     if (!string.IsNullOrWhiteSpace(cmd.Long)) sb.Append($"{cmd.Long},");
                     if (cmd.Aliases.Length > 0) sb.AppendJoin(',', cmd.Aliases);
@@ -275,16 +300,16 @@ namespace HzNS.Cmdr.Handlers
                     return true;
                 },
                 (owner, flag, level) => true);
-            
+
             ShowIt(w.ParsedCommand ?? w.RootCommand, commandLines, optionLines, writer, tabStop, true);
-            
+
             writer.WriteLine("");
         }
 
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-        private Func<ICommand, IFlag, int /*level*/, bool> flagsWatcher(Worker w,
+        private Func<ICommand, IFlag, int /*level*/, bool> flagsWatcher(IBaseWorker w,
             // SortedDictionary<string, List<TwoString>> commandLines,
             SortedDictionary<int /*level*/, CmdFlags> optionLines,
             int tabStop)

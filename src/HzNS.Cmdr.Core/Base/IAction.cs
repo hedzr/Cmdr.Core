@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using HzNS.Cmdr.Internal;
 
 namespace HzNS.Cmdr.Base
 {
     public interface IAction
     {
-        void Invoke(Worker w, IEnumerable<string> remainsArgs);
+        void Invoke(IBaseWorker w, IEnumerable<string> remainsArgs);
     }
 }

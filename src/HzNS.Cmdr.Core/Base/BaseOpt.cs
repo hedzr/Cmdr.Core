@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using HzNS.Cmdr.Internal;
 
 namespace HzNS.Cmdr.Base
 {
@@ -40,23 +41,78 @@ namespace HzNS.Cmdr.Base
         public bool Hidden { get; set; } = false;
         public string[] EnvVars { get; set; } = { };
 
-        public Func<Worker, IEnumerable<string>, bool>? PreAction { get; set; }
-        public Action<Worker, IEnumerable<string>>? PostAction { get; set; }
-        public Action<Worker, IEnumerable<string>>? Action { get; set; }
-        public Action<Worker, object?, object?>? OnSet { get; set; }
+        public Func<IBaseWorker, IBaseOpt, IEnumerable<string>, bool>? PreAction { get; set; }
+        public Action<IBaseWorker, IBaseOpt, IEnumerable<string>>? PostAction { get; set; }
+        public Action<IBaseWorker, IBaseOpt, IEnumerable<string>>? Action { get; set; }
+        public Action<IBaseWorker, IBaseOpt, object?, object?>? OnSet { get; set; }
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public ICommand? Owner { get; set; } = null;
 
-        public bool Match(string s, bool isLongOpt = false)
+        public bool Match(string s, bool isLongOpt = false, bool aliasAsLong = true)
         {
-            if (!isLongOpt)
+            if (isLongOpt)
             {
-                if (s == Short) return true;
+                // ReSharper disable once InvertIf
+                if (aliasAsLong)
+                    if (Aliases.Any(title => s == title))
+                        return true;
+                return s == Long;
             }
             else
             {
-                return s == Long || Aliases.Any(title => s == title);
+                if (s == Short) return true;
+            }
+
+            return false;
+        }
+
+        public bool Match(string str, int pos, int len, bool isLong = false, bool aliasAsLong = true)
+        {
+            var s = str.Substring(pos, len);
+            return Match(s, isLong, aliasAsLong);
+        }
+
+        // ReSharper disable once InconsistentNaming
+        private static bool equals(ref string s, string input, int pos, params string[] a)
+        {
+            foreach (var it in a)
+            {
+                if (s == it) return true;
+                // ReSharper disable once InvertIf
+                if (s.Length < it.Length && pos + it.Length <= input.Length)
+                {
+                    var st = input.Substring(pos, it.Length);
+                    // ReSharper disable once InvertIf
+                    if (st == it)
+                    {
+                        s = st;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public bool Match(ref string s, string input, int pos, bool isLong = false, bool aliasAsLong = true)
+        {
+            if (isLong)
+            {
+                // ReSharper disable once InvertIf
+                if (aliasAsLong)
+                {
+                    if (@equals(ref s, input, pos, Aliases))
+                        return true;
+                }
+
+                if (@equals(ref s, input, pos, Long))
+                    return true;
+            }
+            else
+            {
+                if (@equals(ref s, input, pos, Short))
+                    return true;
             }
 
             return false;

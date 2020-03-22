@@ -11,7 +11,7 @@ namespace commander.Cmd
     {
         public TagsAddCmd() : base("a", "add", new[] {"create", "new"}, "", "", "")
         {
-            Action = (worker, remainArgs) => { Console.WriteLine("[HIT] add a tag."); };
+            Action = (worker, sender, remainArgs) => { Console.WriteLine("[HIT] add a tag."); };
         }
     }
 
@@ -19,7 +19,7 @@ namespace commander.Cmd
     {
         public TagsRemoveCmd() : base("rm", "remove", new[] {"delete", "del", "erase"}, "", "", "")
         {
-            Action = (worker, remainArgs) => { Console.WriteLine("[HIT] remove a tag."); };
+            Action = (worker, sender, remainArgs) => { Console.WriteLine("[HIT] remove a tag."); };
         }
     }
 
@@ -27,7 +27,7 @@ namespace commander.Cmd
     {
         public TagsListCmd() : base("l", "list", new[] {"ls", "lst"}, "", "", "")
         {
-            Action = (worker, remainArgs) => { Console.WriteLine("[HIT] list all tags."); };
+            Action = (worker, sender, remainArgs) => { Console.WriteLine("[HIT] list all tags."); };
         }
     }
 
@@ -37,7 +37,7 @@ namespace commander.Cmd
         // ReSharper disable once StringLiteralTypo
         public TagsModifyCmd() : base("m", "modify", new[] {"mod", "modi", "update"}, "", "", "")
         {
-            Action = (worker, remainArgs) => { Console.WriteLine("[HIT] modify a tag."); };
+            Action = (worker, sender, remainArgs) => { Console.WriteLine("[HIT] modify a tag."); };
 
             // adds flags here
             AddFlag(new Flag<string> {Long = "name", DefaultValue = "test-redis"});
