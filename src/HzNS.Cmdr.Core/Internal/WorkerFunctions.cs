@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using HzNS.Cmdr.Base;
+using HzNS.Cmdr.Internal.Base;
 using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Colorify;
 using HzNS.Cmdr.Tool.Ext;

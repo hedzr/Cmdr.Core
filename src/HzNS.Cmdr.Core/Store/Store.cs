@@ -106,7 +106,7 @@ namespace HzNS.Cmdr.Store
                 case string _:
                     foreach (var v in val)
                     {
-                        node.Values[key] = val;
+                        node.Values[key] = v;
                     }
 
                     return;

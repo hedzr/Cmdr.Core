@@ -4,53 +4,32 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
+using HzNS.Cmdr.Internal.Base;
 using HzNS.Cmdr.Tool;
-using Serilog;
 
 namespace HzNS.Cmdr.Internal
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public interface ILoggable
-    {
-        ILogger log { get; }
-    }
-
-    public interface IBaseWorker : ILoggable, IWorkerFunctions
-    {
-        int ParsedCount { get; set; }
-
-        bool Parsed { get; set; }
-
-        ICommand? ParsedCommand { get; set; }
-        IFlag? ParsedFlag { get; set; }
-
-        bool EnableDuplicatedCharThrows { get; set; }
-        bool EnableEmptyLongFieldThrows { get; set; }
-        bool EnableUnknownCommandThrows { get; set; }
-        bool EnableUnknownFlagThrows { get; set; }
-        int TabStop { get; set; }
-
-
-        // ReSharper disable once CollectionNeverUpdated.Local
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
-        Dictionary<ICommand, Xref> xrefs { get; }
-
-        IRootCommand RootCommand { get; }
-    }
-
-
-    [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
-    [SuppressMessage("ReSharper", "MemberCanBePrivate.Local")]
-    // ReSharper disable once InconsistentNaming
-    public interface IDefaultMatchers : IBaseWorker
-    {
-    }
-
-
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public static class DefaultMatchers
     {
+        /// <summary>
+        /// greedy mode: prefer to longest Long option.
+        ///
+        /// for example, think about there are two options: `--addr` and `--add`, in the
+        /// greedy mode `--addr` will be picked for the input `--addr xxx`.
+        /// just the opposite, `--add` && `--r` will be split out.
+        /// </summary>
+        public static bool EnableCmdrGreedyLongFlag { get; set; } = true;
+
+
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public static bool EnableCmdrLogTrace { get; set; }
+
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public static bool EnableCmdrLogDebug { get; set; }
+
+
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         // ReSharper disable once SuggestBaseTypeForParameter
@@ -138,7 +117,7 @@ namespace HzNS.Cmdr.Internal
                 var ccc = command;
                 var fragment = longOpt ? arg.Substring(2) : arg.Substring(1);
                 var pos = 0;
-                var len = 1;
+                var len = EnableCmdrGreedyLongFlag ? fragment.Length : 1;
                 var siz = fragment.Length;
                 var ate = 0;
 
@@ -152,11 +131,12 @@ namespace HzNS.Cmdr.Internal
 
                 backtraceAllParentFlags:
 
+                var decidedLen = 0;
+                IFlag? decidedFlg = null;
+
                 #region backtraceAllParentFlags
 
                 // ok = false;
-                var decidedLen = 0;
-                IFlag? decidedFlg = null;
                 foreach (var flg in ccc.Flags)
                 {
                     ok = flg.Match(ref part, fragment, pos, longOpt);
@@ -284,7 +264,7 @@ namespace HzNS.Cmdr.Internal
 
         #endregion
 
-        #region helpers for Run() - match(ed)
+        #region helpers for match() - match(ed)
 
         /// <summary>
         /// 
@@ -402,13 +382,6 @@ namespace HzNS.Cmdr.Internal
 
         #endregion
 
-        // ReSharper disable once FieldCanBeMadeReadOnly.Local
-        private static Action<IBaseWorker, IBaseOpt, object?, object?>? defaultOnSet = (w, flg, oldVal, newVal) =>
-        {
-            if (EnableCmdrLogDebug)
-                Console.WriteLine($"--> onSet: {flg} changed ({oldVal} -> {newVal})");
-        };
-
         #region suggestions
 
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]
@@ -462,7 +435,6 @@ namespace HzNS.Cmdr.Internal
         }
 
         #endregion
-
 
         #region debug helpers: logDebug
 
@@ -594,13 +566,15 @@ namespace HzNS.Cmdr.Internal
 
         #endregion
 
-        #region debug helpers: EnableCmdrTrace
 
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public static bool EnableCmdrLogTrace { get; set; }
+        #region defaultOnSet
 
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public static bool EnableCmdrLogDebug { get; set; }
+        // ReSharper disable once FieldCanBeMadeReadOnly.Local
+        private static Action<IBaseWorker, IBaseOpt, object?, object?>? defaultOnSet = (w, flg, oldVal, newVal) =>
+        {
+            if (EnableCmdrLogDebug)
+                Console.WriteLine($"--> onSet: {flg} changed ({oldVal} -> {newVal})");
+        };
 
         #endregion
     }

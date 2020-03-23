@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using HzNS.Cmdr.Internal;
+using HzNS.Cmdr.Internal.Base;
 
 namespace HzNS.Cmdr.Base
 {

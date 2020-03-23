@@ -9,6 +9,7 @@ using AutofacSerilogIntegration;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Internal;
+using HzNS.Cmdr.Internal.Base;
 using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Enrichers;
 using Serilog;

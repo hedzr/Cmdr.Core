@@ -2,6 +2,7 @@
 using System;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
+using HzNS.Cmdr.Tool.ObjectCloner;
 
 // ReSharper disable MemberCanBePrivate.Global
 namespace Simple
@@ -254,7 +255,7 @@ namespace Simple
                     ToggleGroup = "Mode",
                     Description = "dify with the `key`."
                 })
-                .AddCommand(s2));
+                .AddCommand(s2.DeepClone()));
 
             AddCommand(s2);
         }
