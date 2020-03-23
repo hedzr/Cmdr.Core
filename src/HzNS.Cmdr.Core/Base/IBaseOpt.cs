@@ -38,7 +38,9 @@ namespace HzNS.Cmdr.Base
 
         bool Match(string s, bool isLongOpt = false, bool aliasAsLong = true);
         bool Match(string str, int pos, int len, bool isLong = false, bool aliasAsLong = true);
-        bool Match(ref string s, string input, int pos, bool isLong = false, bool aliasAsLong = true);
+
+        bool Match(ref string s, string input, int pos, bool isLong = false, bool aliasAsLong = true,
+            bool enableCmdrGreedyLongFlag = false);
 
         string ToDottedKey();
     }

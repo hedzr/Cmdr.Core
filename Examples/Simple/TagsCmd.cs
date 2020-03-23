@@ -255,6 +255,13 @@ namespace Simple
                     ToggleGroup = "Mode",
                     Description = "dify with the `key`."
                 })
+                .AddFlag(new Flag<string>
+                {
+                    DefaultValue = "api.github.com", Long = "addr", Short = "", Aliases = new[] {"address"},
+                    PlaceHolder = "HOST[:PORT]",
+                    ToggleGroup = "Server",
+                    Description = "network address of the remote server."
+                })
                 .AddCommand(s2.DeepClone()));
 
             AddCommand(s2);

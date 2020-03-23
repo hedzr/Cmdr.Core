@@ -139,7 +139,7 @@ namespace HzNS.Cmdr.Internal
                 // ok = false;
                 foreach (var flg in ccc.Flags)
                 {
-                    ok = flg.Match(ref part, fragment, pos, longOpt);
+                    ok = flg.Match(ref part, fragment, pos, longOpt, true, EnableCmdrGreedyLongFlag);
                     if (!ok) continue;
 
                     // a flag matched ok, try extracting its value from commandline arguments
@@ -151,8 +151,8 @@ namespace HzNS.Cmdr.Internal
                         //
                     }
 
-                    @this.logDebug("    ++ flag matched: {SW:l}{flgLong:l} {value}",
-                        Util.SwitchChar(longOpt), flg.Long, value);
+                    @this.logDebug("    ++ flag matched: {SW:l}{Part:l} {value}",
+                        Util.SwitchChar(longOpt), part, value);
 
                     if (len > decidedLen)
                     {
@@ -190,7 +190,7 @@ namespace HzNS.Cmdr.Internal
                 if (pos + decidedLen < siz)
                 {
                     pos += decidedLen;
-                    len = 1;
+                    len = EnableCmdrGreedyLongFlag ? fragment.Length - pos : 1;
                     @this.logDebug("    - for next part: {Part}", fragment.Substring(pos, len));
                     ccc = command;
                     goto forEachFragmentParts;
@@ -316,8 +316,7 @@ namespace HzNS.Cmdr.Internal
         // ReSharper disable once MemberCanBeMadeStatic.Local
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
         private static void onFlagMatched<T>(this T @this, IEnumerable<string> args, int position, string fragment,
-            in bool longOpt,
-            IFlag flag)
+            in bool longOpt, IFlag flag)
             where T : IDefaultMatchers
         {
             var remainArgs = args.Where((it, idx) => idx >= position).ToArray();
@@ -334,6 +333,8 @@ namespace HzNS.Cmdr.Internal
                     flag.OnSet?.Invoke(@this, flag, flag.getDefaultValue(), flag.getDefaultValue());
                 else
                     defaultOnSet?.Invoke(@this, flag, flag.getDefaultValue(), flag.getDefaultValue());
+
+                flag.Owner?.FindRoot()?.OnSet?.Invoke(@this, flag, flag.getDefaultValue(), flag.getDefaultValue());
 
                 // ReSharper disable once SuspiciousTypeConversion.Global
                 // ReSharper disable once UseNegatedPatternMatching
@@ -443,7 +444,10 @@ namespace HzNS.Cmdr.Internal
         {
             if (EnableCmdrLogTrace)
             {
-                @this.log.Debug(messageTemplate);
+                @this.log.ForContext("SKIP_", 1)
+                    // logEvent.AddPropertyIfAbsent(new LogEventProperty("SourceFileName",
+                    // new ScalarValue(stack.GetFileName())));
+                    .Debug(messageTemplate);
             }
         }
 
@@ -453,7 +457,7 @@ namespace HzNS.Cmdr.Internal
         {
             if (EnableCmdrLogTrace)
             {
-                @this.log.Debug(messageTemplate, property0);
+                @this.log.ForContext("SKIP_", 1).Debug(messageTemplate, property0);
             }
         }
 
@@ -463,7 +467,7 @@ namespace HzNS.Cmdr.Internal
         {
             if (EnableCmdrLogTrace)
             {
-                @this.log.Debug(messageTemplate, property0, property1);
+                @this.log.ForContext("SKIP_", 1).Debug(messageTemplate, property0, property1);
             }
         }
 
@@ -473,7 +477,7 @@ namespace HzNS.Cmdr.Internal
         {
             if (EnableCmdrLogTrace)
             {
-                @this.log.Debug(messageTemplate, property0, property1, property2);
+                @this.log.ForContext("SKIP_", 1).Debug(messageTemplate, property0, property1, property2);
             }
         }
 
@@ -483,7 +487,7 @@ namespace HzNS.Cmdr.Internal
         {
             if (EnableCmdrLogTrace)
             {
-                @this.log.Debug(messageTemplate, property0, property1, property2, property3);
+                @this.log.ForContext("SKIP_", 1).Debug(messageTemplate, property0, property1, property2, property3);
             }
         }
 

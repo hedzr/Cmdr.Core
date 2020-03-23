@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
 
@@ -60,6 +61,11 @@ namespace Simple
                                     Group = "Consul",
                                 })
                             );
+
+                            root.OnSet = (worker, flag, oldValue, newValue) =>
+                            {
+                                Console.WriteLine($"--> [root.onSet] {flag} set: {oldValue} -> {newValue}");
+                            };
                         }
                     ), // <- RootCmd
 

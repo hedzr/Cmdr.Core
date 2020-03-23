@@ -19,9 +19,10 @@ namespace HzNS.Cmdr.Tool.Enrichers
         public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
         {
             var skip = 3;
-            var postSkip = 0;
-            if (logEvent.Properties.ContainsKey("SKIP_"))
-                postSkip = int.Parse(logEvent.Properties["SKIP_"].ToString());
+
+            // var postSkip = 0;
+            // if (logEvent.Properties.ContainsKey("SKIP_"))
+            // postSkip = int.Parse(logEvent.Properties["SKIP_"].ToString());
 
             while (true)
             {
