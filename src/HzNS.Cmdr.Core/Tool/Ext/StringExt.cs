@@ -5,6 +5,26 @@ namespace HzNS.Cmdr.Tool.Ext
 {
     public static class StringExtensions
     {
+        public static string EatStart(this string @this, string part)
+        {
+            return @this.StartsWith(part) ? @this.Substring(part.Length) : @this;
+        }
+
+        public static string EatEnd(this string @this, string part)
+        {
+            return @this.EndsWith(part) ? @this.Substring(0, @this.Length - part.Length) : @this;
+        }
+
+        public static string EatBoth(this string @this, string part)
+        {
+            var t = @this;
+            if (t.StartsWith(part))
+                t = t.Substring(part.Length);
+            if (t.EndsWith(part))
+                t = t.Substring(0, t.Length - part.Length);
+            return t;
+        }
+
         /// <summary>
         ///     A string extension method that repeats the string a specified number of times.
         /// </summary>
