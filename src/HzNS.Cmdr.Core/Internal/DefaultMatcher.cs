@@ -144,12 +144,14 @@ namespace HzNS.Cmdr.Internal
 
                     // a flag matched ok, try extracting its value from commandline arguments
                     object? value;
-                    (ate, value) = tryExtractingValue(@this, flg, args, i, part, pos);
+                    (ate, value) = tryExtractingValue(@this, flg, args, i, fragment, part, pos);
 
+                    #if DEBUG
                     if (value != null && ate > 0)
                     {
                         //
                     }
+                    #endif
 
                     @this.logDebug("    ++ flag matched: {SW:l}{Part:l} {value}",
                         Util.SwitchChar(longOpt), part, value);
@@ -221,13 +223,15 @@ namespace HzNS.Cmdr.Internal
 
         // ReSharper disable once SuggestBaseTypeForParameter
         internal static (int ate, object? value) tryExtractingValue<T>(
-            this T @this, IFlag flg, string[] args, int i, string part, int pos)
+            this T @this, 
+            IFlag flg, string[] args, int i, string fragment,
+            string part, int pos)
             where T : IDefaultMatchers
         {
             var ate = 0;
             object? val = null;
 
-            var remains = args[i].Substring(pos + part.Length);
+            var remains = fragment.Substring(pos + part.Length);
             bool? flipChar = null;
             if (remains.Length > 0)
             {
