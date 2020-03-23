@@ -7,7 +7,6 @@ using System.Linq;
 using Autofac;
 using AutofacSerilogIntegration;
 using HzNS.Cmdr.Base;
-using HzNS.Cmdr.Builder;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Internal;
 using HzNS.Cmdr.Tool;
@@ -69,6 +68,17 @@ namespace HzNS.Cmdr
         {
             // NOTE that the logger `log` is not ready yet at this time.
             ColorifyEnabler.Enable();
+
+            DefaultMatchers.EnableCmdrLogTrace = Util.GetEnvValueBool("CMDR_TRACE");
+            if (DefaultMatchers.EnableCmdrLogTrace)
+                DefaultMatchers.EnableCmdrLogDebug = true;
+            DefaultMatchers.EnableCmdrLogDebug = Util.GetEnvValueBool("CMDR_DEBUG");
+            Cmdr.Instance.Store.Set("debug", Util.GetEnvValueBool("DEBUG"));
+            Cmdr.Instance.Store.Set("trace", Util.GetEnvValueBool("TRACE"));
+            Cmdr.Instance.Store.Set("verbose", Util.GetEnvValueBool("VERBOSE"));
+            Cmdr.Instance.Store.Set("verbose-level", Util.GetEnvValueInt("VERBOSE_LEVEL", 5));
+            Cmdr.Instance.Store.Set("quiet", Util.GetEnvValueBool("QUIET"));
+
             return this;
         }
 
@@ -122,7 +132,7 @@ namespace HzNS.Cmdr
             {
                 // f4();
                 // show help screen
-                log.Debug("showing the help screen ...");
+                this.logDebug("showing the help screen ...");
                 Parsed = true;
                 ShowHelpScreen(this, ex.RemainArgs);
             }
@@ -133,15 +143,18 @@ namespace HzNS.Cmdr
             }
             catch (CmdrException ex)
             {
-                log.Error(ex, "Error occurs");
+                this.logError(ex, "Error occurs");
             }
             catch (System.Exception ex)
             {
-                log.Error(ex, $"args: {args}, position: {position}");
+                this.logError(ex, $"args: {args}, position: {position}");
                 throw;
             }
             finally
             {
+                var store = Cmdr.Instance.Store;
+                store.Dump();
+
                 ColorifyEnabler.Reset();
             }
         }
@@ -224,6 +237,7 @@ namespace HzNS.Cmdr
 
         #endregion
 
+
         #region helpers for With(), Xref
 
         #region xref class and member container
@@ -283,7 +297,7 @@ namespace HzNS.Cmdr
                 xx.TryAddAliases(this, owner, flag);
                 return true; // return false to break the walkForFlags' loop.
             });
-            log.Debug("_xrefs was built.");
+            this.logDebug("_xrefs was built.");
         }
 
         #endregion

@@ -18,12 +18,64 @@ namespace HzNS.Cmdr.Tool
         public static string StripFirstKnobble(string s)
         {
             var pos = s.IndexOf('.');
-            if (pos >= 0)
-            {
-                return s.Substring(pos + 1);
-            }
+            return pos >= 0 ? s.Substring(pos + 1) : s;
+        }
 
-            return s;
+        public static bool ToBool(string s, bool defaultValue = false)
+        {
+            return s switch
+            {
+                "1" => true,
+                "yes" => true,
+                "y" => true,
+                "Y" => true,
+                "true" => true,
+                "t" => true,
+                "T" => true,
+                "是" => true,
+                "真" => true,
+                "0" => false,
+                "no" => false,
+                "n" => false,
+                "N" => false,
+                "false" => true,
+                "f" => false,
+                "F" => false,
+                "否" => false,
+                "假" => false,
+                _ => defaultValue
+            };
+        }
+        
+        /// <summary>
+        ///
+        /// true/false, yes/no, t/f, y/n, 1/0, ...
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        public static bool GetEnvValueBool(string key, bool defaultValue = false)
+        {
+            var v = Environment.GetEnvironmentVariable(key);
+            return v == null ? defaultValue : ToBool(v, defaultValue);
+        }
+
+        public static int GetEnvValueInt(string key, int defaultValue = 0)
+        {
+            var v = Environment.GetEnvironmentVariable(key);
+            return v == null ? defaultValue : int.Parse(v);
+        }
+
+        public static long GetEnvValueLong(string key, long defaultValue = 0)
+        {
+            var v = Environment.GetEnvironmentVariable(key);
+            return v == null ? defaultValue : long.Parse(v);
+        }
+
+        public static string GetEnvValueString(string key, string defaultValue = "")
+        {
+            var v = Environment.GetEnvironmentVariable(key);
+            return v ?? defaultValue;
         }
 
         #region About Json

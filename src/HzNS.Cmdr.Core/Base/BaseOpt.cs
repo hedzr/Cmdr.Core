@@ -117,5 +117,28 @@ namespace HzNS.Cmdr.Base
 
             return false;
         }
+
+        public IEnumerable<string> ToKeys()
+        {
+            var list = new List<string>();
+            var t = this;
+            do
+            {
+                if (!string.IsNullOrWhiteSpace(t.Long))
+                    list.Insert(0, t.Long);
+#pragma warning disable CS8600
+                if (t.Owner != t)
+                    t = t.Owner as BaseOpt;
+#pragma warning restore CS8600
+            } while (t != null);
+
+            return list;
+        }
+
+        public string ToDottedKey()
+        {
+            var list = ToKeys();
+            return string.Join('.', list);
+        }
     }
 }

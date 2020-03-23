@@ -3,9 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
-using HzNS.Cmdr.Internal;
 
-namespace HzNS.Cmdr.Builder
+namespace HzNS.Cmdr.Internal
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public abstract class BuiltinOptions

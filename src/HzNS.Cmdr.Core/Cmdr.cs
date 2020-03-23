@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
+using HzNS.Cmdr.Internal;
 using HzNS.Cmdr.Tool.Enrichers;
 using Serilog;
 using Serilog.Core;
@@ -50,7 +51,7 @@ namespace HzNS.Cmdr
 
             try
             {
-                worker.log.Debug($"EnableDuplicatedCharThrows: {worker.EnableDuplicatedCharThrows}");
+                worker.logDebug("EnableDuplicatedCharThrows: {EnableDuplicatedCharThrows}", worker.EnableDuplicatedCharThrows);
                 if (root != null)
                     worker.With(root);
             }
@@ -62,12 +63,14 @@ namespace HzNS.Cmdr
             // }
             catch (CmdrException ex)
             {
-                worker.log.Error(ex, "Error occurs");
+                worker.logError(ex, "Error occurs");
             }
 
             return worker;
         }
 
+        public HzNS.Cmdr.Store.Store Store { get; } = HzNS.Cmdr.Store.Store.Instance;
+        
         #region Singleton Pattern
 
         private Cmdr()

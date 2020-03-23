@@ -57,17 +57,9 @@ namespace HzNS.Cmdr.Internal
         public static int match<T>(this T @this, ICommand command, string[] args, int position, int level)
             where T : IDefaultMatchers
         {
-            @this.log.Debug("  - match for command: {CommandTitle}", command.backtraceTitles);
+            @this.logDebug("  - match for command: {CommandTitle}", command.backtraceTitles);
 
             var matchedPosition = -1;
-            // ReSharper disable once TooWideLocalVariableScope
-            string fragment;
-            // ReSharper disable once TooWideLocalVariableScope
-            int pos, len, size;
-            // ReSharper disable once TooWideLocalVariableScope
-            int ate;
-            // ReSharper disable once TooWideLocalVariableScope
-            object? value;
 
             // ReSharper disable once ForCanBeConvertedToForeach
             for (var i = position; i < args.Length; i++)
@@ -77,7 +69,7 @@ namespace HzNS.Cmdr.Internal
                 var isOpt = arg.StartsWith("-");
                 var longOpt = arg.StartsWith("--");
 
-                @this.log.Debug("    -> arg {Index}: {Argument}", i, arg);
+                @this.logDebug("    -> arg {Index}: {Argument}", i, arg);
                 if (!isOpt)
                 {
                     #region matching command
@@ -92,7 +84,7 @@ namespace HzNS.Cmdr.Internal
                             if (!ok) ok = cmd.Match(arg, true);
                             if (!ok) continue;
 
-                            @this.log.Debug("    ++ command matched: {CommandTitle}", cmd.backtraceTitles);
+                            @this.logDebug("    ++ command matched: {CommandTitle}", cmd.backtraceTitles);
 
                             @this.ParsedCommand = cmd;
                             @this.ParsedFlag = null;
@@ -103,7 +95,10 @@ namespace HzNS.Cmdr.Internal
                                 if (i == arg.Length - 1) throw new WantHelpScreenException();
 
                                 var pos1 = match(@this, cmd, args, i + 1, level + 1);
-                                if (pos1 < 0) matchedPosition = positionCopy;
+                                if (pos1 < 0)
+                                    matchedPosition = positionCopy;
+                                else
+                                    i = pos1;
                                 positionCopy = pos1;
                             }
 
@@ -117,7 +112,7 @@ namespace HzNS.Cmdr.Internal
 
                         if (matchedPosition < 0)
                         {
-                            @this.log.Debug("level {Level} (cmd can't matched): returning {Position}", level,
+                            @this.logDebug("level {Level} (cmd can't matched): returning {Position}", level,
                                 -position - 1);
                             onCommandCannotMatched(@this, args, i, arg, command);
                             return -position - 1;
@@ -128,7 +123,7 @@ namespace HzNS.Cmdr.Internal
                     }
                     else
                     {
-                        @this.log.Debug("level {Level} (no sub-cmds): returning {Position}", level, matchedPosition);
+                        @this.logDebug("level {Level} (no sub-cmds): returning {Position}", level, matchedPosition);
                         onCommandCannotMatched(@this, args, i, arg, command);
                         return matchedPosition;
                     }
@@ -138,77 +133,103 @@ namespace HzNS.Cmdr.Internal
                     continue;
                 }
 
-                // matching for flags of 'command'
+                #region matching for flags of 'command'
 
                 var ccc = command;
-                fragment = longOpt ? arg.Substring(2) : arg.Substring(1);
-                pos = 0;
-                len = 1;
-                size = fragment.Length;
-                ate = 0;
+                var fragment = longOpt ? arg.Substring(2) : arg.Substring(1);
+                var pos = 0;
+                var len = 1;
+                var siz = fragment.Length;
+                var ate = 0;
 
                 forEachFragmentParts:
+
+                #region forEachFragmentParts
+
                 var part = fragment.Substring(pos, len);
 
-                @this.log.Debug("    - try finding flags for ccc: {CommandTitle}", ccc.backtraceTitles);
+                @this.logDebug("    - try finding flags for ccc: {CommandTitle}", ccc.backtraceTitles);
 
                 backtraceAllParentFlags:
-                ok = false;
+
+                #region backtraceAllParentFlags
+
+                // ok = false;
+                var decidedLen = 0;
+                IFlag? decidedFlg = null;
                 foreach (var flg in ccc.Flags)
                 {
                     ok = flg.Match(ref part, fragment, pos, longOpt);
                     if (!ok) continue;
 
                     // a flag matched ok, try extracting its value from commandline arguments
+                    object? value;
                     (ate, value) = tryExtractingValue(@this, flg, args, i, part, pos);
 
-                    @this.log.Debug("    ++ flag matched: {SW:l}{flgLong:l} {value}",
+                    if (value != null && ate > 0)
+                    {
+                        //
+                    }
+
+                    @this.logDebug("    ++ flag matched: {SW:l}{flgLong:l} {value}",
                         Util.SwitchChar(longOpt), flg.Long, value);
 
-                    len = part.Length;
-                    @this.ParsedFlag = flg;
-                    onFlagMatched(@this, args, i + 1, part, longOpt, flg);
-                    matchedPosition = i + 1;
+                    if (len > decidedLen)
+                    {
+                        decidedFlg = flg;
+                        decidedLen = part.Length;
+                    }
+
                     break;
                 }
 
-                // ReSharper disable once InvertIf
-                if (!ok)
+                if (decidedFlg == null)
                 {
                     if (ccc.Owner != null && ccc.Owner != ccc)
                     {
                         ccc = ccc.Owner;
-                        @this.log.Debug("    - try finding flags for its(ccc) parent: {CommandTitle}",
+                        @this.logDebug("    - try finding flags for its(ccc) parent: {CommandTitle}",
                             ccc.backtraceTitles);
                         goto backtraceAllParentFlags;
                     }
 
-                    @this.log.Debug("can't match a flag: {Argument}/part={Part}/fragment={Fragment}.", arg, part,
+                    @this.logDebug("can't match a flag: {Argument}/part={Part}/fragment={Fragment}.", arg, part,
                         fragment);
                     onFlagCannotMatched(@this, args, i, part, longOpt, command);
+                    decidedLen = 1;
+                }
+                else
+                {
+                    // matched
+
+                    @this.ParsedFlag = decidedFlg;
+                    onFlagMatched(@this, args, i + 1, part, longOpt, decidedFlg);
+                    matchedPosition = i + 1;
                 }
 
-                if (pos + len < size)
+                if (pos + decidedLen < siz)
                 {
-                    pos += len;
+                    pos += decidedLen;
                     len = 1;
-                    @this.log.Debug("    - for next part: {Part}", fragment.Substring(pos, len));
+                    @this.logDebug("    - for next part: {Part}", fragment.Substring(pos, len));
                     ccc = command;
                     goto forEachFragmentParts;
                 }
 
-                if (ate > 0)
-                {
-                    i += ate;
-                }
+                #endregion
 
-                // 
+                #endregion
+
+                if (ate > 0)
+                    i += ate;
+
+                #endregion
             }
 
             // ReSharper disable once InvertIf
             if (matchedPosition < 0)
             {
-                @this.log.Debug("level {Level}: returning {Position}", level, -position - 1);
+                @this.logDebug("level {Level}: returning {Position}", level, -position - 1);
                 return -position - 1;
             }
 
@@ -219,8 +240,8 @@ namespace HzNS.Cmdr.Internal
         #region for match(), tryExtractingValue
 
         // ReSharper disable once SuggestBaseTypeForParameter
-        internal static (int ate, object? value) tryExtractingValue<T>(this T @this, IFlag flg, string[] args, int i,
-            string part, int pos)
+        internal static (int ate, object? value) tryExtractingValue<T>(
+            this T @this, IFlag flg, string[] args, int i, string part, int pos)
             where T : IDefaultMatchers
         {
             var ate = 0;
@@ -243,15 +264,18 @@ namespace HzNS.Cmdr.Internal
             {
                 case bool _:
                     val = flipChar ?? true;
+                    Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
                     break;
 
                 case string _:
                     ate = 1;
                     val = args[i + ate];
+                    Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
                     break;
 
                 case string[] _:
                     val = true;
+                    Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
                     break;
             }
 
@@ -289,7 +313,7 @@ namespace HzNS.Cmdr.Internal
 
             try
             {
-                @this.log.Debug("---> matched command: {cmd}, remains: {Args}", cmd, string.Join(",", remainArgs));
+                @this.logDebug("---> matched command: {cmd}, remains: {Args}", cmd, string.Join(",", remainArgs));
 
                 if (cmd is IAction action)
                     action.Invoke(@this, remainArgs);
@@ -325,7 +349,7 @@ namespace HzNS.Cmdr.Internal
             {
                 // ReSharper disable once UnusedVariable
                 var sw = Util.SwitchChar(longOpt);
-                @this.log.Debug("  ---> flag matched: {SW:l}{Fragment:l}", sw, fragment);
+                @this.logDebug("  ---> flag matched: {SW:l}{Fragment:l}", sw, fragment);
                 if (flag.OnSet != null)
                     flag.OnSet?.Invoke(@this, flag, flag.getDefaultValue(), flag.getDefaultValue());
                 else
@@ -344,12 +368,6 @@ namespace HzNS.Cmdr.Internal
                 flag.PostAction?.Invoke(@this, flag, remainArgs);
             }
         }
-
-        // ReSharper disable once FieldCanBeMadeReadOnly.Local
-        private static Action<IBaseWorker, IBaseOpt, object?, object?>? defaultOnSet = (w, flg, oldVal, newVal) =>
-        {
-            w.log.Debug("");
-        };
 
         // ReSharper disable once MemberCanBeMadeStatic.Local
         // ReSharper disable once UnusedParameter.Local
@@ -383,6 +401,13 @@ namespace HzNS.Cmdr.Internal
         }
 
         #endregion
+
+        // ReSharper disable once FieldCanBeMadeReadOnly.Local
+        private static Action<IBaseWorker, IBaseOpt, object?, object?>? defaultOnSet = (w, flg, oldVal, newVal) =>
+        {
+            if (EnableCmdrLogDebug)
+                Console.WriteLine($"--> onSet: {flg} changed ({oldVal} -> {newVal})");
+        };
 
         #region suggestions
 
@@ -427,13 +452,155 @@ namespace HzNS.Cmdr.Internal
 
         #endregion
 
-        #region debug helpers
+
+        #region debug helpers: errPrint
 
         // ReSharper disable once InconsistentNaming
         private static void errPrint(string message)
         {
             Console.Error.WriteLine(message);
         }
+
+        #endregion
+
+
+        #region debug helpers: logDebug
+
+        public static void logDebug<T>(this T @this, string messageTemplate)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.Debug(messageTemplate);
+            }
+        }
+
+        public static void logDebug<T, T0>(this T @this, string messageTemplate,
+            T0 property0)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.Debug(messageTemplate, property0);
+            }
+        }
+
+        public static void logDebug<T, T0, T1>(this T @this, string messageTemplate,
+            T0 property0, T1 property1)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.Debug(messageTemplate, property0, property1);
+            }
+        }
+
+        public static void logDebug<T, T0, T1, T2>(this T @this, string messageTemplate,
+            T0 property0, T1 property1, T2 property2)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.Debug(messageTemplate, property0, property1, property2);
+            }
+        }
+
+        public static void logDebug<T, T0, T1, T2, T3>(this T @this, string messageTemplate,
+            T0 property0, T1 property1, T2 property2, T3 property3)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.Debug(messageTemplate, property0, property1, property2, property3);
+            }
+        }
+
+        #endregion
+
+        #region debug helpers: logWarning
+
+        public static void logWarning<T>(this T @this, System.Exception exception, string messageTemplate)
+            where T : IDefaultMatchers
+        {
+            @this.log.Warning(exception, messageTemplate);
+        }
+
+        public static void logWarning<T, T0>(this T @this, System.Exception exception, string messageTemplate,
+            T0 property0)
+            where T : IDefaultMatchers
+        {
+            @this.log.Warning(exception, messageTemplate, property0);
+        }
+
+        public static void logWarning<T, T0, T1>(this T @this, System.Exception exception, string messageTemplate,
+            T0 property0, T1 property1)
+            where T : IDefaultMatchers
+        {
+            @this.log.Warning(exception, messageTemplate, property0, property1);
+        }
+
+        public static void logWarning<T, T0, T1, T2>(this T @this, System.Exception exception, string messageTemplate,
+            T0 property0, T1 property1, T2 property2)
+            where T : IDefaultMatchers
+        {
+            @this.log.Warning(exception, messageTemplate, property0, property1, property2);
+        }
+
+        public static void logWarning<T, T0, T1, T2, T3>(this T @this, System.Exception exception,
+            string messageTemplate,
+            T0 property0, T1 property1, T2 property2, T3 property3)
+            where T : IDefaultMatchers
+        {
+            @this.log.Warning(exception, messageTemplate, property0, property1, property2, property3);
+        }
+
+        #endregion
+
+        #region debug helpers: logError
+
+        public static void logError<T>(this T @this, System.Exception exception, string messageTemplate)
+            where T : IDefaultMatchers
+        {
+            @this.log.Error(exception, messageTemplate);
+        }
+
+        public static void logError<T, T0>(this T @this, System.Exception exception, string messageTemplate,
+            T0 property0)
+            where T : IDefaultMatchers
+        {
+            @this.log.Error(exception, messageTemplate, property0);
+        }
+
+        public static void logError<T, T0, T1>(this T @this, System.Exception exception, string messageTemplate,
+            T0 property0, T1 property1)
+            where T : IDefaultMatchers
+        {
+            @this.log.Error(exception, messageTemplate, property0, property1);
+        }
+
+        public static void logError<T, T0, T1, T2>(this T @this, System.Exception exception, string messageTemplate,
+            T0 property0, T1 property1, T2 property2)
+            where T : IDefaultMatchers
+        {
+            @this.log.Error(exception, messageTemplate, property0, property1, property2);
+        }
+
+        public static void logError<T, T0, T1, T2, T3>(this T @this, System.Exception exception, string messageTemplate,
+            T0 property0, T1 property1, T2 property2, T3 property3)
+            where T : IDefaultMatchers
+        {
+            @this.log.Error(exception, messageTemplate, property0, property1, property2, property3);
+        }
+
+        #endregion
+
+        #region debug helpers: EnableCmdrTrace
+
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public static bool EnableCmdrLogTrace { get; set; }
+
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public static bool EnableCmdrLogDebug { get; set; }
 
         #endregion
     }
