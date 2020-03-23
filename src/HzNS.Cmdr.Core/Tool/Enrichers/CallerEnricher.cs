@@ -19,6 +19,10 @@ namespace HzNS.Cmdr.Tool.Enrichers
         public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
         {
             var skip = 3;
+            var postSkip = 0;
+            if (logEvent.Properties.ContainsKey("SKIP_"))
+                postSkip = int.Parse(logEvent.Properties["SKIP_"].ToString());
+
             while (true)
             {
                 var stack = new StackFrame(skip, true);
@@ -29,8 +33,10 @@ namespace HzNS.Cmdr.Tool.Enrichers
                 }
 
                 var method = stack.GetMethod();
-                if (method != null && method.DeclaringType != null
-                                   && method.DeclaringType.Assembly != typeof(Serilog.Log).Assembly)
+                if (method != null
+                    && method.DeclaringType != null
+                    && method.DeclaringType.Assembly != typeof(Serilog.Log).Assembly
+                    && IsValid(method.Name))
                 {
                     var caller =
                         $"{method.DeclaringType.FullName}.{method.Name}({string.Join(", ", method.GetParameters().Select(pi => pi.ParameterType.FullName))})";
@@ -49,6 +55,17 @@ namespace HzNS.Cmdr.Tool.Enrichers
 
                 skip++;
             }
+        }
+
+        private static bool IsValid(string mn)
+        {
+            return mn switch
+            {
+                "logDebug" => false,
+                "logWarning" => false,
+                "logError" => false,
+                _ => true
+            };
         }
     }
 }
