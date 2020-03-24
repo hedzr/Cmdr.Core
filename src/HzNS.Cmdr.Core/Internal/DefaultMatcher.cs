@@ -356,7 +356,7 @@ namespace HzNS.Cmdr.Internal
         private static (int ate, object? val) valFrom(IReadOnlyList<string> args, int i, string remains)
         {
             var ate = 1;
-            object? val = null;
+            object? val;
             if (remains.Length > 0)
             {
                 const string sep = "=";

@@ -8,6 +8,18 @@ using System.Text.RegularExpressions;
 
 namespace HzNS.Cmdr.Tool.Ext
 {
+    public static class StringEx
+    {
+        [Pure]
+        // [PublicAPI]
+        // ReSharper disable once BuiltInTypeReferenceStyle
+        public static string Repeat(char ch, int repeatCount)
+        {
+            return new string(ch, repeatCount);
+        }
+    }
+
+
     public static class StringExtensions
     {
         public static string EatStart(this string @this, string part)
@@ -30,7 +42,7 @@ namespace HzNS.Cmdr.Tool.Ext
             return t;
         }
 
-        
+
         /// <summary>
         ///     A string extension method that repeats the string a specified number of times.
         /// </summary>
@@ -59,7 +71,7 @@ namespace HzNS.Cmdr.Tool.Ext
         [Pure]
         // [PublicAPI]
         // ReSharper disable once BuiltInTypeReferenceStyle
-        public static string Repeat(this System.String @this, char ch, int repeatCount)
+        public static string Repeat(this String @this, char ch, int repeatCount)
         {
             return new string(ch, repeatCount);
         }
@@ -70,8 +82,8 @@ namespace HzNS.Cmdr.Tool.Ext
         // {
         //     return null;// (IOrderedEnumerable<TSource>) new OrderedEnumerable<TSource, TKey>(source, keySelector, (IComparer<TKey>) null, false, (OrderedEnumerable<TSource>) null);
         // }
-        
-        
+
+
         /// <summary>Extracts a substring between specified delimiter strings.</summary>
         /// <example><code><![CDATA[
         /// var theExtractedString = "Hallo (Welt)!".Extract(between: "(", and: ")"); // Welt
@@ -80,28 +92,37 @@ namespace HzNS.Cmdr.Tool.Ext
         /// <param name="between">Left delimiter</param>
         /// <param name="and">Right delimiter</param>
         /// <returns>Extracted string</returns>
-        public static string Extract(this string value, string between, string and) {
-            if (value == null) {
+        public static string Extract(this string value, string between, string and)
+        {
+            if (value == null)
+            {
                 throw new ArgumentNullException(nameof(value));
             }
-            if (between == null) {
+
+            if (between == null)
+            {
                 throw new ArgumentNullException(nameof(between));
             }
-            if (and == null) {
+
+            if (and == null)
+            {
                 throw new ArgumentNullException(nameof(and));
             }
 
             int theLeftIndex = value.IndexOf(between, StringComparison.Ordinal);
-            if (theLeftIndex == -1) {
+            if (theLeftIndex == -1)
+            {
                 return string.Empty;
             }
 
             int theRightIndex = value.IndexOf(and, StringComparison.Ordinal);
-            if (theRightIndex == -1) {
+            if (theRightIndex == -1)
+            {
                 return value.Substring(theLeftIndex + 1);
             }
 
-            if (theRightIndex < theLeftIndex) {
+            if (theRightIndex < theLeftIndex)
+            {
                 return string.Empty;
             }
 
@@ -147,15 +168,18 @@ namespace HzNS.Cmdr.Tool.Ext
         /// <returns><b>true</b>, if the conversion succeeds; otherwise <b>false</b></returns>
         // ReSharper disable once MemberCanBePrivate.Global
         public static bool TryConvert(this string value, Type destinationType, CultureInfo cultureInfo,
-            out object? convertedValue) {
-            try {
+            out object? convertedValue)
+        {
+            try
+            {
                 var isNullableType = destinationType.IsGenericType &&
                                      destinationType.GetGenericTypeDefinition() == typeof(Nullable<>);
                 var theDestinationType =
                     isNullableType ? destinationType.GetGenericArguments().Single() : destinationType;
 
                 var theConverter = TypeDescriptor.GetConverter(theDestinationType);
-                if (!theConverter.CanConvertFrom(typeof(string))) {
+                if (!theConverter.CanConvertFrom(typeof(string)))
+                {
                     convertedValue = null;
                     return false;
                 }
@@ -164,7 +188,9 @@ namespace HzNS.Cmdr.Tool.Ext
                 convertedValue = isNullableType ? Activator.CreateInstance(destinationType, theValue) : theValue;
 
                 return true;
-            } catch (System.Exception) {
+            }
+            catch (System.Exception)
+            {
                 convertedValue = null;
                 return false;
             }
@@ -189,12 +215,16 @@ namespace HzNS.Cmdr.Tool.Ext
         /// <param name="convertedValue">Converted value result</param>
         /// <returns><b>true</b>, if the conversion succeeds; otherwise <b>false</b></returns>
         public static bool TryConvert<TDestinationType>(this string value, CultureInfo cultureInfo,
-            out TDestinationType convertedValue) {
+            out TDestinationType convertedValue)
+        {
             var theResult = TryConvert(value, typeof(TDestinationType), cultureInfo, out var theConvertedValue);
 
-            if (theResult) {
+            if (theResult)
+            {
                 convertedValue = (TDestinationType) theConvertedValue!;
-            } else {
+            }
+            else
+            {
                 convertedValue = default!;
             }
 

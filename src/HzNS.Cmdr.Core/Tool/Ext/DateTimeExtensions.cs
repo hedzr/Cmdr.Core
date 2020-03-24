@@ -201,9 +201,9 @@ namespace HzNS.Cmdr.Tool.Ext
             while (start < s.Length)
             {
                 var (ok, num, pos) = WantDigits(s, start);
-                if (!ok) return (ok, ts);
+                if (!ok) return (false, ts);
                 (ok, pos) = addTo(ref ts, num, s, start + pos);
-                if (!ok) return (ok, ts);
+                if (!ok) return (false, ts);
                 start = pos;
             }
 
