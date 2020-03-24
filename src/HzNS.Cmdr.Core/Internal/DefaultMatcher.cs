@@ -6,6 +6,7 @@ using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Internal.Base;
 using HzNS.Cmdr.Tool;
+using HzNS.Cmdr.Tool.Ext;
 
 namespace HzNS.Cmdr.Internal
 {
@@ -146,12 +147,12 @@ namespace HzNS.Cmdr.Internal
                     object? value;
                     (ate, value) = tryExtractingValue(@this, flg, args, i, fragment, part, pos);
 
-                    #if DEBUG
+#if DEBUG
                     if (value != null && ate > 0)
                     {
                         //
                     }
-                    #endif
+#endif
 
                     @this.logDebug("    ++ flag matched: {SW:l}{Part:l} {value}",
                         Util.SwitchChar(longOpt), part, value);
@@ -222,14 +223,15 @@ namespace HzNS.Cmdr.Internal
         #region for match(), tryExtractingValue
 
         // ReSharper disable once SuggestBaseTypeForParameter
+        [SuppressMessage("ReSharper", "IdentifierTypo")]
         internal static (int ate, object? value) tryExtractingValue<T>(
-            this T @this, 
+            this T @this,
             IFlag flg, string[] args, int i, string fragment,
             string part, int pos)
             where T : IDefaultMatchers
         {
             var ate = 0;
-            object? val = null;
+            object? val;
 
             var remains = fragment.Substring(pos + part.Length);
             bool? flipChar = null;
@@ -244,24 +246,124 @@ namespace HzNS.Cmdr.Internal
             }
 
             var dv = flg.getDefaultValue();
-            switch (dv)
+
+            if (dv is bool)
             {
-                case bool _:
-                    val = flipChar ?? true;
-                    Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
-                    break;
-
-                case string _:
-                    ate = 1;
-                    val = args[i + ate];
-                    Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
-                    break;
-
-                case string[] _:
-                    val = true;
-                    Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
-                    break;
+                val = flipChar ?? true;
+                Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                return (ate, val);
             }
+
+            (ate, val) = valFrom(args, i, remains);
+
+            // ReSharper disable once InvertIf
+            if (val is string v)
+            {
+                string[] sv;
+                switch (dv)
+                {
+                    case string _:
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                        break;
+                    case string[] _:
+                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), sv);
+                        val = sv;
+                        break;
+
+                    case int[] _:
+                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        var aiv = sv.Select(int.Parse);
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), aiv);
+                        val = aiv;
+                        break;
+                    case uint[] _:
+                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        var uaiv = sv.Select(uint.Parse);
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), uaiv);
+                        val = uaiv;
+
+                        break;
+                    case long[] _:
+                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        var alv = sv.Select(long.Parse);
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), alv);
+                        val = alv;
+                        break;
+                    case ulong[] _:
+                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        // ReSharper disable once IdentifierTypo
+                        var ualv = sv.Select(ulong.Parse);
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), ualv);
+                        val = ualv;
+                        break;
+                    case short[] _:
+                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        var asv = sv.Select(short.Parse);
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), asv);
+                        val = asv;
+                        break;
+                    case ushort[] _:
+                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        // ReSharper disable once IdentifierTypo
+                        var uasv = sv.Select(ushort.Parse);
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), uasv);
+                        val = uasv;
+                        break;
+
+                    // more built-in types
+
+                    case char _:
+                        if (!string.IsNullOrEmpty(v))
+                        {
+                            Cmdr.Instance.Store.Set(flg.ToDottedKey(), v[0]);
+                            val = v[0];
+                        }
+
+                        break;
+
+                    case float _:
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), float.Parse(v));
+                        // val=float.Parse(v);
+                        break;
+                    case double _:
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), double.Parse(v));
+                        break;
+                    case decimal _:
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), decimal.Parse(v));
+                        break;
+
+                    // time
+
+                    case TimeSpan _:
+                        var tsVal = TimeSpan.ParseExact(v, new[] {"c", "g", "G",}, null);
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), tsVal);
+                        break;
+                    case DateTime _:
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTime.Parse(v));
+                        break;
+                    case DateTimeOffset _:
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTimeOffset.Parse(v));
+                        break;
+                }
+            }
+
+            return (ate, val);
+        }
+
+        private static (int ate, object? val) valFrom(IReadOnlyList<string> args, int i, string remains)
+        {
+            var ate = 1;
+            object? val = null;
+            if (remains.Length > 0)
+            {
+                const string sep = "=";
+                remains = remains.EatStart(sep).Trim('\'', '"');
+                val = remains;
+                ate = 0;
+            }
+            else
+                val = args[i + ate];
 
             return (ate, val);
         }
