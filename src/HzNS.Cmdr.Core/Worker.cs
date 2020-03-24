@@ -153,8 +153,15 @@ namespace HzNS.Cmdr
             }
             finally
             {
-                var store = Cmdr.Instance.Store;
-                store.Dump();
+                var dump = Util.GetEnvValueBool("CMDR_DUMP");
+                if (dump)
+                {
+                    Console.WriteLine("\n\nDump the Store:");
+                    var store = Cmdr.Instance.Store;
+                    store.Dump();
+                    Console.WriteLine("\n\nDump the Flags:");
+                    DumpValues();
+                }
 
                 ColorifyEnabler.Reset();
             }
@@ -342,6 +349,28 @@ namespace HzNS.Cmdr
         }
 
         #endregion
+
+        private void DumpValues()
+        {
+            dumpValues(RootCommand);
+        }
+
+        private void dumpValues(ICommand parent)
+        {
+            walkFor(parent ?? _root,
+                commandsWatcher: (owner, Cmdr, level) => true,
+                flagsWatcher: (owner, flg, level) =>
+                {
+                    var s = Cmdr.Instance.Store;
+                    var slot = s.FindByKeys(flg.ToKeys());
+                    if (slot != null)
+                    {
+                        Console.WriteLine($"  {flg.ToDottedKey(),-45}=> [{flg.HitCount}] {slot.Values[flg.Long]}");
+                    }
+
+                    return true;
+                });
+        }
 
         // #region helpers for Run() - match
         //

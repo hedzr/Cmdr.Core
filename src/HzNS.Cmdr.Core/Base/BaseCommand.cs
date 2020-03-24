@@ -79,7 +79,7 @@ namespace HzNS.Cmdr.Base
             return this;
         }
 
-        public ICommand AddFlag<T>(IFlag<T> flag, bool required = true)
+        public ICommand AddFlag<T>(IFlag<T> flag, bool required = false)
         {
             flag.Owner = this;
 

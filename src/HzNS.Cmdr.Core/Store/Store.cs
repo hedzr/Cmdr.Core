@@ -40,7 +40,7 @@ namespace HzNS.Cmdr.Store
                 var a = parts.ToList();
                 a.Add(key);
                 var path = string.Join(".", a.ToArray());
-                tw.WriteLineAsync($"{path,-45}{val}");
+                tw.WriteLineAsync($"  {path,-45}{val}");
             }
         }
 
@@ -135,32 +135,54 @@ namespace HzNS.Cmdr.Store
 
         public bool HasKeys(IEnumerable<string> keys)
         {
-            return hasKeys(Prefixes.Concat(keys), Root);
+            var (ok, _) = hasKeys(Prefixes.Concat(keys), Root);
+            return ok;
         }
 
-        private bool hasKeys(IEnumerable<string> parts, Slot? node)
+        public bool HasDottedKey(string dottedKey)
+        {
+            var (ok, _) = hasKeys(Prefixes.Concat(dottedKey.Split('.')), Root);
+            return ok;
+        }
+
+        public Slot? FindByKeys(IEnumerable<string> keys)
+        {
+            var (_, s) = hasKeys(Prefixes.Concat(keys), Root);
+            return s;
+        }
+
+        public Slot? FindByDottedKey(string dottedKey)
+        {
+            var (_, s) = hasKeys(Prefixes.Concat(dottedKey.Split('.')), Root);
+            return s;
+        }
+
+
+        private (bool, Slot?) hasKeys(IEnumerable<string> parts, Slot? node)
         {
             var enumerable = parts as string[] ?? parts.ToArray();
-            var path = string.Join(',', enumerable);
-            if (_fastMap.ContainsKey(path)) return true;
+            var path = string.Join('.', enumerable);
+            if (_fastMap.ContainsKey(path)) return (true, _fastMap[path]);
 
             while (node != null)
             {
-                if (enumerable.Length < 1) return false;
+                if (enumerable.Length < 1) return (false, null);
                 if (enumerable.Length == 1)
                 {
                     var key = enumerable[0];
                     var yes = node.Values.ContainsKey(key);
+                    if (!yes)
+                        return (false, null);
                     // if (_fastMap.ContainsKey(path)) ;
                     _fastMap.Add(path, node);
-                    return yes;
+                    return (yes, node);
                 }
 
                 var part = enumerable[0];
                 enumerable = enumerable.Skip(1).ToArray();
                 if (!node.Children.ContainsKey(part))
                 {
-                    return false;
+                    return (false, null);
                 }
 
                 node = node.Children[part];
@@ -184,12 +206,7 @@ namespace HzNS.Cmdr.Store
             //     tw.WriteLineAsync($"{path,-45}{val}");
             // }
 
-            return false;
-        }
-
-        public bool HasDottedKey(string dottedKey)
-        {
-            return hasKeys(Prefixes.Concat(dottedKey.Split('.')), Root);
+            return (false, null);
         }
 
 
