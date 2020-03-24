@@ -17,6 +17,8 @@ namespace HzNS.Cmdr.Store
 
         public string[] Prefixes { get; set; } = {"app"};
 
+        private readonly SortedDictionary<string, Slot> _fastMap = new SortedDictionary<string, Slot>();
+
         public void Dump()
         {
             dumpTo(Console.Out, Root);
@@ -130,6 +132,66 @@ namespace HzNS.Cmdr.Store
         {
             //
         }
+
+        public bool HasKeys(IEnumerable<string> keys)
+        {
+            return hasKeys(Prefixes.Concat(keys), Root);
+        }
+
+        private bool hasKeys(IEnumerable<string> parts, Slot? node)
+        {
+            var enumerable = parts as string[] ?? parts.ToArray();
+            var path = string.Join(',', enumerable);
+            if (_fastMap.ContainsKey(path)) return true;
+
+            while (node != null)
+            {
+                if (enumerable.Length < 1) return false;
+                if (enumerable.Length == 1)
+                {
+                    var key = enumerable[0];
+                    var yes = node.Values.ContainsKey(key);
+                    // if (_fastMap.ContainsKey(path)) ;
+                    _fastMap.Add(path, node);
+                    return yes;
+                }
+
+                var part = enumerable[0];
+                enumerable = enumerable.Skip(1).ToArray();
+                if (!node.Children.ContainsKey(part))
+                {
+                    return false;
+                }
+
+                node = node.Children[part];
+            }
+
+
+            // if (node == null) return false;
+            //
+            // foreach (var (key, slot) in node.Children)
+            // {
+            //     var a = parts.ToList();
+            //     a.Add(key);
+            //     dumpTo(tw, slot, level + 1, a.ToArray());
+            // }
+            //
+            // foreach (var (key, val) in node.Values)
+            // {
+            //     var a = parts.ToList();
+            //     a.Add(key);
+            //     var path = string.Join(".", a.ToArray());
+            //     tw.WriteLineAsync($"{path,-45}{val}");
+            // }
+
+            return false;
+        }
+
+        public bool HasDottedKey(string dottedKey)
+        {
+            return hasKeys(Prefixes.Concat(dottedKey.Split('.')), Root);
+        }
+
 
         #region Singleton Pattern
 
