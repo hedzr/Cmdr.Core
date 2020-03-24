@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -57,55 +58,30 @@ namespace HzNS.Cmdr.Tool.Ext
         //     return "";
         // }
 
+        public static DateTime ParseDateTime(string s)
+        {
+            return DateTimeEx.Parse(s);
+        }
+
+        public static DateTimeOffset ParseDateTimeOffset(string s)
+        {
+            return DateTimeOffsetEx.Parse(s);
+        }
+
+        
+        //
+        
+        
         public static string ToRelativeDateString(this DateTime dt)
         {
             var ts = new TimeSpan(DateTime.Now.Ticks - dt.Ticks);
-            return impl(ts);
+            return TimeSpanEx.impl(ts);
         }
 
         public static string ToUtcRelativeDateString(this DateTime dt)
         {
             var ts = new TimeSpan(DateTime.UtcNow.Ticks - dt.Ticks);
-            return impl(ts);
-        }
-
-        // ReSharper disable once InconsistentNaming
-        private static string impl(TimeSpan ts)
-        {
-            var delta = (int) Math.Floor(Math.Abs(ts.TotalSeconds));
-
-            if (delta < 60)
-                return ts.Seconds == 1 ? "one second ago" : ts.Seconds + " seconds ago";
-
-            if (delta < 120)
-                return "a minute ago";
-
-            if (delta < 2700) // 45 * 60
-                return ts.Minutes + " minutes ago";
-
-            if (delta < 5400) // 90 * 60
-                return "an hour ago";
-
-            if (delta < 2 * 60 * 60)
-                return "2 hours ago";
-
-            if (delta < 86400) // 24 * 60 * 60
-                return ts.Hours + " hours ago";
-
-            if (delta < 172800) // 48 * 60 * 60
-                return "yesterday";
-
-            if (delta < 2592000) // 30 * 24 * 60 * 60
-                return ts.Days + " days ago";
-
-            if (delta < 31104000) // 12 * 30 * 24 * 60 * 60
-            {
-                var months = Convert.ToInt32(Math.Floor((double) ts.Days / 30));
-                return months <= 1 ? "one month ago" : months + " months ago";
-            }
-
-            var years = Convert.ToInt32(Math.Floor((double) ts.Days / 365));
-            return years <= 1 ? "one year ago" : years + " years ago";
+            return TimeSpanEx.impl(ts);
         }
 
 
@@ -114,10 +90,71 @@ namespace HzNS.Cmdr.Tool.Ext
 
         public static string ToRelativeDateString(this TimeSpan ts)
         {
-            return impl(ts);
+            return TimeSpanEx.impl(ts);
         }
 
+
         public static string ToMoment(this TimeSpan ts)
+        {
+            return TimeSpanEx.ToMoment(ts);
+        }
+
+        public static TimeSpan FromMoment(this TimeSpan ts, string s)
+        {
+            return TimeSpanEx.FromMoment(s);
+        }
+    }
+
+
+    public readonly struct DateTimeEx
+    {
+        public static DateTime Parse(string s)
+        {
+            DateTime dt;
+            var ok = DateTime.TryParse(s, null, DateTimeStyles.AdjustToUniversal, out dt);
+            if (ok) return dt;
+            
+            return DateTime.ParseExact(s, new[]
+            {
+                "d", // 2009-06-15T13:45:30 -> 6/15/2009 (en-US)
+                "D", // 2009-06-15T13:45:30 -> Monday, June 15, 2009 (en-US)
+                "s",
+                "c",
+                "g",
+                "G",
+            }, null);
+        }
+    }
+    
+
+    public readonly struct DateTimeOffsetEx
+    {
+        public static DateTimeOffset Parse(string s)
+        {
+            return DateTimeOffset.ParseExact(s, new[] {"c", "g", "G",}, null);
+        }
+    }
+
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    public readonly struct TimeSpanEx
+    {
+        
+        public static TimeSpan Parse(string s)
+        {
+            var (ok, ts) = ParseMomentImpl(TimeSpan.Zero, s);
+            if (ok) return ts;
+            
+            return TimeSpan.ParseExact(s, new[]
+            {
+                "c", "g", "G",
+            }, null);
+        }
+
+
+        public static string ToMoment(TimeSpan ts)
         {
             var sb = new StringBuilder();
 
@@ -135,7 +172,8 @@ namespace HzNS.Cmdr.Tool.Ext
             return sb.ToString();
         }
 
-        public static TimeSpan FromMoment(this TimeSpan ts, string s)
+        // ReSharper disable once MemberCanBePrivate.Global
+        public static TimeSpan ParseMoment(TimeSpan ts, string s)
         {
             var start = 0;
             while (start < s.Length)
@@ -148,6 +186,28 @@ namespace HzNS.Cmdr.Tool.Ext
             }
 
             return ts;
+        }
+
+        public static TimeSpan FromMoment(string s)
+        {
+            var ts = TimeSpan.Zero;
+            ts = ParseMoment(ts, s);
+            return ts;
+        }
+        
+        public static (bool ok, TimeSpan) ParseMomentImpl(TimeSpan ts, string s)
+        {
+            var start = 0;
+            while (start < s.Length)
+            {
+                var (ok, num, pos) = WantDigits(s, start);
+                if (!ok) return (ok, ts);
+                (ok, pos) = addTo(ref ts, num, s, start + pos);
+                if (!ok) return (ok, ts);
+                start = pos;
+            }
+
+            return (true, ts);
         }
 
         // ReSharper disable once InconsistentNaming
@@ -188,6 +248,53 @@ namespace HzNS.Cmdr.Tool.Ext
             var m = Regex.Match(s.Substring(start), DigitPattern);
             return m.Success ? (true, int.Parse(m.Groups[1].Value), m.Groups[1].Value.Length) : (false, 0, 0);
         }
+
+
+        public static string ToRelativeDateString(TimeSpan ts)
+        {
+            return impl(ts);
+        }
+
+
+        // ReSharper disable once InconsistentNaming
+        internal static string impl(TimeSpan ts)
+        {
+            var delta = (int) Math.Floor(Math.Abs(ts.TotalSeconds));
+
+            if (delta < 60)
+                return ts.Seconds == 1 ? "one second ago" : ts.Seconds + " seconds ago";
+
+            if (delta < 120)
+                return "a minute ago";
+
+            if (delta < 2700) // 45 * 60
+                return ts.Minutes + " minutes ago";
+
+            if (delta < 5400) // 90 * 60
+                return "an hour ago";
+
+            if (delta < 2 * 60 * 60)
+                return "2 hours ago";
+
+            if (delta < 86400) // 24 * 60 * 60
+                return ts.Hours + " hours ago";
+
+            if (delta < 172800) // 48 * 60 * 60
+                return "yesterday";
+
+            if (delta < 2592000) // 30 * 24 * 60 * 60
+                return ts.Days + " days ago";
+
+            if (delta < 31104000) // 12 * 30 * 24 * 60 * 60
+            {
+                var months = Convert.ToInt32(Math.Floor((double) ts.Days / 30));
+                return months <= 1 ? "one month ago" : months + " months ago";
+            }
+
+            var years = Convert.ToInt32(Math.Floor((double) ts.Days / 365));
+            return years <= 1 ? "one year ago" : years + " years ago";
+        }
+
 
         private const string DigitPattern = @"^(\d+)";
     }

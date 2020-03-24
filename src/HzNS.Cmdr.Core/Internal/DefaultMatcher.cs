@@ -338,14 +338,14 @@ namespace HzNS.Cmdr.Internal
                     case TimeSpan _:
                         var tsVal = flg.UseMomentTimeFormat
                             ? new TimeSpan().FromMoment(v)
-                            : TimeSpan.ParseExact(v, new[] {"c", "g", "G",}, null);
+                            : TimeSpanEx.Parse(v);
                         Cmdr.Instance.Store.Set(flg.ToDottedKey(), tsVal);
                         break;
                     case DateTime _:
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTime.Parse(v));
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTimeEx.Parse(v));
                         break;
                     case DateTimeOffset _:
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTimeOffset.Parse(v));
+                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTimeOffsetEx.Parse(v));
                         break;
                 }
             }
