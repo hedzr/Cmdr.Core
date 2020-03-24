@@ -16,6 +16,7 @@
 
 cmdr has rich features:
 
+- [x] POSIX Compatible (Unix [*getopt*(3)](http://man7.org/linux/man-pages/man3/getopt.3.html))
 - [x] builds multi-level command and sub-commands
 - [x] builds short, long and alias options with kinds of data types
 - [x] defines commands and options via fluent api style
@@ -32,14 +33,111 @@ cmdr has rich features:
   - [x] Options with short names (`-h`)
   - [x] Options with long names (`--help`)
   - [x] Options with aliases (`--helpme`, `--usage`, `--info`)
-  - [ ] Options with and without arguments (bool v.s. other type)
-  - [ ] Options with optional arguments and default values
+  - [x] Options with and without arguments (bool v.s. other type)
+  - [x] Options with optional arguments and default values
   - [x] Multiple option groups each containing a set of options
-  - [ ] Supports the compat short options `-aux` == `-a -u -x`
-  - [ ] Supports namespaces for (nested) option groups
-    _see also: option store and hirarchy data_
+  - [x] Supports the compat short options `-aux` == `-a -u -x`, `-vvv` == `-v -v -v` (HitCount=3)
+  - [x] Supports namespaces for (nested) option groups
+    _see also: option store and hierarchy data_
 
-- Automatic help screen generation (*Generates and prints well-formatted help message*)
+- [x] Supports for `-D+`, `-D-` to enable/disable a bool option.
+
+- [x] Automatic help screen generation (*Generates and prints well-formatted help message*)
+
+- [x] Sortable commands and options/flags. Or sorted by alphabetic order.
+
+- [x] Predefined commands and flags:
+
+  - Help: `-h`, `-?`, `--help`, `--info`, `--usage`, `--helpme`, ...
+  - Version & Build Info: `--version`/`--ver`/`-V`, `--build-info`/`-#`
+    - Simulating version at runtime with `—version-sim 1.9.1`
+    - [ ] generally, `conf.AppName` and `conf.Version` are originally.
+    - `~~tree`: list all commands and sub-commands.
+    - `--config <location>`: specify the location of the root config file.
+  - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
+  - [ ] Generate Commands:
+    - [ ] `generate shell`: `—bash`/`—zsh`(*todo*)/`--auto`
+    - [ ] `generate manual`:  man 1 ready.
+    - [ ] `generate doc`: markdown ready.
+  - `cmdr` Specials:
+    - [ ] `--no-env-overrides`, and `--strict-mode`
+    - [ ] `--no-color`: print the plain text to console without ANSI colors.
+
+- [x] Groupable commands and options/flags.
+
+  Sortable group name with `[0-9A-Za-z]+\..+` format, eg:
+
+  - `1001.c++`, `1100.golang`, `1200.java`, …;
+  - `abcd.c++`, `b999.golang`, `zzzz.java`, …;
+
+- [x] Supports for unlimited multi-level sub-commands.
+  
+- [ ] Overrides by environment variables.
+
+  *priority level:* `defaultValue -> config-file -> env-var -> command-line opts`
+
+- [ ] `Option Store` - Unify option value extraction:
+
+  - [ ] `cmdr.Get(key)`, `cmdr.GetBool(key)`, `cmdr.GetInt(key)`, `cmdr.GetString(key)`, `cmdr.GetStringSlice(key, defaultValues...)` and `cmdr.GetIntSlice(key, defaultValues...)`, `cmdr.GetDuration(key)` for Option value extractions.
+
+    - bool
+    - int, int64, uint, uint64, float32, float64
+      ```bash
+      $ app -t 1    #  float: 1.1, 1e10, hex: 0x9d, oct: 0700, bin: 0b00010010
+      ```
+    - string
+    - string slice, int slice (comma-separated)
+      ```bash
+      $ app -t apple,banana      # => []string{"apple", "banana"}
+      $ app -t apple -t banana   # => []string{"apple", "banana"}
+      ```
+    - time duration (1ns, 1ms, 1s, 1m, 1h, 1d, ...)
+      ```bash
+      $ app -t 1ns -t 1ms -t 1s -t 1m -t 1h -t 1d
+      ```
+    - ~~*todo: float, time, duration, int slice, …, all primitive go types*~~
+    - map
+    - struct: `cmdr.GetSectionFrom(sectionKeyPath, &holderStruct)`
+    
+  - `cmdr.Set(key, value)`, `cmdr.SerNx(key, value)`
+
+    - `Set()` set value by key without RxxtPrefix, eg: `cmdr.Set("debug", true)` for `--debug`.
+    - `SetNx()` set value by exact key. so: `cmdr.SetNx("app.debug", true)` for `--debug`.
+
+  - Fast Guide for `Get`, `GetP` and `GetR`:
+
+    - `cmdr.GetP(prefix, key)`, `cmdr.GetBoolP(prefix, key)`, ….
+    - `cmdr.GetR(key)`, `cmdr.GetBoolR(key)`, …, `cmdr.GetMapR(key)`
+    - `cmdr.GetRP(prefix, key)`, `cmdr.GetBoolRP(prefix, key)`, ….
+  
+    As a fact, `cmdr.Get("app.server.port")` == `cmdr.GetP("app.server", "port")` == `cmdr.GetR("server.port")`
+	(*if cmdr.RxxtPrefix == ["app"]*); so:
+
+    ```go
+    cmdr.Set("server.port", 7100)
+    assert cmdr.GetR("server.port") == 7100
+    assert cmdr.Get("app.server.port") == 7100
+    ```
+    
+    In most cases, **GetXxxR()** are recommended.
+    
+    While extracting string value, the evnvar will be expanded automatically but raw version `GetStringNoExpandXXX()` available since v1.6.7. For example:
+    
+    ```go
+    fmt.Println(cmdr.GetStringNoExpandR("kk"))  // = $HOME/Downloads
+    fmt.Println(cmdr.GetStringR("kk"))          // = /home/ubuntu/Downloads
+    ```
+
+- cmdr Options Store
+
+  internal `rxxtOptions`
+
+- Walkable
+
+  - Customizable `Painter` interface to loop *each* command and flag.
+  - Walks on all commands with `WalkAllCommands(walker)`.
+
+---
 
 - Strict Mode (`-`)
 
@@ -56,8 +154,6 @@ cmdr has rich features:
           strict-mode: true
         ```
 
-- Supports for unlimited multi-level sub-commands.
-
 - Supports `-I/usr/include -I=/usr/include` `-I /usr/include` option argument specifications
   
   Automatically allows those formats (applied to long option too):
@@ -65,8 +161,6 @@ cmdr has rich features:
   - `-I file`, `-Ifile`, and `-I=files`
   - `-I 'file'`, `-I'file'`, and `-I='files'`
   - `-I "file"`, `-I"file"`, and `-I="files"`
-
-- Supports for `-D+`, `-D-` to enable/disable a bool option.
 
 - Supports for **PassThrough** by `--`. (*Passing remaining command line arguments after -- (optional)*)
 
@@ -91,34 +185,8 @@ cmdr has rich features:
 
   since v1.1.3, using [Jaro-Winkler distance](https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance) instead of soundex.
 
-- Groupable commands and options/flags.
-
-  Sortable group name with `[0-9A-Za-z]+\..+` format, eg:
-
-  - `1001.c++`, `1100.golang`, `1200.java`, …;
-  - `abcd.c++`, `b999.golang`, `zzzz.java`, …;
-
-- Sortable commands and options/flags. Or sorted by alphabetic order.
-
-- Predefined commands and flags:
-
-  - Help: `-h`, `-?`, `--help`, `--info`, `--usage`, `--helpme`, ...
-  - Version & Build Info: `--version`/`--ver`/`-V`, `--build-info`/`-#`
-    - Simulating version at runtime with `—version-sim 1.9.1`
-    - generally, `conf.AppName` and `conf.Version` are originally.
-    - `~~tree`: list all commands and sub-commands.
-    - `--config <location>`: specify the location of the root config file.
-  - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
-  - Generate Commands:
-    - `generate shell`: `—bash`/`—zsh`(*todo*)/`--auto`
-    - `generate manual`:  man 1 ready.
-    - `generate doc`: markdown ready.
-  - `cmdr` Specials:
-    - `--no-env-overrides`, and `--strict-mode`
-    - `--no-color`: print the plain text to console without ANSI colors.
-
 - Generators
- 
+
   - *Todo: ~~manual generator~~, and ~~markdown~~/docx/pdf generators.*
 
   - Man Page generator: `bin/demo generate man`
@@ -179,71 +247,6 @@ cmdr has rich features:
     - TOML
   
   - `cmdr.Exec(root, cmdr.WithNoLoadConfigFiles(false))`: disable loading external config files.
-  
-- Overrides by environment variables.
-
-  *priority level:* `defaultValue -> config-file -> env-var -> command-line opts`
-
-- `Option Store` - Unify option value extraction:
-
-  - `cmdr.Get(key)`, `cmdr.GetBool(key)`, `cmdr.GetInt(key)`, `cmdr.GetString(key)`, `cmdr.GetStringSlice(key, defaultValues...)` and `cmdr.GetIntSlice(key, defaultValues...)`, `cmdr.GetDuration(key)` for Option value extractions.
-
-    - bool
-    - int, int64, uint, uint64, float32, float64
-      ```bash
-      $ app -t 1    #  float: 1.1, 1e10, hex: 0x9d, oct: 0700, bin: 0b00010010
-      ```
-    - string
-    - string slice, int slice (comma-separated)
-      ```bash
-      $ app -t apple,banana      # => []string{"apple", "banana"}
-      $ app -t apple -t banana   # => []string{"apple", "banana"}
-      ```
-    - time duration (1ns, 1ms, 1s, 1m, 1h, 1d, ...)
-      ```bash
-      $ app -t 1ns -t 1ms -t 1s -t 1m -t 1h -t 1d
-      ```
-    - ~~*todo: float, time, duration, int slice, …, all primitive go types*~~
-    - map
-    - struct: `cmdr.GetSectionFrom(sectionKeyPath, &holderStruct)`
-    
-  - `cmdr.Set(key, value)`, `cmdr.SerNx(key, value)`
-
-    - `Set()` set value by key without RxxtPrefix, eg: `cmdr.Set("debug", true)` for `--debug`.
-    - `SetNx()` set value by exact key. so: `cmdr.SetNx("app.debug", true)` for `--debug`.
-
-  - Fast Guide for `Get`, `GetP` and `GetR`:
-
-    - `cmdr.GetP(prefix, key)`, `cmdr.GetBoolP(prefix, key)`, ….
-    - `cmdr.GetR(key)`, `cmdr.GetBoolR(key)`, …, `cmdr.GetMapR(key)`
-    - `cmdr.GetRP(prefix, key)`, `cmdr.GetBoolRP(prefix, key)`, ….
-  
-    As a fact, `cmdr.Get("app.server.port")` == `cmdr.GetP("app.server", "port")` == `cmdr.GetR("server.port")`
-	(*if cmdr.RxxtPrefix == ["app"]*); so:
-
-    ```go
-    cmdr.Set("server.port", 7100)
-    assert cmdr.GetR("server.port") == 7100
-    assert cmdr.Get("app.server.port") == 7100
-    ```
-    
-    In most cases, **GetXxxR()** are recommended.
-    
-    While extracting string value, the evnvar will be expanded automatically but raw version `GetStringNoExpandXXX()` available since v1.6.7. For example:
-    
-    ```go
-    fmt.Println(cmdr.GetStringNoExpandR("kk"))  // = $HOME/Downloads
-    fmt.Println(cmdr.GetStringR("kk"))          // = /home/ubuntu/Downloads
-    ``` 
-
-- cmdr Options Store
-
-  internal `rxxtOptions`
-
-- Walkable
-
-  - Customizable `Painter` interface to loop *each* command and flag.
-  - Walks on all commands with `WalkAllCommands(walker)`.
 
 - Daemon (*Linux Only*)
 
@@ -308,7 +311,7 @@ cmdr has rich features:
     ```
 
    `~~tree` is a special option/flag like a command.
-  
+
 
 - More Advanced features
 
