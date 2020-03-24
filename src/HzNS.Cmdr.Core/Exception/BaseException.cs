@@ -80,7 +80,7 @@ namespace HzNS.Cmdr.Exception
 
         public override string ToString()
         {
-            return $"Missed flag '{Util.SwitchChar(true)}{Flag.Long}'. Context: \"{Flag.Owner.backtraceTitles}\".";
+            return $"The REQUIRED flag '{Util.SwitchChar(true)}{Flag.Long}' missed. Context: \"{Flag.Owner?.backtraceTitles}\".";
         }
     }
     

@@ -449,7 +449,7 @@ namespace HzNS.Cmdr.Internal
             {
                 // var ready = true;
                 foreach (var f in (o?.RequiredFlags).Where(f =>
-                    f.getDefaultValue() == null && !Cmdr.Instance.Store.HasKeys(f.ToKeys())))
+                    f.getDefaultValue() != null && !Cmdr.Instance.Store.HasKeys(f.ToKeys())))
                 {
                     // ready = false;
                     throw new MissedRequiredFlagException(f);
