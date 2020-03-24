@@ -46,8 +46,9 @@ namespace HzNS.Cmdr.Internal
             {
                 bool ok;
                 var arg = args[i];
-                var isOpt = arg.StartsWith("-");
+                var isOpt = arg[0] == '-' || arg[0] == '/';
                 var longOpt = arg.StartsWith("--");
+                var hiddenOpt = arg.StartsWith("~~");
 
                 @this.logDebug("    -> arg {Index}: {Argument}", i, arg);
                 if (!isOpt)
@@ -134,6 +135,7 @@ namespace HzNS.Cmdr.Internal
 
                 var decidedLen = 0;
                 IFlag? decidedFlg = null;
+                object? value = null, oldValue = null;
 
                 #region backtraceAllParentFlags
 
@@ -144,8 +146,7 @@ namespace HzNS.Cmdr.Internal
                     if (!ok) continue;
 
                     // a flag matched ok, try extracting its value from commandline arguments
-                    object? value;
-                    (ate, value) = tryExtractingValue(@this, flg, args, i, fragment, part, pos);
+                    (ate, value, oldValue) = tryExtractingValue(@this, flg, args, i, fragment, part, pos);
 
 #if DEBUG
                     if (value != null && ate > 0)
@@ -186,7 +187,7 @@ namespace HzNS.Cmdr.Internal
                     // matched
 
                     @this.ParsedFlag = decidedFlg;
-                    onFlagMatched(@this, args, i + 1, part, longOpt, decidedFlg);
+                    onFlagMatched(@this, args, i + 1, part, longOpt, decidedFlg, oldValue, value);
                     matchedPosition = i + 1;
                 }
 
@@ -224,14 +225,14 @@ namespace HzNS.Cmdr.Internal
 
         // ReSharper disable once SuggestBaseTypeForParameter
         [SuppressMessage("ReSharper", "IdentifierTypo")]
-        internal static (int ate, object? value) tryExtractingValue<T>(
-            this T @this,
-            IFlag flg, string[] args, int i, string fragment,
+        internal static (int ate, object? value, object? old) tryExtractingValue<T>(
+            this T @this, IFlag flg,
+            string[] args, int i, string fragment,
             string part, int pos)
             where T : IDefaultMatchers
         {
             var ate = 0;
-            object? val;
+            object? val, old = null;
 
             var remains = fragment.Substring(pos + part.Length);
             bool? flipChar = null;
@@ -250,8 +251,8 @@ namespace HzNS.Cmdr.Internal
             if (dv is bool)
             {
                 val = flipChar ?? true;
-                Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
-                return (ate, val);
+                old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                return (ate, val, old);
             }
 
             (ate, val) = valFrom(args, i, remains);
@@ -263,51 +264,51 @@ namespace HzNS.Cmdr.Internal
                 switch (dv)
                 {
                     case string _:
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
                         break;
                     case string[] _:
                         sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), sv);
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), sv);
                         val = sv;
                         break;
 
                     case int[] _:
                         sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
                         var aiv = sv.Select(int.Parse);
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), aiv);
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), aiv);
                         val = aiv;
                         break;
                     case uint[] _:
                         sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
                         var uaiv = sv.Select(uint.Parse);
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), uaiv);
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), uaiv);
                         val = uaiv;
 
                         break;
                     case long[] _:
                         sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
                         var alv = sv.Select(long.Parse);
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), alv);
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), alv);
                         val = alv;
                         break;
                     case ulong[] _:
                         sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
                         // ReSharper disable once IdentifierTypo
                         var ualv = sv.Select(ulong.Parse);
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), ualv);
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), ualv);
                         val = ualv;
                         break;
                     case short[] _:
                         sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
                         var asv = sv.Select(short.Parse);
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), asv);
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), asv);
                         val = asv;
                         break;
                     case ushort[] _:
                         sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
                         // ReSharper disable once IdentifierTypo
                         var uasv = sv.Select(ushort.Parse);
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), uasv);
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), uasv);
                         val = uasv;
                         break;
 
@@ -316,21 +317,21 @@ namespace HzNS.Cmdr.Internal
                     case char _:
                         if (!string.IsNullOrEmpty(v))
                         {
-                            Cmdr.Instance.Store.Set(flg.ToDottedKey(), v[0]);
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), v[0]);
                             val = v[0];
                         }
 
                         break;
 
                     case float _:
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), float.Parse(v));
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), float.Parse(v));
                         // val=float.Parse(v);
                         break;
                     case double _:
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), double.Parse(v));
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), double.Parse(v));
                         break;
                     case decimal _:
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), decimal.Parse(v));
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), decimal.Parse(v));
                         break;
 
                     // time
@@ -339,13 +340,13 @@ namespace HzNS.Cmdr.Internal
                         var tsVal = flg.UseMomentTimeFormat
                             ? new TimeSpan().FromMoment(v)
                             : TimeSpanEx.Parse(v);
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), tsVal);
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), tsVal);
                         break;
                     case DateTime _:
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTimeEx.Parse(v));
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTimeEx.Parse(v));
                         break;
                     case DateTimeOffset _:
-                        Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTimeOffsetEx.Parse(v));
+                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTimeOffsetEx.Parse(v));
                         break;
 
                     // fallback converter
@@ -355,14 +356,14 @@ namespace HzNS.Cmdr.Internal
                         {
                             @this.logDebug("unacceptable default value ({dv}) datatype: {type}", dv, dv.GetType());
                             val = Convert.ChangeType(v, dv.GetType()); // typeof(int)
-                            Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
                         }
 
                         break;
                 }
             }
 
-            return (ate, val);
+            return (ate, val, old);
         }
 
         private static (int ate, object? val) valFrom(IReadOnlyList<string> args, int i, string remains)
@@ -371,8 +372,8 @@ namespace HzNS.Cmdr.Internal
             object? val;
             if (remains.Length > 0)
             {
-                const string sep = "=";
-                remains = remains.EatStart(sep).Trim('\'', '"');
+                // const string sep = "=";
+                remains = remains.EatStart("=", ":").Trim('\'', '"');
                 val = remains;
                 ate = 0;
             }
@@ -449,7 +450,8 @@ namespace HzNS.Cmdr.Internal
             {
                 // var ready = true;
                 foreach (var f in (o?.RequiredFlags).Where(f =>
-                    f.getDefaultValue() != null && !Cmdr.Instance.Store.HasKeys(f.ToKeys())))
+                    // f.getDefaultValue() != null && 
+                    !Cmdr.Instance.Store.HasKeys(f.ToKeys())))
                 {
                     // ready = false;
                     throw new MissedRequiredFlagException(f);
@@ -463,7 +465,7 @@ namespace HzNS.Cmdr.Internal
         // ReSharper disable once MemberCanBeMadeStatic.Local
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
         private static void onFlagMatched<T>(this T @this, IEnumerable<string> args, int position, string fragment,
-            in bool longOpt, IFlag flag)
+            in bool longOpt, IFlag flag, object? oldValue, object? value)
             where T : IDefaultMatchers
         {
             var remainArgs = args.Where((it, idx) => idx >= position).ToArray();
@@ -482,12 +484,15 @@ namespace HzNS.Cmdr.Internal
                     f.HitTitle = fragment;
                 }
 
-                if (flag.OnSet != null)
-                    flag.OnSet?.Invoke(@this, flag, flag.getDefaultValue(), flag.getDefaultValue());
-                else
-                    defaultOnSet?.Invoke(@this, flag, flag.getDefaultValue(), flag.getDefaultValue());
+                if (value?.GetType().IsArray == true)
+                    value = Cmdr.Instance.Store.Get(flag.ToDottedKey());
 
-                flag.Owner?.FindRoot()?.OnSet?.Invoke(@this, flag, flag.getDefaultValue(), flag.getDefaultValue());
+                if (flag.OnSet != null)
+                    flag.OnSet?.Invoke(@this, flag, oldValue, value);
+                else
+                    defaultOnSet?.Invoke(@this, flag, oldValue, value);
+
+                flag.Owner?.FindRoot()?.OnSet?.Invoke(@this, flag, oldValue, value);
 
                 // ReSharper disable once SuspiciousTypeConversion.Global
                 // ReSharper disable once UseNegatedPatternMatching

@@ -12,6 +12,7 @@ using HzNS.Cmdr.Internal;
 using HzNS.Cmdr.Internal.Base;
 using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Enrichers;
+using HzNS.Cmdr.Tool.Ext;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -362,10 +363,14 @@ namespace HzNS.Cmdr
                 flagsWatcher: (owner, flg, level) =>
                 {
                     var s = Cmdr.Instance.Store;
-                    var slot = s.FindByKeys(flg.ToKeys());
+                    var (slot,vk) = s.FindByKeys(flg.ToKeys());
+                    // ReSharper disable once InvertIf
                     if (slot != null)
                     {
-                        Console.WriteLine($"  {flg.ToDottedKey(),-45}=> [{flg.HitCount}] {slot.Values[flg.Long]}");
+                        var v = slot.Values[vk];
+                        // if (v?.GetType().IsArray == true)
+                        //     v = "[" + string.Join(",", v as object[] ?? throw new CmdrException()) + "]";
+                        Console.WriteLine($"  {flg.ToDottedKey(),-45}=> [{flg.HitCount}] {v?.ToStringEx()}");
                     }
 
                     return true;

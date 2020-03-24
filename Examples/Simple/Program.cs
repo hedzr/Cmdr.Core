@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
+using HzNS.Cmdr.Tool.Ext;
 
 namespace Simple
 {
@@ -64,7 +65,7 @@ namespace Simple
 
                             root.OnSet = (worker, flag, oldValue, newValue) =>
                             {
-                                Console.WriteLine($"--> [root.onSet] {flag} set: {oldValue} -> {newValue}");
+                                Console.WriteLine($"--> [root.onSet] {flag} set: {oldValue?.ToStringEx()} -> {newValue?.ToStringEx()}");
                             };
                         }
                     ), // <- RootCmd

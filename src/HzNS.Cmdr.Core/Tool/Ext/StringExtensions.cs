@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using HzNS.Cmdr.Exception;
 
 namespace HzNS.Cmdr.Tool.Ext
 {
@@ -22,14 +23,46 @@ namespace HzNS.Cmdr.Tool.Ext
 
     public static class StringExtensions
     {
+        public static string ToStringEx(this object @this)
+        {
+            // ReSharper disable once InvertIf
+            if (@this.GetType().IsArray)
+            {
+                var v = "[" + string.Join(",", @this as object[] ?? throw new CmdrException()) + "]";
+                return v;
+            }
+
+            return @this.ToString() ?? "";
+        }
+
         public static string EatStart(this string @this, string part)
         {
             return @this.StartsWith(part) ? @this.Substring(part.Length) : @this;
         }
 
+        public static string EatStart(this string @this, params string[] parts)
+        {
+            foreach (var part in parts)
+            {
+                if (@this.StartsWith(part)) return @this.Substring(part.Length);
+            }
+
+            return @this;
+        }
+
         public static string EatEnd(this string @this, string part)
         {
             return @this.EndsWith(part) ? @this.Substring(0, @this.Length - part.Length) : @this;
+        }
+
+        public static string EatEnd(this string @this, params string[] parts)
+        {
+            foreach (var part in parts)
+            {
+                if (@this.EndsWith(part)) return @this.Substring(0, @this.Length - part.Length);
+            }
+
+            return @this;
         }
 
         public static string EatBoth(this string @this, string part)
@@ -39,6 +72,18 @@ namespace HzNS.Cmdr.Tool.Ext
                 t = t.Substring(part.Length);
             if (t.EndsWith(part))
                 t = t.Substring(0, t.Length - part.Length);
+            return t;
+        }
+
+        public static string EatBoth(this string @this, params string[] parts)
+        {
+            var t = @this;
+            foreach (var part in parts)
+            {
+                if (t.StartsWith(part)) t = t.Substring(part.Length);
+                if (t.EndsWith(part)) t = @this.Substring(0, t.Length - part.Length);
+            }
+
             return t;
         }
 

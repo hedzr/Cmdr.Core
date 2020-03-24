@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using HzNS.Cmdr.Tool.Ext;
+using HzNS.Cmdr.Tool.ObjectCloner;
 
 namespace HzNS.Cmdr.Store
 {
@@ -40,11 +42,17 @@ namespace HzNS.Cmdr.Store
                 var a = parts.ToList();
                 a.Add(key);
                 var path = string.Join(".", a.ToArray());
-                tw.WriteLineAsync($"  {path,-45}{val}");
+                tw.WriteLineAsync($"  {path,-45}{val?.ToStringEx()}");
             }
         }
 
-        public void Set<T>(string key, params T[] val)
+        public object? Get(string key, object? defaultValues = null)
+        {
+            var (slot, vk) = FindByDottedKey(key);
+            return slot?.Values[vk] ?? defaultValues;
+        }
+
+        public object? Set<T>(string key, params T[] val)
         {
             // if (val == null)
             // {
@@ -53,16 +61,16 @@ namespace HzNS.Cmdr.Store
             // }
 
             var parts = Prefixes.Concat(key.Split('.'));
-            setValue(parts, Root, val);
+            return setValue(parts, Root, val);
         }
 
 
-        private static void setValue<T>(IEnumerable<string> parts, Slot? node, params T[] val)
+        private static object? setValue<T>(IEnumerable<string> parts, Slot? node, params T[] val)
         {
             while (node != null)
             {
                 var enumerable = parts as string[] ?? parts.ToArray();
-                if (enumerable.Length < 1) return;
+                if (enumerable.Length < 1) return null;
                 if (enumerable.Length == 1)
                 {
                     var key = enumerable[0];
@@ -72,12 +80,13 @@ namespace HzNS.Cmdr.Store
                         : (val.Length > 0 ? val[0] : (object?) true);
                     if (!yes)
                     {
-                        node.Values[key] = dv;
-                        return;
+                        node.Values[key] = val.Length == 1 ? dv : val;
+                        return null;
                     }
 
+                    var old = node.Values[key]?.DeepClone();
                     setValueInternal(dv, key, enumerable.Skip(1).ToArray(), node, val);
-                    return;
+                    return old;
                 }
 
                 var part = enumerable[0];
@@ -90,11 +99,13 @@ namespace HzNS.Cmdr.Store
 
                 node = node.Children[part];
             }
+
+            return null;
         }
 
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]
-        private static void setValueInternal<T>(object? dv, string key, IEnumerable<string>? parts, Slot node,
-            params T[] val)
+        private static void setValueInternal<T>(object? dv, string key,
+            IEnumerable<string>? parts, Slot node, params T[] val)
         {
             switch (dv)
             {
@@ -114,13 +125,18 @@ namespace HzNS.Cmdr.Store
                     return;
                 case string[] v:
                     if (val.Length == 0)
+                        // v = new string[] { };
                         Array.Clear(v, 0, v.Length);
 
+#pragma warning disable CS8619
+                    // ReSharper disable once LoopCanBeConvertedToQuery
                     foreach (var value in val)
                     {
-                        v.Append(value as string);
+                        v = v.Append(value as string).ToArray();
                     }
+#pragma warning restore CS8619
 
+                    node.Values[key] = v;
                     return;
             }
 
@@ -135,54 +151,61 @@ namespace HzNS.Cmdr.Store
 
         public bool HasKeys(IEnumerable<string> keys)
         {
-            var (ok, _) = hasKeys(Prefixes.Concat(keys), Root);
+            var (ok, _, _) = hasKeys(Prefixes.Concat(keys), Root);
             return ok;
         }
 
         public bool HasDottedKey(string dottedKey)
         {
-            var (ok, _) = hasKeys(Prefixes.Concat(dottedKey.Split('.')), Root);
+            var (ok, _, _) = hasKeys(Prefixes.Concat(dottedKey.Split('.')), Root);
             return ok;
         }
 
-        public Slot? FindByKeys(IEnumerable<string> keys)
+        public (Slot?, string valueKey) FindByKeys(IEnumerable<string> keys)
         {
-            var (_, s) = hasKeys(Prefixes.Concat(keys), Root);
-            return s;
+            var (_, s, valueKey) = hasKeys(Prefixes.Concat(keys), Root);
+            return (s, valueKey);
         }
 
-        public Slot? FindByDottedKey(string dottedKey)
+        public (Slot?, string valueKey) FindByDottedKey(string dottedKey)
         {
-            var (_, s) = hasKeys(Prefixes.Concat(dottedKey.Split('.')), Root);
-            return s;
+            var (_, s, valueKey) = hasKeys(Prefixes.Concat(dottedKey.Split('.')), Root);
+            return (s, valueKey);
         }
 
 
-        private (bool, Slot?) hasKeys(IEnumerable<string> parts, Slot? node)
+        private static string lastDot(string s)
+        {
+            var a = s.Split('.');
+            return a.Length > 0 ? a[^1] : string.Empty;
+        }
+        
+        private (bool, Slot?, string valueKey) hasKeys(IEnumerable<string> parts, Slot? node)
         {
             var enumerable = parts as string[] ?? parts.ToArray();
             var path = string.Join('.', enumerable);
-            if (_fastMap.ContainsKey(path)) return (true, _fastMap[path]);
+
+            if (_fastMap.ContainsKey(path)) return (true, _fastMap[path], lastDot(path));
 
             while (node != null)
             {
-                if (enumerable.Length < 1) return (false, null);
+                if (enumerable.Length < 1) return (false, null, string.Empty);
                 if (enumerable.Length == 1)
                 {
                     var key = enumerable[0];
                     var yes = node.Values.ContainsKey(key);
                     if (!yes)
-                        return (false, null);
+                        return (false, null, key);
                     // if (_fastMap.ContainsKey(path)) ;
                     _fastMap.Add(path, node);
-                    return (yes, node);
+                    return (true, node, key);
                 }
 
                 var part = enumerable[0];
                 enumerable = enumerable.Skip(1).ToArray();
                 if (!node.Children.ContainsKey(part))
                 {
-                    return (false, null);
+                    return (false, null, part);
                 }
 
                 node = node.Children[part];
@@ -206,7 +229,7 @@ namespace HzNS.Cmdr.Store
             //     tw.WriteLineAsync($"{path,-45}{val}");
             // }
 
-            return (false, null);
+            return (false, null, string.Empty);
         }
 
 
