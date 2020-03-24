@@ -50,7 +50,7 @@ namespace HzNS.Cmdr.Base
         public List<ICommand> SubCommands
         {
             get => _subCommands;
-            set
+            internal set
             {
                 _subCommands.Clear();
                 _subCommands.AddRange(value);
@@ -60,12 +60,17 @@ namespace HzNS.Cmdr.Base
         public List<IFlag> Flags
         {
             get => _flags;
-            set
+            internal set
             {
                 _flags.Clear();
                 _flags.AddRange(value);
             }
         }
+
+        public List<IFlag> RequiredFlags { get; internal set; } = new List<IFlag>();
+        public Dictionary<string, List<IFlag>> ToggleableFlags { get; internal set; } = new Dictionary<string, List<IFlag>>();
+
+        public string HitTitle { get; set; } = "";
 
         public ICommand AddCommand(ICommand cmd)
         {
@@ -74,10 +79,25 @@ namespace HzNS.Cmdr.Base
             return this;
         }
 
-        public ICommand AddFlag<T>(IFlag<T> flag)
+        public ICommand AddFlag<T>(IFlag<T> flag, bool required = true)
         {
             flag.Owner = this;
+
             _flags.Add(flag);
+
+            if (required)
+                RequiredFlags.Add(flag);
+
+            // ReSharper disable once InvertIf
+            if (!string.IsNullOrWhiteSpace(flag.ToggleGroup) && flag.DefaultValue is bool)
+            {
+                if (string.IsNullOrWhiteSpace(flag.Group))
+                    flag.Group = flag.ToggleGroup;
+                if (!ToggleableFlags.ContainsKey(flag.ToggleGroup))
+                    ToggleableFlags.TryAdd(flag.ToggleGroup, new List<IFlag>());
+                ToggleableFlags[flag.ToggleGroup].Add(flag);
+            }
+
             return this;
         }
 

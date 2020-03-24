@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using HzNS.Cmdr.Base;
+using HzNS.Cmdr.Tool;
 
 namespace HzNS.Cmdr.Exception
 {
@@ -64,6 +65,25 @@ namespace HzNS.Cmdr.Exception
     public class ShouldBeStopException : CmdrException
     {
     }
+
+    
+    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+    public class MissedRequiredFlagException : CmdrException
+    {
+        public MissedRequiredFlagException(IFlag f)
+        {
+            Flag = f;
+        }
+        
+        public IFlag Flag { get; set; }
+
+        public override string ToString()
+        {
+            return $"Missed flag '{Util.SwitchChar(true)}{Flag.Long}'. Context: \"{Flag.Owner.backtraceTitles}\".";
+        }
+    }
+    
 
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]

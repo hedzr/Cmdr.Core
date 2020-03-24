@@ -347,6 +347,18 @@ namespace HzNS.Cmdr.Internal
                     case DateTimeOffset _:
                         Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTimeOffsetEx.Parse(v));
                         break;
+
+                    // fallback converter
+
+                    default:
+                        if (dv != null)
+                        {
+                            @this.logDebug("unacceptable default value ({dv}) datatype: {type}", dv, dv.GetType());
+                            val = Convert.ChangeType(v, dv.GetType()); // typeof(int)
+                            Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                        }
+
+                        break;
                 }
             }
 
@@ -372,7 +384,7 @@ namespace HzNS.Cmdr.Internal
 
         #endregion
 
-        
+
         #region helpers for match() - onMatchedXXX
 
         /// <summary>
@@ -388,10 +400,17 @@ namespace HzNS.Cmdr.Internal
         // ReSharper disable once MemberCanBeMadeStatic.Local
         // ReSharper disable once SuggestBaseTypeForParameter
         // ReSharper disable once UnusedParameter.Local
-        internal static bool onCommandMatched<T>(this T @this, IEnumerable<string> args, int position, string arg,
-            ICommand cmd)
+        internal static bool onCommandMatched<T>(this T @this, IEnumerable<string> args,
+            int position, string arg, ICommand cmd)
             where T : IDefaultMatchers
         {
+            checkRequiredFlagsReady(@this, cmd);
+
+            if (cmd is BaseCommand c)
+            {
+                c.HitTitle = arg;
+            }
+
             var remainArgs = args.Where((it, idx) => idx >= position).ToArray();
 
             var root = cmd.FindRoot();
@@ -421,6 +440,25 @@ namespace HzNS.Cmdr.Internal
             // throw new NotImplementedException();
         }
 
+        // ReSharper disable once UnusedParameter.Local
+        private static void checkRequiredFlagsReady<T>(T @this, ICommand cmd) where T : IDefaultMatchers
+        {
+            // ReSharper disable once SuggestVarOrType_SimpleTypes
+            ICommand? o = cmd;
+            while (o?.Owner != null && o.Owner != o)
+            {
+                // var ready = true;
+                foreach (var f in (o?.RequiredFlags).Where(f =>
+                    f.getDefaultValue() == null && !Cmdr.Instance.Store.HasKeys(f.ToKeys())))
+                {
+                    // ready = false;
+                    throw new MissedRequiredFlagException(f);
+                }
+
+                o = o?.Owner;
+            }
+        }
+
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
@@ -438,6 +476,12 @@ namespace HzNS.Cmdr.Internal
                 // ReSharper disable once UnusedVariable
                 var sw = Util.SwitchChar(longOpt);
                 @this.logDebug("  ---> flag matched: {SW:l}{Fragment:l}", sw, fragment);
+                if (flag is BaseFlag<bool> f)
+                {
+                    f.HitCount++;
+                    f.HitTitle = fragment;
+                }
+
                 if (flag.OnSet != null)
                     flag.OnSet?.Invoke(@this, flag, flag.getDefaultValue(), flag.getDefaultValue());
                 else
@@ -492,7 +536,7 @@ namespace HzNS.Cmdr.Internal
 
         #endregion
 
-        
+
         #region suggestions
 
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]

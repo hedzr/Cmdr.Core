@@ -5,6 +5,7 @@ namespace HzNS.Cmdr.Base
     [SuppressMessage("ReSharper", "ConvertToAutoPropertyWhenPossible")]
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
     public abstract class BaseFlag<T> : BaseOpt, IFlag<T>
     {
 #pragma warning disable CS8618
@@ -29,6 +30,9 @@ namespace HzNS.Cmdr.Base
 
         public string ToggleGroup { get; set; } = "";
         public bool UseMomentTimeFormat { get; set; } = true;
+
+        public string HitTitle { get; set; } = "";
+        public int HitCount { get; set; } = 0;
 
         public object? getDefaultValue()
         {

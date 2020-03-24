@@ -15,6 +15,9 @@ namespace HzNS.Cmdr.Base
         /// </summary>
         bool UseMomentTimeFormat { get; set; }
         
+        string HitTitle { get; }
+        int HitCount { get; }
+        
         object? getDefaultValue();
     }
 
