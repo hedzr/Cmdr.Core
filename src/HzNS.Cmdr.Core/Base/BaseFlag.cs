@@ -28,6 +28,7 @@ namespace HzNS.Cmdr.Base
         public string PlaceHolder { get; set; }
 
         public string ToggleGroup { get; set; } = "";
+        public bool UseMomentTimeFormat { get; set; } = true;
 
         public object? getDefaultValue()
         {

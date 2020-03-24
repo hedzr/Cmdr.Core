@@ -336,7 +336,9 @@ namespace HzNS.Cmdr.Internal
                     // time
 
                     case TimeSpan _:
-                        var tsVal = TimeSpan.ParseExact(v, new[] {"c", "g", "G",}, null);
+                        var tsVal = flg.UseMomentTimeFormat
+                            ? new TimeSpan().FromMoment(v)
+                            : TimeSpan.ParseExact(v, new[] {"c", "g", "G",}, null);
                         Cmdr.Instance.Store.Set(flg.ToDottedKey(), tsVal);
                         break;
                     case DateTime _:
