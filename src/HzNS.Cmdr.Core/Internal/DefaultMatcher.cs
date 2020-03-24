@@ -372,7 +372,8 @@ namespace HzNS.Cmdr.Internal
 
         #endregion
 
-        #region helpers for match() - match(ed)
+        
+        #region helpers for match() - onMatchedXXX
 
         /// <summary>
         /// 
@@ -491,6 +492,7 @@ namespace HzNS.Cmdr.Internal
 
         #endregion
 
+        
         #region suggestions
 
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]
