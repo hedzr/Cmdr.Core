@@ -11,20 +11,11 @@ namespace Tests.HzNS.Cmdr
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
     [SuppressMessage("ReSharper", "StringLiteralTypo")]
-    public class WorkerTest
+    public class WorkerTest : TestBase
     {
-        // https://xunit.github.io/docs/capturing-output.html
-
-        #region XUnit: capture the output
-
-        private readonly ITestOutputHelper output;
-
-        public WorkerTest(ITestOutputHelper output)
+        public WorkerTest(ITestOutputHelper output) : base(output)
         {
-            this.output = output;
         }
-
-        #endregion
 
         [Fact]
         public void Test1()
@@ -36,7 +27,7 @@ namespace Tests.HzNS.Cmdr
                     args = "tags mode s1 s2 --address consul.local -h", ok = true, expected = (w, args) =>
                     {
                         // ReSharper disable once ConvertToLambdaExpression
-                        return w.ParsedCommand.IsEqual("s2");
+                        return w.ParsedCommand?.IsEqual("s2") ?? false;
                     }
                 },
 
@@ -80,7 +71,7 @@ namespace Tests.HzNS.Cmdr
                     args = "tags mode s1 s2 --address consul.local -h", ok = true, expected = (w, args) =>
                     {
                         // ReSharper disable once ConvertToLambdaExpression
-                        return w.ParsedCommand.IsEqual("s2");
+                        return w.ParsedCommand?.IsEqual("s2") ?? false;
                     }
                 },
             })
@@ -94,12 +85,12 @@ namespace Tests.HzNS.Cmdr
         // ReSharper disable once MemberCanBeMadeStatic.Local
         private void TestLarge(string inputArgs, bool ok, Func<Worker, string, bool>? expected)
         {
-            output.WriteLine($"- test for: {inputArgs} ...");
+            Output.WriteLine($"- test for: {inputArgs} ...");
             var w = global::HzNS.Cmdr.Cmdr.NewWorker(root.RootCmd);
             w.Run(inputArgs.Split(" "));
             Assert.Equal(ok, w.Parsed);
             Assert.True(expected?.Invoke(w, inputArgs));
-            output.WriteLine($"  DONE");
+            Output.WriteLine($"  DONE");
         }
 
         private class testItem

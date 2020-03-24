@@ -46,7 +46,7 @@ namespace HzNS.Cmdr.Tool
                 _ => defaultValue
             };
         }
-        
+
         /// <summary>
         ///
         /// true/false, yes/no, t/f, y/n, 1/0, ...

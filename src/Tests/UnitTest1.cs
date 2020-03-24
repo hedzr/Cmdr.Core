@@ -27,7 +27,7 @@ namespace Tests
         }
 
         [Fact]
-        void Add_MaximumSumResult_ThrowsOverflowException()
+        public void Add_MaximumSumResult_ThrowsOverflowException()
         {
             var stringCalculator = new StringCalculator();
             const string maximumResult = "4623784623462364283467238472361001";
