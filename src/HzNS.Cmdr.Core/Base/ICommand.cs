@@ -6,6 +6,13 @@ namespace HzNS.Cmdr.Base
     {
         List<ICommand> SubCommands { get; }
         List<IFlag> Flags { get; }
+        /// <summary>
+        /// In the help screen, Usages line looks like:
+        /// <code>
+        /// {appName} [Commands] [tail args]|[Options]|[Parent/Global Options]
+        /// </code> 
+        /// </summary>
+        string TailArgs { get; }
 
         List<IFlag> RequiredFlags { get; }
         Dictionary<string, List<IFlag>> ToggleableFlags { get; }

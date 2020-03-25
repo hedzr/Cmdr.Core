@@ -67,6 +67,9 @@ namespace HzNS.Cmdr.Base
             }
         }
 
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
+        public string TailArgs { get; set; } = "";
+
         public List<IFlag> RequiredFlags { get; internal set; } = new List<IFlag>();
 
         public Dictionary<string, List<IFlag>> ToggleableFlags { get; internal set; } =

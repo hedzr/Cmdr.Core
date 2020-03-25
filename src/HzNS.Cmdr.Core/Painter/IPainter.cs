@@ -72,6 +72,7 @@ namespace HzNS.Cmdr.Painter
         #endregion
 
         private bool _quiteMode;
+        private IRootCommand? _root;
 
 
         public void Setup(ICommand cmd, IBaseWorker w, params string[] remainArgs)
@@ -79,6 +80,7 @@ namespace HzNS.Cmdr.Painter
             // Console.WriteLine("Setup...");
             // _quiteMode = Parse(Cmdr.Instance.Store.Get("quiet").ToString());
             _quiteMode = Cmdr.Instance.Store.GetAs("quiet", _quiteMode);
+            _root = cmd.FindRoot();
 
             // int qi = Cmdr.Instance.Store.GetAs("quiet", 0);
             // Console.WriteLine($"qi={qi}");
@@ -88,19 +90,70 @@ namespace HzNS.Cmdr.Painter
         public void PrintHeadLines(ICommand cmd, IBaseWorker w, params string[] remainArgs)
         {
             if (_quiteMode) return;
-            //
+
+            var author = _root?.AppInfo.Author;
+            if (string.IsNullOrWhiteSpace(author))
+                author = "Freeman";
+
+            oln($"{_root?.AppInfo.AppName} - {_root?.AppInfo.AppVersion} - {author}");
+
+            if (!string.IsNullOrWhiteSpace(_root?.AppInfo.Copyright))
+                oln(_root?.AppInfo.Copyright);
+
+            if (!string.IsNullOrWhiteSpace(_root?.Description))
+            {
+                oln("Description:");
+                oln(_root?.Description, ColorDesc);
+            }
+
+            // ReSharper disable once InvertIf
+            if (Cmdr.Instance.Store.GetAs<bool>("verbose"))
+            {
+                if (!string.IsNullOrWhiteSpace(_root?.DescriptionLong))
+                {
+                    oln("");
+                    oln(_root?.DescriptionLong, ColorDesc);
+                }
+
+                // ReSharper disable once InvertIf
+                if (!string.IsNullOrWhiteSpace(_root?.Examples))
+                {
+                    oln("Examples:");
+                    oln(_root?.Examples, ColorDesc);
+                }
+            }
         }
 
         public void PrintUsages(ICommand cmd, IBaseWorker w, params string[] remainArgs)
         {
             if (_quiteMode) return;
-            //
+
+            // ReSharper disable once IdentifierTypo
+            var cmds = cmd.backtraceTitles;
+            if (string.IsNullOrWhiteSpace(cmds))
+                cmds = " [Commands]";
+            else if (cmd.SubCommands.Count > 0)
+                cmds += " [Sub-Commands]";
+
+            var tails = "[Tail Args]|[Options]|[Parent/Global Options]";
+            if (!string.IsNullOrWhiteSpace(cmd.TailArgs))
+                tails = cmd.TailArgs;
+            
+            oln("");
+            oln("Usages:");
+            oln($"    {_root?.AppInfo.AppName} {cmds} {tails}");
         }
 
         public void PrintExamples(ICommand cmd, IBaseWorker w, params string[] remainArgs)
         {
             if (_quiteMode) return;
-            //
+
+            // ReSharper disable once InvertIf
+            if (!string.IsNullOrWhiteSpace(cmd.Examples))
+            {
+                oln("Examples:");
+                oln(cmd.Examples, ColorDesc);
+            }
         }
 
         #region PrintCommandsAndOptions
@@ -110,6 +163,8 @@ namespace HzNS.Cmdr.Painter
             SortedDictionary<int, CmdFlags> optionLines, // Format writer,
             int tabStop, bool treeMode, IBaseWorker w, params string[] remainArgs)
         {
+            if (_quiteMode) return;
+
             if (treeMode)
             {
                 var title = cmd.IsRoot ? "-ROOT-" : cmd.backtraceTitles;
@@ -125,7 +180,10 @@ namespace HzNS.Cmdr.Painter
             {
                 if (commandLines.Count > 0)
                 {
-                    oln("\nCommands:");
+                    if (cmd.Owner != null && cmd.Owner.IsRoot)
+                        oln("\nCommands:");
+                    else
+                        oln("\nSub-Commands:");
                     ShowOne(commandLines, tabStop);
                 }
             }
@@ -213,8 +271,8 @@ namespace HzNS.Cmdr.Painter
         public void PrintTailLines(ICommand cmd, IBaseWorker w, params string[] remainArgs)
         {
             if (_quiteMode) return;
-            
-            oln(Console.Out.NewLine, ColorDesc);
+
+            oln("", ColorDesc);
             oln("Type '-h'/'-?' or '--help' to get command help screen.", ColorDesc);
             oln("More: '-D'/'--debug', '-v'|'--verbose', '-V'/'--version', '-#'/'--build-info'...", ColorDesc);
         }
@@ -222,7 +280,7 @@ namespace HzNS.Cmdr.Painter
         public void PrintEpilogue(ICommand cmd, IBaseWorker w, params string[] remainArgs)
         {
             if (_quiteMode) return;
-            oln(Console.Out.NewLine);
+            oln("");
         }
 
         #region PrintDumpForDebug
@@ -322,16 +380,16 @@ namespace HzNS.Cmdr.Painter
 
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
-        private void oln(string text, string color = Colors.txtDefault)
+        private void oln(string? text, string color = Colors.txtDefault)
         {
-            ColorifyEnabler.Colorify.WriteLine(text, color);
+            ColorifyEnabler.Colorify.WriteLine(text ?? string.Empty, color);
         }
 
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
-        private void o(string text, string color = Colors.txtDefault)
+        private void o(string? text, string color = Colors.txtDefault)
         {
-            ColorifyEnabler.Colorify.Write(text, color);
+            ColorifyEnabler.Colorify.Write(text ?? string.Empty, color);
         }
 
 
