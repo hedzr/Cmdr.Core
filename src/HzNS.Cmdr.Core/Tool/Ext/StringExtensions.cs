@@ -18,11 +18,45 @@ namespace HzNS.Cmdr.Tool.Ext
         {
             return new string(ch, repeatCount);
         }
+
+
+        public static bool ToBool(object s, bool defaultValue = false)
+        {
+            if (s is string s1)
+                return ToBool(s1, defaultValue);
+            return ToBool(s?.ToString() ?? string.Empty, defaultValue);
+        }
+
+        public static bool ToBool(string s, bool defaultValue = false)
+        {
+            return s switch
+            {
+                "1" => true,
+                "yes" => true,
+                "y" => true,
+                "Y" => true,
+                "true" => true,
+                "t" => true,
+                "T" => true,
+                "是" => true,
+                "真" => true,
+                "0" => false,
+                "no" => false,
+                "n" => false,
+                "N" => false,
+                "false" => true,
+                "f" => false,
+                "F" => false,
+                "否" => false,
+                "假" => false,
+                _ => defaultValue
+            };
+        }
     }
 
 
     public static class StringExtensions
-    {
+    { 
         public static string ToStringEx(this object @this)
         {
             // ReSharper disable once InvertIf
@@ -35,6 +69,23 @@ namespace HzNS.Cmdr.Tool.Ext
             return @this.ToString() ?? "";
         }
 
+        
+        public static bool ToBool(this object @this, bool defaultValue = false)
+        {
+            return StringEx.ToBool(@this, defaultValue);
+        }
+        
+        
+        
+        // string
+        
+        
+        
+        public static bool ToBool(this string @this, bool defaultValue = false)
+        {
+            return StringEx.ToBool(@this, defaultValue);
+        }
+        
         public static string EatStart(this string @this, string part)
         {
             return @this.StartsWith(part) ? @this.Substring(part.Length) : @this;
@@ -251,8 +302,10 @@ namespace HzNS.Cmdr.Tool.Ext
                     return false;
                 }
 
+#pragma warning disable CS8643
                 var theValue = theConverter.ConvertFromString(null, cultureInfo, value);
                 convertedValue = isNullableType ? Activator.CreateInstance(destinationType, theValue) : theValue;
+#pragma warning restore CS8643
 
                 return true;
             }

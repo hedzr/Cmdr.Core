@@ -74,7 +74,7 @@ namespace HzNS.Cmdr
 
 
         /// <summary>
-        /// In default, Store.GetAs<T>(key, defaultValue) will extract the entry value as T.
+        /// In default, Store.GetAs&lt;T&gt;(key, defaultValue) will extract the entry value as T.
         /// If the entry value has a different data type, Convert.ChangeType will be applied.
         /// But you can disable this act by set EnableAutoBoxingWhenExtracting to false.
         /// </summary>

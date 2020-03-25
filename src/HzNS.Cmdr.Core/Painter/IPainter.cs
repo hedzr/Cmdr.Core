@@ -88,16 +88,19 @@ namespace HzNS.Cmdr.Painter
         public void PrintHeadLines(ICommand cmd, IBaseWorker w, params string[] remainArgs)
         {
             if (_quiteMode) return;
+            //
         }
 
         public void PrintUsages(ICommand cmd, IBaseWorker w, params string[] remainArgs)
         {
             if (_quiteMode) return;
+            //
         }
 
         public void PrintExamples(ICommand cmd, IBaseWorker w, params string[] remainArgs)
         {
             if (_quiteMode) return;
+            //
         }
 
         #region PrintCommandsAndOptions
@@ -242,15 +245,47 @@ namespace HzNS.Cmdr.Painter
         public void PrintBuildInfo(ICommand cmd, in int tabStop, IBaseWorker w, params string[] remainArgs)
         {
             var root = cmd.FindRoot();
+            // ReSharper disable once InvertIf
             if (root != null)
             {
-                oln($"{root.AppInfo.AppVersion}");
+                if (_quiteMode)
+                {
+                    oln($"{root.AppInfo.Builder}");
+                    oln($"{root.AppInfo.BuildTimestamp}");
+                    oln($"{root.AppInfo.BuildVcsHash}");
+                }
+                else
+                {
+                    oln($"       Built by: {root.AppInfo.Builder}");
+                    oln($"Build Timestamp: {root.AppInfo.BuildTimestamp}");
+                    oln($"  Build Githash: {root.AppInfo.BuildVcsHash}");
+                }
             }
         }
 
         public void PrintVersions(ICommand cmd, in int tabStop, IBaseWorker w, params string[] remainArgs)
         {
-            throw new NotImplementedException();
+            var root = cmd.FindRoot();
+            // ReSharper disable once InvertIf
+            if (root != null)
+            {
+                if (_quiteMode)
+                {
+                    oln($"{root.AppInfo.AppVersion}");
+                    oln($"{root.AppInfo.AppName}");
+                    oln($"{root.AppInfo.BuildTimestamp}");
+                    oln($"{root.AppInfo.BuildVcsHash}");
+                    oln($"{root.AppInfo.Builder}");
+                }
+                else
+                {
+                    oln($"        Version: {root.AppInfo.AppVersion}");
+                    oln($"       App Name: {root.AppInfo.AppName}");
+                    oln($"       Built by: {root.AppInfo.Builder}");
+                    oln($"Build Timestamp: {root.AppInfo.BuildTimestamp}");
+                    oln($"  Build Githash: {root.AppInfo.BuildVcsHash}");
+                }
+            }
         }
 
 

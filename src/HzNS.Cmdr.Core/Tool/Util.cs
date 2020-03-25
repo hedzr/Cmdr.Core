@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using HzNS.Cmdr.Tool.Ext;
 
 namespace HzNS.Cmdr.Tool
 {
@@ -17,32 +17,6 @@ namespace HzNS.Cmdr.Tool
             return longOpt ? "--" : "-";
         }
 
-        public static bool ToBool(string s, bool defaultValue = false)
-        {
-            return s switch
-            {
-                "1" => true,
-                "yes" => true,
-                "y" => true,
-                "Y" => true,
-                "true" => true,
-                "t" => true,
-                "T" => true,
-                "是" => true,
-                "真" => true,
-                "0" => false,
-                "no" => false,
-                "n" => false,
-                "N" => false,
-                "false" => true,
-                "f" => false,
-                "F" => false,
-                "否" => false,
-                "假" => false,
-                _ => defaultValue
-            };
-        }
-
         /// <summary>
         ///
         /// true/false, yes/no, t/f, y/n, 1/0, ...
@@ -53,7 +27,7 @@ namespace HzNS.Cmdr.Tool
         public static bool GetEnvValueBool(string key, bool defaultValue = false)
         {
             var v = Environment.GetEnvironmentVariable(key);
-            return v == null ? defaultValue : ToBool(v, defaultValue);
+            return v?.ToBool(defaultValue) ?? defaultValue;
         }
 
         public static int GetEnvValueInt(string key, int defaultValue = 0)
@@ -88,8 +62,8 @@ namespace HzNS.Cmdr.Tool
 #pragma warning restore CS8653
 
             if (typeof(T) == typeof(string))
-                return (T)(object)v;
-            return (T)Convert.ChangeType(v, typeof(T));
+                return (T) (object) v;
+            return (T) Convert.ChangeType(v, typeof(T));
         }
 
         #region About Json

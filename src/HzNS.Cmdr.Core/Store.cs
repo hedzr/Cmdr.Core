@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Painter;
-using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Ext;
 using HzNS.Cmdr.Tool.ObjectCloner;
 
@@ -77,15 +76,15 @@ namespace HzNS.Cmdr
             if (v == null) return defaultValues.Length > 0 ? defaultValues[^1] : default(T);
 #pragma warning restore CS8653
 
-            if (typeof(T) == typeof(bool))
-            {
-                var bv = Util.ToBool((string)v);
-                return (T)Convert.ChangeType(bv, typeof(T));
-            }
-            
             if (typeof(T) == v.GetType())
                 return (T) v;
 
+            if (typeof(T) == typeof(bool))
+            {
+                var bv = v.ToBool();
+                return (T)Convert.ChangeType(bv, typeof(T));
+            }
+            
             if(Cmdr.Instance.EnableAutoBoxingWhenExtracting)
                 return (T)Convert.ChangeType(v, typeof(T));
             

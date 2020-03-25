@@ -12,6 +12,7 @@ using HzNS.Cmdr.Internal;
 using HzNS.Cmdr.Internal.Base;
 using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Enrichers;
+using HzNS.Cmdr.Tool.Ext;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -310,7 +311,12 @@ namespace HzNS.Cmdr
                             // ReSharper disable once InvertIf
                             if (tv != default)
                             {
-                                v = tv;
+                                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+                                if (v != null)
+                                    v = v is bool ? tv.ToBool() : Convert.ChangeType(tv, v.GetType());
+                                else
+                                    v = tv;
+
                                 break;
                             }
                         }
@@ -320,7 +326,11 @@ namespace HzNS.Cmdr
                         var tv = Util.GetEnvValue<object>(Store.Instance.WrapKeys(flag.ToKeys()));
                         if (tv != default)
                         {
-                            v = tv;
+                            // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+                            if (v != null)
+                                v = v is bool ? tv.ToBool() : Convert.ChangeType(tv, v.GetType());
+                            else
+                                v = tv;
                         }
                     }
                 }
