@@ -221,7 +221,7 @@ namespace HzNS.Cmdr.Internal
         }
 
 
-        #region for match(), tryExtractingValue
+        #region for match() - tryExtractingValue
 
         // ReSharper disable once SuggestBaseTypeForParameter
         [SuppressMessage("ReSharper", "IdentifierTypo")]
@@ -382,7 +382,27 @@ namespace HzNS.Cmdr.Internal
 
             return (ate, val);
         }
+        
+        private static void setValueRecursive(this object obj, string propertyName, object value, bool recursive = false)
+        {
+            var t = obj.GetType();
+            foreach (var propInfo in t.GetProperties())
+            {
+                if (propInfo.CanWrite && propInfo.Name == propertyName)
+                {
+                    if (propInfo.PropertyType.IsClass && recursive)
+                    {
+#pragma warning disable CS8604
+                        var propVal = propInfo.GetValue(obj, null);
+                        setValueRecursive(propVal, propertyName, value, true);
+#pragma warning restore CS8604
+                    }
 
+                    propInfo.SetValue(obj, value, null);
+                }
+            }
+        } 
+        
         #endregion
 
 
@@ -478,10 +498,10 @@ namespace HzNS.Cmdr.Internal
                 // ReSharper disable once UnusedVariable
                 var sw = Util.SwitchChar(longOpt);
                 @this.logDebug("  ---> flag matched: {SW:l}{Fragment:l}", sw, fragment);
-                if (flag is BaseFlag<bool> f)
+                // if (flag is BaseFlag<bool> f)
                 {
-                    f.HitCount++;
-                    f.HitTitle = fragment;
+                    flag.setValueRecursive("HitCount", flag.HitCount+1);
+                    flag.setValueRecursive("HitTitle", fragment);
                 }
 
                 if (value?.GetType().IsArray == true)

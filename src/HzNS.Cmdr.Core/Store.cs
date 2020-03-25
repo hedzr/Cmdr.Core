@@ -64,6 +64,11 @@ namespace HzNS.Cmdr.Store
             return setValue(parts, Root, val);
         }
 
+        public object? SetBy<T>(IEnumerable<string> keys, params T[] val)
+        {
+            return setValue(keys, Root, val);
+        }
+
 
         private static object? setValue<T>(IEnumerable<string> parts, Slot? node, params T[] val)
         {
