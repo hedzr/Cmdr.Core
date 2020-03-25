@@ -76,7 +76,7 @@ cmdr has rich features:
 
   *priority level:* `defaultValue -> config-file -> env-var -> command-line opts`
 
-- [ ] `Option Store` - Unify option value extraction:
+- [x] `Option Store` - Unify option value extraction:
 
   - [x] `object? Cmdr.Instance.Store.Get(key, defaultValue)`
 
@@ -144,10 +144,85 @@ cmdr has rich features:
 
   internal `rxxtOptions`
 
-- Walkable
+- [x] Walkable
 
   - Customizable `Painter` interface to loop *each* command and flag.
-  - Walks on all commands with `WalkAllCommands(walker)`.
+  - Walks on all commands with `Walk(walker)`.
+  
+- [x] Supports `-I/usr/include -I=/usr/include` `-I /usr/include -I:/usr` option argument specifications
+
+  Automatically allows those formats (applied to long option too):
+
+  - `-I file`, `-Ifile`, and `-I=files`
+  - `-I 'file'`, `-I'file'`, and `-I='files'`
+  - `-I "file"`, `-I"file"`, and `-I="files"`
+
+- [ ] Supports for **PassThrough** by `--`. (*Passing remaining command line arguments after -- (optional)*)
+
+- [ ] Predefined external config file locations:
+
+  - `/etc/<appname>/<appname>.yml` and `conf.d` sub-directory.
+
+  - `/usr/local/etc/<appname>/<appname>.yml` and `conf.d` sub-directory.
+
+  - `$HOME/.config/<appname>/<appname>.yml` and `conf.d` sub-directory.
+
+  - `$HOME/.<appname>/<appname>.yml` and `conf.d` sub-directory.
+
+  - all predefined locations are:
+
+    ```go
+    predefinedLocations: []string{
+    	"./ci/etc/%s/%s.yml",       // for developer
+    	"/etc/%s/%s.yml",           // regular location: /etc/$APPNAME/$APPNAME.yml
+    	"/usr/local/etc/%s/%s.yml", // regular macOS HomeBrew location
+    	"$HOME/.config/%s/%s.yml",  // per user: $HOME/.config/$APPNAME/$APPNAME.yml
+    	"$HOME/.%s/%s.yml",         // ext location per user
+    	"$THIS/%s.yml",             // executable's directory
+    	"%s.yml",                   // current directory
+    },
+    ```
+
+  - since v1.5.0, uses `cmdr.WithPredefinedLocations("a","b",...),`
+
+- [ ] Watch `conf.d` directory:
+
+  - `cmdr.WithConfigLoadedListener(listener)`
+
+    - `AddOnConfigLoadedListener(c)`
+    - `RemoveOnConfigLoadedListener(c)`  
+    - `SetOnConfigLoadedListener(c, enabled)`
+
+  - As a feature, do NOT watch the changes on `<appname>.yml`.
+
+    - *since v1.6.9*, `WithWatchMainConfigFileToo(true)` allows the main config file `<appname>.yml`  to be watched.
+
+  - on command-line:
+
+    ```bash
+    $ bin/demo --configci/etc/demo-yy ~~debug
+    $ bin/demo --config=ci/etc/demo-yy/any.yml ~~debug
+    $ bin/demo --config ci/etc/demo-yy/any.yml ~~debug
+    ```
+
+  - supports muiltiple file formats:
+
+    - Yaml
+    - JSON
+    - TOML
+
+  - `cmdr.Exec(root, cmdr.WithNoLoadConfigFiles(false))`: disable loading external config files.
+
+- Handlers
+
+  - Global Handlers: `RootCommand.OnPre/Post/Action()/OnSet()` will be triggered before/after the concrete `Command.OnPre/Post/Action()/OnSet()`
+  - Command Actions: `OnPreAction/OnAction/OnPostAction/OnSet`
+  - Flag Actions: `OnPreAction/OnAction/OnPostAction/OnSet`
+  - 
+
+- 
+
+- 
 
 ---
 
@@ -166,16 +241,8 @@ cmdr has rich features:
           strict-mode: true
         ```
 
-- Supports `-I/usr/include -I=/usr/include` `-I /usr/include` option argument specifications
+- 
   
-  Automatically allows those formats (applied to long option too):
-
-  - `-I file`, `-Ifile`, and `-I=files`
-  - `-I 'file'`, `-I'file'`, and `-I='files'`
-  - `-I "file"`, `-I"file"`, and `-I="files"`
-
-- Supports for **PassThrough** by `--`. (*Passing remaining command line arguments after -- (optional)*)
-
 - Supports for options being specified multiple times, with different values
 
   > since v1.5.0:
@@ -211,55 +278,8 @@ cmdr has rich features:
      $ bin/wget-demo generate shell --bash
      ```
 
-- Predefined external config file locations:
-  - `/etc/<appname>/<appname>.yml` and `conf.d` sub-directory.
-  - `/usr/local/etc/<appname>/<appname>.yml` and `conf.d` sub-directory.
-  - `$HOME/.config/<appname>/<appname>.yml` and `conf.d` sub-directory.
-  - `$HOME/.<appname>/<appname>.yml` and `conf.d` sub-directory.
-  - all predefined locations are:
+- 
   
-    ```go
-    predefinedLocations: []string{
-  		"./ci/etc/%s/%s.yml",       // for developer
-    	"/etc/%s/%s.yml",           // regular location: /etc/$APPNAME/$APPNAME.yml
-  		"/usr/local/etc/%s/%s.yml", // regular macOS HomeBrew location
-    	"$HOME/.config/%s/%s.yml",  // per user: $HOME/.config/$APPNAME/$APPNAME.yml
-  		"$HOME/.%s/%s.yml",         // ext location per user
-    	"$THIS/%s.yml",             // executable's directory
-  		"%s.yml",                   // current directory
-    },
-    ```
-    
-  - since v1.5.0, uses `cmdr.WithPredefinedLocations("a","b",...),`
-  
-- Watch `conf.d` directory:
-  
-  - `cmdr.WithConfigLoadedListener(listener)`
-    
-    - `AddOnConfigLoadedListener(c)`
-    - `RemoveOnConfigLoadedListener(c)`  
-    - `SetOnConfigLoadedListener(c, enabled)`
-    
-  - As a feature, do NOT watch the changes on `<appname>.yml`.
-  
-    - *since v1.6.9*, `WithWatchMainConfigFileToo(true)` allows the main config file `<appname>.yml`  to be watched.
-
-  - on command-line:
-  
-    ```bash
-    $ bin/demo --configci/etc/demo-yy ~~debug
-    $ bin/demo --config=ci/etc/demo-yy/any.yml ~~debug
-    $ bin/demo --config ci/etc/demo-yy/any.yml ~~debug
-    ```
-  
-  - supports muiltiple file formats:
-  
-    - Yaml
-    - JSON
-    - TOML
-  
-  - `cmdr.Exec(root, cmdr.WithNoLoadConfigFiles(false))`: disable loading external config files.
-
 - Daemon (*Linux Only*)
 
   > rewrote since v1.6.0
