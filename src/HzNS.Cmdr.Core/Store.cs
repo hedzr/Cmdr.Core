@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
+using HzNS.Cmdr.Painter;
 using HzNS.Cmdr.Tool.Ext;
 using HzNS.Cmdr.Tool.ObjectCloner;
 
-namespace HzNS.Cmdr.Store
+namespace HzNS.Cmdr
 {
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
@@ -65,9 +65,23 @@ namespace HzNS.Cmdr.Store
             return setValue(parts, Root, val);
         }
 
-        public object? SetBy<T>(IEnumerable<string> keys, params T[] val)
+        public object? SetByKeys<T>(IEnumerable<string> keys, params T[] val)
         {
-            return setValue(keys, Root, val);
+            var parts = Prefixes.Concat(keys);
+            return setValue(parts, Root, val);
+        }
+
+        /// <summary>
+        /// no 
+        /// </summary>
+        /// <param name="keys"></param>
+        /// <param name="val"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        internal object? SetByKeysInternal<T>(IEnumerable<string> keys, T val)
+        {
+            var parts = Prefixes.Concat(keys);
+            return setValue(parts, Root, val);
         }
 
 

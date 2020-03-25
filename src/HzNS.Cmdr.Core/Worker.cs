@@ -12,7 +12,6 @@ using HzNS.Cmdr.Internal;
 using HzNS.Cmdr.Internal.Base;
 using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Enrichers;
-using HzNS.Cmdr.Tool.Ext;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -296,6 +295,13 @@ namespace HzNS.Cmdr
                 xx.TryAddShort(this, owner, flag);
                 xx.TryAddLong(this, owner, flag);
                 xx.TryAddAliases(this, owner, flag);
+
+                // build into Store too:
+                // bool exists = Cmdr.Instance.Store.HasKeys(flag.ToKeys());
+                var v = flag.getDefaultValue();
+                if (v != null)
+                    Cmdr.Instance.Store.SetByKeysInternal(flag.ToKeys(), v);
+
                 return true; // return false to break the walkForFlags' loop.
             });
             this.logDebug("_xrefs was built.");
@@ -305,6 +311,7 @@ namespace HzNS.Cmdr
 
         #endregion
 
+        
         #region helpers for Walk()
 
         private bool walkFor(ICommand parent,

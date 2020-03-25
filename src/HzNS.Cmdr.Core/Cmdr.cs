@@ -69,7 +69,7 @@ namespace HzNS.Cmdr
             return worker;
         }
 
-        public HzNS.Cmdr.Store.Store Store { get; } = HzNS.Cmdr.Store.Store.Instance;
+        public Store Store { get; } = Store.Instance;
         
         #region Singleton Pattern
 
