@@ -68,7 +68,9 @@ namespace HzNS.Cmdr.Base
         }
 
         public List<IFlag> RequiredFlags { get; internal set; } = new List<IFlag>();
-        public Dictionary<string, List<IFlag>> ToggleableFlags { get; internal set; } = new Dictionary<string, List<IFlag>>();
+
+        public Dictionary<string, List<IFlag>> ToggleableFlags { get; internal set; } =
+            new Dictionary<string, List<IFlag>>();
 
         public string HitTitle { get; set; } = "";
 

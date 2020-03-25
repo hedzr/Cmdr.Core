@@ -65,7 +65,9 @@ namespace Simple
 
                             root.OnSet = (worker, flag, oldValue, newValue) =>
                             {
-                                Console.WriteLine($"--> [root.onSet] {flag} set: {oldValue?.ToStringEx()} -> {newValue?.ToStringEx()}");
+                                if (Cmdr.Instance.Store.GetAs<bool>("quiet")) return;
+                                Console.WriteLine(
+                                    $"--> [root.onSet] {flag} set: {oldValue?.ToStringEx()} -> {newValue?.ToStringEx()}");
                             };
                         }
                     ), // <- RootCmd

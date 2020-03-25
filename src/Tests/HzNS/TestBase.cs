@@ -8,7 +8,6 @@ namespace Tests.HzNS
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     public abstract class TestBase
     {
-        
         // https://xunit.github.io/docs/capturing-output.html
 
         #region XUnit: capture the output
@@ -21,6 +20,5 @@ namespace Tests.HzNS
         }
 
         #endregion
-
     }
 }

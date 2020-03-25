@@ -8,7 +8,7 @@ namespace HzNS.Cmdr.Base
     [SuppressMessage("ReSharper", "UnusedMember.Local")]
     public abstract class BaseRootCommand : BaseCommand, IRootCommand
     {
-        public IAppInfo AppInfo;
+        public IAppInfo AppInfo { get; set; }
 
         // ReSharper disable once PublicConstructorInAbstractClass
         public BaseRootCommand(IAppInfo appInfo)

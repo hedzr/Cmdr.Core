@@ -68,10 +68,10 @@ namespace HzNS.Cmdr.Tool.Ext
             return DateTimeOffsetEx.Parse(s);
         }
 
-        
+
         //
-        
-        
+
+
         public static string ToRelativeDateString(this DateTime dt)
         {
             var ts = new TimeSpan(DateTime.Now.Ticks - dt.Ticks);
@@ -113,7 +113,7 @@ namespace HzNS.Cmdr.Tool.Ext
             DateTime dt;
             var ok = DateTime.TryParse(s, null, DateTimeStyles.AdjustToUniversal, out dt);
             if (ok) return dt;
-            
+
             return DateTime.ParseExact(s, new[]
             {
                 "d", // 2009-06-15T13:45:30 -> 6/15/2009 (en-US)
@@ -125,7 +125,7 @@ namespace HzNS.Cmdr.Tool.Ext
             }, null);
         }
     }
-    
+
 
     public readonly struct DateTimeOffsetEx
     {
@@ -135,18 +135,17 @@ namespace HzNS.Cmdr.Tool.Ext
         }
     }
 
-    
+
     /// <summary>
     /// 
     /// </summary>
     public readonly struct TimeSpanEx
     {
-        
         public static TimeSpan Parse(string s)
         {
             var (ok, ts) = ParseMomentImpl(TimeSpan.Zero, s);
             if (ok) return ts;
-            
+
             return TimeSpan.ParseExact(s, new[]
             {
                 "c", "g", "G",
@@ -194,7 +193,7 @@ namespace HzNS.Cmdr.Tool.Ext
             ts = ParseMoment(ts, s);
             return ts;
         }
-        
+
         public static (bool ok, TimeSpan) ParseMomentImpl(TimeSpan ts, string s)
         {
             var start = 0;

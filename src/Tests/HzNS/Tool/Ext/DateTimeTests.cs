@@ -17,8 +17,8 @@ namespace Tests.HzNS.Tool.Ext
         [Fact]
         public void Test1()
         {
-            int? intValue           = "123".ConvertToNullable<int>();   
-            double? doubleValue     = "123".ConvertToNullable<double>();   
+            int? intValue = "123".ConvertToNullable<int>();
+            double? doubleValue = "123".ConvertToNullable<double>();
             DateTime? dateTimeValue = "1981-08-24".ConvertToNullable<DateTime>();
             Output.WriteLine($"values: {intValue}, {doubleValue}, {dateTimeValue}");
         }
@@ -26,13 +26,13 @@ namespace Tests.HzNS.Tool.Ext
         [Fact]
         public void Test2()
         {
-            int? intValue           = "123".ConvertTo<int>();   
-            double? doubleValue     = "123".ConvertTo<double>();   
+            int? intValue = "123".ConvertTo<int>();
+            double? doubleValue = "123".ConvertTo<double>();
             DateTime? dateTimeValue = "1981-08-24".ConvertTo<DateTime>();
             Output.WriteLine($"values: {intValue}, {doubleValue}, {dateTimeValue}");
         }
     }
-    
+
     public class DateTimeTests : TestBase
     {
         public DateTimeTests(ITestOutputHelper output) : base(output)

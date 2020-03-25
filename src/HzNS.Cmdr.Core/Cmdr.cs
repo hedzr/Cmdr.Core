@@ -51,7 +51,8 @@ namespace HzNS.Cmdr
 
             try
             {
-                worker.logDebug("EnableDuplicatedCharThrows: {EnableDuplicatedCharThrows}", worker.EnableDuplicatedCharThrows);
+                worker.logDebug("EnableDuplicatedCharThrows: {EnableDuplicatedCharThrows}",
+                    worker.EnableDuplicatedCharThrows);
                 if (root != null)
                     worker.With(root);
             }
@@ -70,7 +71,17 @@ namespace HzNS.Cmdr
         }
 
         public Store Store { get; } = Store.Instance;
-        
+
+
+        /// <summary>
+        /// In default, Store.GetAs<T>(key, defaultValue) will extract the entry value as T.
+        /// If the entry value has a different data type, Convert.ChangeType will be applied.
+        /// But you can disable this act by set EnableAutoBoxingWhenExtracting to false.
+        /// </summary>
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
+        public bool EnableAutoBoxingWhenExtracting { get; set; } = true;
+
+
         #region Singleton Pattern
 
         private Cmdr()

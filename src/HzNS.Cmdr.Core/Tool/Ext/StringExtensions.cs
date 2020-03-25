@@ -113,6 +113,28 @@ namespace HzNS.Cmdr.Tool.Ext
             return sb.ToString();
         }
 
+        /// <summary>
+        /// erase the first knobble from the given string. eg:
+        /// "abc.defg" => "defg"
+        /// "073.zxcv" => "zxcv"
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="sep"></param>
+        /// <returns></returns>
+        public static string StripFirstKnobble(this string s, params char[] sep)
+        {
+            foreach (var ch in sep.Length > 0 ? sep : DefaultKnobbleChars)
+            {
+                var pos = s.IndexOf(ch);
+                if (pos >= 0) s = s.Substring(pos + 1);
+            }
+
+            return s;
+        }
+
+        private static readonly char[] DefaultKnobbleChars = new[] {'.'};
+
+
         [Pure]
         // [PublicAPI]
         // ReSharper disable once BuiltInTypeReferenceStyle
@@ -259,6 +281,7 @@ namespace HzNS.Cmdr.Tool.Ext
         /// <param name="cultureInfo">Culture info</param>
         /// <param name="convertedValue">Converted value result</param>
         /// <returns><b>true</b>, if the conversion succeeds; otherwise <b>false</b></returns>
+        // ReSharper disable once MemberCanBePrivate.Global
         public static bool TryConvert<TDestinationType>(this string value, CultureInfo cultureInfo,
             out TDestinationType convertedValue)
         {

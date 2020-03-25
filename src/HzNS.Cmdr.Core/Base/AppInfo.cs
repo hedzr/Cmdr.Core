@@ -5,6 +5,12 @@ namespace HzNS.Cmdr.Base
         public string AppName { get; set; } = "";
         public string AppVersion { get; set; } = "";
         public int AppVersionInt { get; set; } = 0;
-        public string BuildTime { get; set; } = "";
+        public string BuildTimestamp { get; set; } = "";
+        public string BuildRelease { get; set; } = "";
+        public string BuildVcsVersion { get; set; } = "";
+        public string BuildVcsHash { get; set; } = "";
+        public string BuildTags { get; set; } = "";
+        public string BuildArgs { get; set; } = "";
+        public string Builder { get; set; } = "";
     }
 }

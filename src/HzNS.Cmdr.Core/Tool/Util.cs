@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
 
@@ -13,12 +15,6 @@ namespace HzNS.Cmdr.Tool
         public static string SwitchChar(bool longOpt)
         {
             return longOpt ? "--" : "-";
-        }
-
-        public static string StripFirstKnobble(string s)
-        {
-            var pos = s.IndexOf('.');
-            return pos >= 0 ? s.Substring(pos + 1) : s;
         }
 
         public static bool ToBool(string s, bool defaultValue = false)
@@ -76,6 +72,24 @@ namespace HzNS.Cmdr.Tool
         {
             var v = Environment.GetEnvironmentVariable(key);
             return v ?? defaultValue;
+        }
+
+        public static T GetEnvValue<T>(IEnumerable<string> key, params T[] defaultValues)
+        {
+            var k = string.Join("_", key);
+            return GetEnvValue(k, defaultValues);
+        }
+
+        public static T GetEnvValue<T>(string key, params T[] defaultValues)
+        {
+            var v = Environment.GetEnvironmentVariable(key);
+#pragma warning disable CS8653
+            if (string.IsNullOrWhiteSpace(v)) return defaultValues.Length > 0 ? defaultValues[^1] : default(T);
+#pragma warning restore CS8653
+
+            if (typeof(T) == typeof(string))
+                return (T)(object)v;
+            return (T)Convert.ChangeType(v, typeof(T));
         }
 
         #region About Json

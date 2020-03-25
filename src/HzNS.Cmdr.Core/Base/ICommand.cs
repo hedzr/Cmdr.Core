@@ -9,7 +9,7 @@ namespace HzNS.Cmdr.Base
 
         List<IFlag> RequiredFlags { get; }
         Dictionary<string, List<IFlag>> ToggleableFlags { get; }
-        
+
         // ReSharper disable once InconsistentNaming
         string backtraceTitles { get; }
         string HitTitle { get; }

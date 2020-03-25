@@ -153,7 +153,7 @@ namespace HzNS.Cmdr
             }
             finally
             {
-                ShowDumpScreen(this);
+                ShowDebugDumpFragment(this);
 
                 ColorifyEnabler.Reset();
             }
@@ -299,6 +299,32 @@ namespace HzNS.Cmdr
                 // build into Store too:
                 // bool exists = Cmdr.Instance.Store.HasKeys(flag.ToKeys());
                 var v = flag.getDefaultValue();
+                // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
+                // if (v == null)
+                {
+                    if (flag.EnvVars.Length > 0)
+                    {
+                        foreach (var ek in flag.EnvVars)
+                        {
+                            var tv = Util.GetEnvValue<object>(ek);
+                            // ReSharper disable once InvertIf
+                            if (tv != default)
+                            {
+                                v = tv;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var tv = Util.GetEnvValue<object>(Store.Instance.WrapKeys(flag.ToKeys()));
+                        if (tv != default)
+                        {
+                            v = tv;
+                        }
+                    }
+                }
+
                 if (v != null)
                     Cmdr.Instance.Store.SetByKeysInternal(flag.ToKeys(), v);
 
@@ -311,7 +337,7 @@ namespace HzNS.Cmdr
 
         #endregion
 
-        
+
         #region helpers for Walk()
 
         private bool walkFor(ICommand parent,

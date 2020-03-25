@@ -66,7 +66,7 @@ namespace HzNS.Cmdr.Exception
     {
     }
 
-    
+
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
     public class MissedRequiredFlagException : CmdrException
@@ -75,15 +75,16 @@ namespace HzNS.Cmdr.Exception
         {
             Flag = f;
         }
-        
+
         public IFlag Flag { get; set; }
 
         public override string ToString()
         {
-            return $"The REQUIRED flag '{Util.SwitchChar(true)}{Flag.Long}' missed. Context: \"{Flag.Owner?.backtraceTitles}\".";
+            return
+                $"The REQUIRED flag '{Util.SwitchChar(true)}{Flag.Long}' missed. Context: \"{Flag.Owner?.backtraceTitles}\".";
         }
     }
-    
+
 
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
@@ -150,14 +151,14 @@ namespace HzNS.Cmdr.Exception
         {
         }
     }
-    
+
     public class UnknownCommandException : WarnCommandException
     {
         public UnknownCommandException(bool isShort, string ch, ICommand cmd) : base(isShort, ch, cmd)
         {
         }
     }
-    
+
     public class UnknownFlagException : WarnCommandException
     {
         public UnknownFlagException(bool isShort, string ch, ICommand cmd) : base(isShort, ch, cmd)

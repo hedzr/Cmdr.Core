@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Painter;
+using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Ext;
 using HzNS.Cmdr.Tool.ObjectCloner;
 
@@ -47,10 +49,48 @@ namespace HzNS.Cmdr
             }
         }
 
+        
+        public IEnumerable<string> WrapKeys(IEnumerable<string> keys)
+        {
+            return Prefixes.Concat(keys);
+        }
+
+
+        public IEnumerable<string> WrapKeys(string dottedKey)
+        {
+            return Prefixes.Concat(dottedKey.Split('.'));
+        }
+
+        
         public object? Get(string key, object? defaultValues = null)
         {
             var (slot, vk) = FindByDottedKey(key);
             return slot?.Values[vk] ?? defaultValues;
+        }
+
+
+        public T GetAs<T>(string key, params T[] defaultValues)
+        {
+            var (slot, vk) = FindByDottedKey(key);
+            var v = slot?.Values[vk];
+#pragma warning disable CS8653
+            if (v == null) return defaultValues.Length > 0 ? defaultValues[^1] : default(T);
+#pragma warning restore CS8653
+
+            if (typeof(T) == typeof(bool))
+            {
+                var bv = Util.ToBool((string)v);
+                return (T)Convert.ChangeType(bv, typeof(T));
+            }
+            
+            if (typeof(T) == v.GetType())
+                return (T) v;
+
+            if(Cmdr.Instance.EnableAutoBoxingWhenExtracting)
+                return (T)Convert.ChangeType(v, typeof(T));
+            
+            throw new CmdrException(
+                $"type info mismatch, cannot get value from option store. expect: {typeof(T)}, the underlying data type is: {v.GetType()}.");
         }
 
         public object? Set<T>(string key, params T[] val)
@@ -61,13 +101,13 @@ namespace HzNS.Cmdr
             //     return;
             // }
 
-            var parts = Prefixes.Concat(key.Split('.'));
+            var parts = WrapKeys(key);
             return setValue(parts, Root, val);
         }
 
         public object? SetByKeys<T>(IEnumerable<string> keys, params T[] val)
         {
-            var parts = Prefixes.Concat(keys);
+            var parts = WrapKeys(keys);
             return setValue(parts, Root, val);
         }
 
@@ -80,7 +120,7 @@ namespace HzNS.Cmdr
         /// <returns></returns>
         internal object? SetByKeysInternal<T>(IEnumerable<string> keys, T val)
         {
-            var parts = Prefixes.Concat(keys);
+            var parts = WrapKeys(keys);
             return setValue(parts, Root, val);
         }
 
@@ -171,25 +211,25 @@ namespace HzNS.Cmdr
 
         public bool HasKeys(IEnumerable<string> keys)
         {
-            var (ok, _, _) = hasKeys(Prefixes.Concat(keys), Root);
+            var (ok, _, _) = hasKeys(WrapKeys(keys), Root);
             return ok;
         }
 
         public bool HasDottedKey(string dottedKey)
         {
-            var (ok, _, _) = hasKeys(Prefixes.Concat(dottedKey.Split('.')), Root);
+            var (ok, _, _) = hasKeys(WrapKeys(dottedKey), Root);
             return ok;
         }
 
         public (Slot?, string valueKey) FindByKeys(IEnumerable<string> keys)
         {
-            var (_, s, valueKey) = hasKeys(Prefixes.Concat(keys), Root);
+            var (_, s, valueKey) = hasKeys(WrapKeys(keys), Root);
             return (s, valueKey);
         }
 
         public (Slot?, string valueKey) FindByDottedKey(string dottedKey)
         {
-            var (_, s, valueKey) = hasKeys(Prefixes.Concat(dottedKey.Split('.')), Root);
+            var (_, s, valueKey) = hasKeys(WrapKeys(dottedKey), Root);
             return (s, valueKey);
         }
 
@@ -199,7 +239,7 @@ namespace HzNS.Cmdr
             var a = s.Split('.');
             return a.Length > 0 ? a[^1] : string.Empty;
         }
-        
+
         private (bool, Slot?, string valueKey) hasKeys(IEnumerable<string> parts, Slot? node)
         {
             var enumerable = parts as string[] ?? parts.ToArray();

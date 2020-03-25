@@ -25,7 +25,7 @@ namespace HzNS.Cmdr.Internal
                 Description = "Show the version of this app.",
                 Hidden = true,
                 Group = Worker.SysMgmtGroup,
-                Action = (worker, sender, remainArgs) => worker.ShowVersions(worker, remainArgs.ToArray()),
+                Action = (worker, sender, remainArgs) => worker.ShowVersionsScreen(worker, remainArgs.ToArray()),
             });
             root.AddFlag(new Flag<bool>
             {
@@ -35,7 +35,7 @@ namespace HzNS.Cmdr.Internal
                 Group = Worker.SysMgmtGroup,
                 PreAction = delegate(IBaseWorker worker, IBaseOpt sender, IEnumerable<string> remainArgs)
                 {
-                    worker.ShowVersions(worker, remainArgs.ToArray());
+                    worker.ShowVersionsScreen(worker, remainArgs.ToArray());
                     return false;
                 },
             });
@@ -61,7 +61,7 @@ namespace HzNS.Cmdr.Internal
                 Group = Worker.SysMgmtGroup,
                 PreAction = (worker, sender, remainArgs) =>
                 {
-                    worker.ShowBuildInfo(worker, remainArgs.ToArray());
+                    worker.ShowBuildInfoScreen(worker, remainArgs.ToArray());
                     return false;
                 },
             });
@@ -118,7 +118,7 @@ namespace HzNS.Cmdr.Internal
                 Group = Worker.SysMgmtGroup,
                 PreAction = ((worker, sender, remainArgs) =>
                 {
-                    worker.DumpTreeForAllCommands(worker, remainArgs.ToArray());
+                    worker.ShowTreeDumpScreenForAllCommands(worker, remainArgs.ToArray());
                     return false;
                 })
             });

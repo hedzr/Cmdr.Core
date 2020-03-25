@@ -382,8 +382,9 @@ namespace HzNS.Cmdr.Internal
 
             return (ate, val);
         }
-        
-        private static void setValueRecursive(this object obj, string propertyName, object value, bool recursive = false)
+
+        private static void setValueRecursive(this object obj, string propertyName, object value,
+            bool recursive = false)
         {
             var t = obj.GetType();
             foreach (var propInfo in t.GetProperties())
@@ -401,8 +402,8 @@ namespace HzNS.Cmdr.Internal
                     propInfo.SetValue(obj, value, null);
                 }
             }
-        } 
-        
+        }
+
         #endregion
 
 
@@ -500,7 +501,7 @@ namespace HzNS.Cmdr.Internal
                 @this.logDebug("  ---> flag matched: {SW:l}{Fragment:l}", sw, fragment);
                 // if (flag is BaseFlag<bool> f)
                 {
-                    flag.setValueRecursive("HitCount", flag.HitCount+1);
+                    flag.setValueRecursive("HitCount", flag.HitCount + 1);
                     flag.setValueRecursive("HitTitle", fragment);
                 }
 

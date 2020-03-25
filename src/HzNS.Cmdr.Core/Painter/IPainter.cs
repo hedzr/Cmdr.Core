@@ -13,6 +13,10 @@ namespace HzNS.Cmdr.Painter
     [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
     public interface IPainter
     {
+        void Setup(ICommand cmd, IBaseWorker w, params string[] remainArgs)
+        {
+        }
+
         void PrintPrologue(ICommand cmd, IBaseWorker w, params string[] remainArgs)
         {
         }
@@ -29,6 +33,9 @@ namespace HzNS.Cmdr.Painter
         void PrintTailLines(ICommand cmd, IBaseWorker w, params string[] remainArgs);
 
 
+        void PrintUsages(ICommand cmd, IBaseWorker w, params string[] remainArgs);
+        void PrintExamples(ICommand cmd, IBaseWorker w, params string[] remainArgs);
+
         void PrintCommandsAndOptions(ICommand cmd,
             SortedDictionary<string, List<TwoString>> commandLines,
             SortedDictionary<int, CmdFlags> optionLines,
@@ -39,6 +46,9 @@ namespace HzNS.Cmdr.Painter
         void PrintDumpForDebug(ICommand cmd, IBaseWorker w, int tabStop = 45, bool hitOnly = true, bool enabled = false)
         {
         }
+
+        void PrintBuildInfo(ICommand cmd, in int tabStop, IBaseWorker w, params string[] remainArgs);
+        void PrintVersions(ICommand cmd, in int tabStop, IBaseWorker w, params string[] remainArgs);
     }
 
     public class DefaultPainter : IPainter
@@ -61,83 +71,36 @@ namespace HzNS.Cmdr.Painter
 
         #endregion
 
-        #region PrintDumpForDebug
+        private bool _quiteMode;
 
-        public void PrintDumpForDebug(ICommand cmd, IBaseWorker w, int tabStop, bool hitOnly = true, bool enabled = false)
+
+        public void Setup(ICommand cmd, IBaseWorker w, params string[] remainArgs)
         {
-            if (!enabled) return;
+            // Console.WriteLine("Setup...");
+            // _quiteMode = Parse(Cmdr.Instance.Store.Get("quiet").ToString());
+            _quiteMode = Cmdr.Instance.Store.GetAs("quiet", _quiteMode);
 
-            oln("Dump the Store:");
-            var store = Cmdr.Instance.Store;
-            store.Dump(o);
-
-            oln("\n\nDump the Flags (Hit only):");
-            dumpValues(w.RootCommand, w, tabStop, hitOnly);
+            // int qi = Cmdr.Instance.Store.GetAs("quiet", 0);
+            // Console.WriteLine($"qi={qi}");
         }
 
-        // ReSharper disable once SuggestBaseTypeForParameter
-        // ReSharper disable once InconsistentNaming
-        private void dumpValues(ICommand parent, IBaseWorker w, int tabStop, bool hitOnly = true)
-        {
-            w.Walk(parent,
-                commandsWatcher: (owner, cmd, level) => true,
-                flagsWatcher: (owner, flg, level) =>
-                {
-                    var s = Cmdr.Instance.Store;
-                    var (slot, vk) = s.FindByKeys(flg.ToKeys());
-                    // ReSharper disable once InvertIf
-                    if (slot != null && (!hitOnly || flg.HitCount > 0))
-                    {
-                        var v = slot.Values[vk];
-                        var txt = new StringBuilder();
-                        txt.Append(" ".Repeat(level + 2))
-                            .Append(flg.ToDottedKey());
-                        txt.Append(" ".Repeat(tabStop - txt.Length - 1));
-                        o(txt.ToString(), ColorDesc);
-                        oln($"=> [{flg.HitCount}] {v?.ToStringEx()}");
-                    }
-
-                    return true;
-                });
-        }
-
-        #endregion
-
-        // ReSharper disable once InconsistentNaming
-        // ReSharper disable once MemberCanBeMadeStatic.Local
-        private void oln(string text, string color = Colors.txtDefault)
-        {
-            ColorifyEnabler.Colorify.WriteLine(text, color);
-        }
-
-        // ReSharper disable once InconsistentNaming
-        // ReSharper disable once MemberCanBeMadeStatic.Local
-        private void o(string text, string color = Colors.txtDefault)
-        {
-            ColorifyEnabler.Colorify.Write(text, color);
-        }
-
-        public void PrintEpilogue(ICommand cmd, IBaseWorker w, params string[] remainArgs)
-        {
-            ColorifyEnabler.Colorify.WriteLine(Console.Out.NewLine);
-        }
-
-        public void PrintHeadLine(ICommand cmd, IBaseWorker w, params string[] remainArgs)
-        {
-            // 
-        }
 
         public void PrintHeadLines(ICommand cmd, IBaseWorker w, params string[] remainArgs)
         {
-            //
+            if (_quiteMode) return;
         }
 
-        public void PrintTailLines(ICommand cmd, IBaseWorker w, params string[] remainArgs)
+        public void PrintUsages(ICommand cmd, IBaseWorker w, params string[] remainArgs)
         {
-            oln(Console.Out.NewLine, ColorDesc);
-            oln("Type '-h'/'-?' or '--help' to get command help screen.", ColorDesc);
-            oln("More: '-D'/'--debug', '-v'|'--verbose', '-V'/'--version', '-#'/'--build-info'...", ColorDesc);
+            if (_quiteMode) return;
         }
+
+        public void PrintExamples(ICommand cmd, IBaseWorker w, params string[] remainArgs)
+        {
+            if (_quiteMode) return;
+        }
+
+        #region PrintCommandsAndOptions
 
         public void PrintCommandsAndOptions(ICommand cmd,
             SortedDictionary<string, List<TwoString>> commandLines,
@@ -164,6 +127,7 @@ namespace HzNS.Cmdr.Painter
                 }
             }
 
+            // ReSharper disable once InvertIf
             if (optionLines.Count > 0)
             {
                 var step = 0;
@@ -197,7 +161,7 @@ namespace HzNS.Cmdr.Painter
         {
             foreach (var (group, twoStrings) in lines)
             {
-                var g = Util.StripFirstKnobble(group);
+                var g = group.StripFirstKnobble();
                 if (g != "Unsorted")
                 {
                     var c = Console.ForegroundColor;
@@ -240,6 +204,101 @@ namespace HzNS.Cmdr.Painter
                 }
             }
         }
+
+        #endregion
+
+        public void PrintTailLines(ICommand cmd, IBaseWorker w, params string[] remainArgs)
+        {
+            if (_quiteMode) return;
+            
+            oln(Console.Out.NewLine, ColorDesc);
+            oln("Type '-h'/'-?' or '--help' to get command help screen.", ColorDesc);
+            oln("More: '-D'/'--debug', '-v'|'--verbose', '-V'/'--version', '-#'/'--build-info'...", ColorDesc);
+        }
+
+        public void PrintEpilogue(ICommand cmd, IBaseWorker w, params string[] remainArgs)
+        {
+            if (_quiteMode) return;
+            oln(Console.Out.NewLine);
+        }
+
+        #region PrintDumpForDebug
+
+        public void PrintDumpForDebug(ICommand cmd, IBaseWorker w, int tabStop, bool hitOnly = true,
+            bool enabled = false)
+        {
+            if (!enabled) return;
+
+            oln("Dump the Store:");
+            var store = Cmdr.Instance.Store;
+            store.Dump(o);
+
+            oln("\n\nDump the Flags (Hit only):");
+            dumpValues(w.RootCommand, w, tabStop, hitOnly);
+        }
+
+        #endregion
+
+        public void PrintBuildInfo(ICommand cmd, in int tabStop, IBaseWorker w, params string[] remainArgs)
+        {
+            var root = cmd.FindRoot();
+            if (root != null)
+            {
+                oln($"{root.AppInfo.AppVersion}");
+            }
+        }
+
+        public void PrintVersions(ICommand cmd, in int tabStop, IBaseWorker w, params string[] remainArgs)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        #region PrintDumpForDebug - helpers
+
+        // ReSharper disable once SuggestBaseTypeForParameter
+        // ReSharper disable once InconsistentNaming
+        private void dumpValues(ICommand parent, IBaseWorker w, int tabStop, bool hitOnly = true)
+        {
+            w.Walk(parent,
+                commandsWatcher: (owner, cmd, level) => true,
+                flagsWatcher: (owner, flg, level) =>
+                {
+                    var s = Cmdr.Instance.Store;
+                    var (slot, vk) = s.FindByKeys(flg.ToKeys());
+                    // ReSharper disable once InvertIf
+                    if (slot != null && (!hitOnly || flg.HitCount > 0))
+                    {
+                        var v = slot.Values[vk];
+                        var txt = new StringBuilder();
+                        txt.Append(" ".Repeat(level + 2))
+                            .Append(flg.ToDottedKey());
+                        txt.Append(" ".Repeat(tabStop - txt.Length - 1));
+                        o(txt.ToString(), ColorDesc);
+                        oln($"=> [{flg.HitCount}] {v?.ToStringEx()}");
+                    }
+
+                    return true;
+                });
+        }
+
+        #endregion
+
+
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once MemberCanBeMadeStatic.Local
+        private void oln(string text, string color = Colors.txtDefault)
+        {
+            ColorifyEnabler.Colorify.WriteLine(text, color);
+        }
+
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once MemberCanBeMadeStatic.Local
+        private void o(string text, string color = Colors.txtDefault)
+        {
+            ColorifyEnabler.Colorify.Write(text, color);
+        }
+
 
         // ReSharper disable once MemberCanBePrivate.Global
         // ReSharper disable once FieldCanBeMadeReadOnly.Global

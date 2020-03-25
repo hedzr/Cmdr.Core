@@ -14,10 +14,10 @@ namespace HzNS.Cmdr.Base
         /// The form likes: "3d89s5139ms".
         /// </summary>
         bool UseMomentTimeFormat { get; set; }
-        
+
         string HitTitle { get; }
         int HitCount { get; }
-        
+
         object? getDefaultValue();
     }
 
