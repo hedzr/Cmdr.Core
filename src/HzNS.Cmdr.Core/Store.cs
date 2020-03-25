@@ -22,6 +22,9 @@ namespace HzNS.Cmdr
 
         private readonly SortedDictionary<string, Slot> _fastMap = new SortedDictionary<string, Slot>();
 
+
+        #region Dump()
+
         public void Dump(Action<string, string> print)
         {
             dumpTo(print, Root);
@@ -48,7 +51,9 @@ namespace HzNS.Cmdr
             }
         }
 
-        
+        #endregion
+
+
         public IEnumerable<string> WrapKeys(IEnumerable<string> keys)
         {
             return Prefixes.Concat(keys);
@@ -60,13 +65,14 @@ namespace HzNS.Cmdr
             return Prefixes.Concat(dottedKey.Split('.'));
         }
 
-        
+
+        #region Get(), GetAs<T>()
+
         public object? Get(string key, object? defaultValues = null)
         {
             var (slot, vk) = FindByDottedKey(key);
             return slot?.Values[vk] ?? defaultValues;
         }
-
 
         public T GetAs<T>(string key, params T[] defaultValues)
         {
@@ -82,16 +88,28 @@ namespace HzNS.Cmdr
             if (typeof(T) == typeof(bool))
             {
                 var bv = v.ToBool();
-                return (T)Convert.ChangeType(bv, typeof(T));
+                return (T) Convert.ChangeType(bv, typeof(T));
             }
-            
-            if(Cmdr.Instance.EnableAutoBoxingWhenExtracting)
-                return (T)Convert.ChangeType(v, typeof(T));
-            
+
+            if (Cmdr.Instance.EnableAutoBoxingWhenExtracting)
+                return (T) Convert.ChangeType(v, typeof(T));
+
             throw new CmdrException(
                 $"type info mismatch, cannot get value from option store. expect: {typeof(T)}, the underlying data type is: {v.GetType()}.");
         }
 
+        #endregion
+
+        
+        #region Set<T>(), SetByKeys<T>()
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="val"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>the old value</returns>
         public object? Set<T>(string key, params T[] val)
         {
             // if (val == null)
@@ -104,6 +122,13 @@ namespace HzNS.Cmdr
             return setValue(parts, Root, val);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="keys"></param>
+        /// <param name="val"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>the old value</returns>
         public object? SetByKeys<T>(IEnumerable<string> keys, params T[] val)
         {
             var parts = WrapKeys(keys);
@@ -201,6 +226,8 @@ namespace HzNS.Cmdr
 
             Console.WriteLine("1_1");
         }
+
+        #endregion
 
 
         public void Delete(string key, bool recursive = true)

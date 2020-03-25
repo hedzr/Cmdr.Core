@@ -72,16 +72,24 @@ cmdr has rich features:
 
 - [x] Supports for unlimited multi-level sub-commands.
   
-- [ ] Overrides by environment variables.
+- [x] Overrides by environment variables.
 
   *priority level:* `defaultValue -> config-file -> env-var -> command-line opts`
 
 - [ ] `Option Store` - Unify option value extraction:
 
-  - [ ] `object? cmdr.Get(key, defaultValue)`
+  - [x] `object? Cmdr.Instance.Store.Get(key, defaultValue)`
 
-    ??:
-    
+  - [x] `T Cmdr.Instance.Store.GetAs<T>(key, defaultValue)`
+
+  - [x] `object? Set<T>(key, value)`
+
+  - [x] `object? SetByKeys(IEnumerable<string> keys, value)`
+
+  - [x] `HasKeys`, `HasDottedKeys`, `FindByKeys`, `FindByDottedKeys`, ...
+
+  - [ ] ??:
+
     `cmdr.GetBool(key)`, `cmdr.GetInt(key)`, `cmdr.GetString(key)`, `cmdr.GetStringSlice(key, defaultValues...)` and `cmdr.GetIntSlice(key, defaultValues...)`, `cmdr.GetDuration(key)` for Option value extractions.
     
     - bool
@@ -103,12 +111,12 @@ cmdr has rich features:
     - map
     - struct: `cmdr.GetSectionFrom(sectionKeyPath, &holderStruct)`
     
-  - `cmdr.Set(key, value)`, `cmdr.SerNx(key, value)`
+  - ??: `cmdr.Set(key, value)`, `cmdr.SerNx(key, value)`
 
     - `Set()` set value by key without RxxtPrefix, eg: `cmdr.Set("debug", true)` for `--debug`.
     - `SetNx()` set value by exact key. so: `cmdr.SetNx("app.debug", true)` for `--debug`.
 
-  - Fast Guide for `Get`, `GetP` and `GetR`:
+  - ??: Fast Guide for `Get`, `GetP` and `GetR`:
 
     - `cmdr.GetP(prefix, key)`, `cmdr.GetBoolP(prefix, key)`, ….
     - `cmdr.GetR(key)`, `cmdr.GetBoolR(key)`, …, `cmdr.GetMapR(key)`

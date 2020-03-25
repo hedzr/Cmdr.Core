@@ -300,6 +300,9 @@ namespace HzNS.Cmdr
                 // build into Store too:
                 // bool exists = Cmdr.Instance.Store.HasKeys(flag.ToKeys());
                 var v = flag.getDefaultValue();
+
+                #region loading values from env vars
+
                 // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
                 // if (v == null)
                 {
@@ -334,6 +337,8 @@ namespace HzNS.Cmdr
                         }
                     }
                 }
+
+                #endregion
 
                 if (v != null)
                     Cmdr.Instance.Store.SetByKeysInternal(flag.ToKeys(), v);
