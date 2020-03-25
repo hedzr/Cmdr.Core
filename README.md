@@ -78,8 +78,12 @@ cmdr has rich features:
 
 - [ ] `Option Store` - Unify option value extraction:
 
-  - [ ] `cmdr.Get(key)`, `cmdr.GetBool(key)`, `cmdr.GetInt(key)`, `cmdr.GetString(key)`, `cmdr.GetStringSlice(key, defaultValues...)` and `cmdr.GetIntSlice(key, defaultValues...)`, `cmdr.GetDuration(key)` for Option value extractions.
+  - [ ] `object? cmdr.Get(key, defaultValue)`
 
+    ??:
+    
+    `cmdr.GetBool(key)`, `cmdr.GetInt(key)`, `cmdr.GetString(key)`, `cmdr.GetStringSlice(key, defaultValues...)` and `cmdr.GetIntSlice(key, defaultValues...)`, `cmdr.GetDuration(key)` for Option value extractions.
+    
     - bool
     - int, int64, uint, uint64, float32, float64
       ```bash
@@ -109,9 +113,9 @@ cmdr has rich features:
     - `cmdr.GetP(prefix, key)`, `cmdr.GetBoolP(prefix, key)`, ….
     - `cmdr.GetR(key)`, `cmdr.GetBoolR(key)`, …, `cmdr.GetMapR(key)`
     - `cmdr.GetRP(prefix, key)`, `cmdr.GetBoolRP(prefix, key)`, ….
-  
+
     As a fact, `cmdr.Get("app.server.port")` == `cmdr.GetP("app.server", "port")` == `cmdr.GetR("server.port")`
-	(*if cmdr.RxxtPrefix == ["app"]*); so:
+  (*if cmdr.RxxtPrefix == ["app"]*); so:
 
     ```go
     cmdr.Set("server.port", 7100)
