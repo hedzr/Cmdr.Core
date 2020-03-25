@@ -21,12 +21,12 @@ namespace HzNS.Cmdr.Store
 
         private readonly SortedDictionary<string, Slot> _fastMap = new SortedDictionary<string, Slot>();
 
-        public void Dump()
+        public void Dump(Action<string, string> print)
         {
-            dumpTo(Console.Out, Root);
+            dumpTo(print, Root);
         }
 
-        public void dumpTo(TextWriter tw, Slot? node, int level = 0, params string[] parts)
+        public void dumpTo(Action<string, string> print, Slot? node, int level = 0, params string[] parts)
         {
             if (node == null) return;
 
@@ -34,7 +34,7 @@ namespace HzNS.Cmdr.Store
             {
                 var a = parts.ToList();
                 a.Add(key);
-                dumpTo(tw, slot, level + 1, a.ToArray());
+                dumpTo(print, slot, level + 1, a.ToArray());
             }
 
             foreach (var (key, val) in node.Values)
@@ -42,7 +42,8 @@ namespace HzNS.Cmdr.Store
                 var a = parts.ToList();
                 a.Add(key);
                 var path = string.Join(".", a.ToArray());
-                tw.WriteLineAsync($"  {path,-45}{val?.ToStringEx()}");
+                print($"  {path,-45}", DefaultPainter.ColorDesc);
+                print($"{val?.ToStringEx()}\n", DefaultPainter.ColorNormal);
             }
         }
 

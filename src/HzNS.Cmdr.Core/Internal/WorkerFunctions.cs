@@ -4,8 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Internal.Base;
+using HzNS.Cmdr.Painter;
 using HzNS.Cmdr.Tool;
-using HzNS.Cmdr.Tool.Colorify;
 using HzNS.Cmdr.Tool.Ext;
 
 namespace HzNS.Cmdr.Internal
@@ -47,118 +47,17 @@ namespace HzNS.Cmdr.Internal
             //
         }
 
-        // ReSharper disable once UnusedParameter.Local
-        private void ShowOne(SortedDictionary<string, List<TwoString>> lines, Format writer, int tabStop, int level = 0)
-        {
-            foreach (var (group, twoStrings) in lines)
-            {
-                var g = Util.StripFirstKnobble(group);
-                if (g != "Unsorted")
-                {
-                    var c = Console.ForegroundColor;
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    writer.WriteLine($"  [{g}]:", ColorGroup);
-                    Console.ForegroundColor = c;
-                }
-
-                foreach (var ts in twoStrings)
-                {
-                    writer.Write(ts.Part1, ColorNormal);
-                    writer.Write(" ".Repeat(tabStop - ts.Part1.Length));
-
-                    var c = Console.ForegroundColor;
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    if (tabStop + ts.Part2.Length > Console.WindowWidth)
-                    {
-                        var width = Console.WindowWidth - tabStop - 1;
-                        var start = 0;
-                        while (start < ts.Part2.Length)
-                        {
-                            if (start + width > ts.Part2.Length) width = ts.Part2.Length - start;
-                            writer.WriteLine(width < 0 ? ts.Part2 : ts.Part2.Substring(start, width), ColorDesc);
-                            if (width > 0)
-                            {
-                                start += width;
-                                if (start < ts.Part2.Length)
-                                {
-                                    writer.Write(" ".Repeat(tabStop));
-                                }
-                            }
-                            else
-                                start = ts.Part2.Length;
-                        }
-                    }
-                    else
-                        writer.WriteLine(ts.Part2, ColorDesc);
-
-                    Console.ForegroundColor = c;
-                }
-            }
-        }
-
-
-        [SuppressMessage("ReSharper", "InvertIf")]
-        [SuppressMessage("ReSharper", "ConvertIfStatementToConditionalTernaryExpression")]
-        private void ShowIt(ICommand cmd,
-            SortedDictionary<string, List<TwoString>> commandLines,
-            SortedDictionary<int, CmdFlags> optionLines,
-            Format writer, int tabStop, bool treeMode = false)
-        {
-            if (treeMode)
-            {
-                var title = cmd.IsRoot ? "-ROOT-" : cmd.backtraceTitles;
-                if (commandLines.Count > 0)
-                {
-                    writer.WriteLine($"\nCommands Tree For '{title}':");
-                    ShowOne(commandLines, writer, tabStop);
-                }
-                else
-                    writer.WriteLine($"\nNO SUB-COMMANDS For '{title}'");
-            }
-            else
-            {
-                if (commandLines.Count > 0)
-                {
-                    writer.WriteLine("\nCommands:");
-                    ShowOne(commandLines, writer, tabStop);
-                }
-            }
-
-            if (optionLines.Count > 0)
-            {
-                var step = 0;
-                // ReSharper disable once UnusedVariable
-                foreach (var (lvl, cf) in optionLines)
-                {
-                    if (!treeMode)
-                    {
-                        // writer.WriteLine($"\nOptions {UpperBoundLevel - lvl}:");
-                        if (step == 0)
-                            writer.WriteLine($"\nOptions:");
-                        else if (cf.cmd.IsRoot)
-                            writer.WriteLine($"\nGlobal Options:");
-                        else if (step == 1)
-                            writer.WriteLine($"\nParent Options ({cf.cmd.backtraceTitles}):");
-                        else
-                            writer.WriteLine($"\nParents Options ({cf.cmd.backtraceTitles}):");
-                    }
-
-                    ShowOne(cf.lines, writer, tabStop, step);
-                    step++;
-                }
-            }
-        }
-
         #region ShowEverything
 
         public void ShowEverything(Worker w, params string[] remainArgs)
         {
-            var writer = ColorifyEnabler.Colorify; // Console.Out;
+            // var writer = ColorifyEnabler.Colorify; // Console.Out;
             var commandLines = new SortedDictionary<string, List<TwoString>>();
             var optionLines = new SortedDictionary<int, CmdFlags>();
-            var tabStop = w.TabStop;
+            var command = w.ParsedCommand ?? w.RootCommand;
+            tabStopCalculated = w.TabStop;
 
-            w.Walk(w.ParsedCommand,
+            w.Walk(command,
                 (owner, cmd, level) =>
                 {
                     if (cmd.Hidden) return true;
@@ -175,7 +74,7 @@ namespace HzNS.Cmdr.Internal
                     if (!commandLines.ContainsKey(cmd.Group))
                         commandLines.TryAdd(cmd.Group, new List<TwoString>());
 
-                    if (sb.Length >= tabStop) tabStop = sb.Length + 1;
+                    if (sb.Length >= tabStopCalculated) tabStopCalculated = sb.Length + 1;
                     commandLines[cmd.Group].Add(new TwoString
                         {Level = level, Part1 = sb.ToString(), Part2 = sb2.ToString()});
 
@@ -201,7 +100,7 @@ namespace HzNS.Cmdr.Internal
                     if (!optionLines[lvl].lines.ContainsKey(flag.Group))
                         optionLines[lvl].lines.TryAdd(flag.Group, new List<TwoString>());
 
-                    if (sb.Length >= tabStop) tabStop = sb.Length + 1;
+                    if (sb.Length >= tabStopCalculated) tabStopCalculated = sb.Length + 1;
                     optionLines[lvl].lines[flag.Group].Add(new TwoString
                         {Level = level, Flag = flag, Part1 = sb.ToString(), Part2 = sb2.ToString()});
 
@@ -217,9 +116,18 @@ namespace HzNS.Cmdr.Internal
                     return true;
                 });
 
-            ShowIt(w.ParsedCommand ?? w.RootCommand, commandLines, optionLines, writer, tabStop);
+            Painter.PrintPrologue(command, w, remainArgs);
+            Painter.PrintPreface(command, w, remainArgs);
+            Painter.PrintHeadLines(command, w, remainArgs);
+            
+            // ShowIt(w.ParsedCommand ?? w.RootCommand, commandLines, optionLines, writer, tabStop);
+            // // ShowIt(command, commandLines, optionLines, writer, tabStop);
+            Painter.PrintCommandsAndOptions(command, commandLines, optionLines, 
+                tabStopCalculated, false, w, remainArgs);
 
-            writer.WriteLine("");
+            Painter.PrintTailLines(command, w, remainArgs);
+            Painter.PrintEpilogue(command, w, remainArgs);
+            // writer.WriteLine("");
 
             Test();
         }
@@ -228,13 +136,25 @@ namespace HzNS.Cmdr.Internal
 
         // ReSharper disable once InconsistentNaming
         private bool noBacktrace;
+        
+        // ReSharper disable once MemberCanBePrivate.Global
+        public IPainter Painter { get; set; } = new DefaultPainter();
 
+        private int tabStopCalculated = 45;
+        
+        public void ShowDumpScreen(IBaseWorker w)
+        {
+            var dump = Util.GetEnvValueBool("CMDR_DUMP");
+            Painter.PrintDumpForDebug(w.ParsedCommand??w.RootCommand, w, tabStopCalculated, true, dump);
+        }
+        
         public void ShowHelpScreen(IBaseWorker w, params string[] remainArgs)
         {
             var commandLines = new SortedDictionary<string, List<TwoString>>();
             var optionLines = new SortedDictionary<int, CmdFlags>();
-            var writer = ColorifyEnabler.Colorify; // Console.Out;
-            var tabStop = w.TabStop;
+            // var writer = ColorifyEnabler.Colorify; // Console.Out;
+            var command = w.ParsedCommand ?? w.RootCommand;
+            tabStopCalculated = w.TabStop;
             noBacktrace = false;
 
             w.Walk(w.ParsedCommand,
@@ -255,29 +175,38 @@ namespace HzNS.Cmdr.Internal
                     if (!commandLines.ContainsKey(cmd.Group))
                         commandLines.TryAdd(cmd.Group, new List<TwoString>());
 
-                    if (sb.Length >= tabStop) tabStop = sb.Length + 1;
+                    if (sb.Length >= tabStopCalculated) tabStopCalculated = sb.Length + 1;
                     commandLines[cmd.Group].Add(new TwoString
                         {Level = level, Part1 = sb.ToString(), Part2 = sb2.ToString()});
 
                     return true;
                 },
-                flagsWatcher(w, optionLines, tabStop));
+                flagsWatcher(w, optionLines, tabStopCalculated));
 
-            ShowIt(w.ParsedCommand ?? w.RootCommand, commandLines, optionLines, writer, tabStop);
+            Painter.PrintPrologue(command, w, remainArgs);
+            Painter.PrintPreface(command, w, remainArgs);
+            Painter.PrintHeadLines(command, w, remainArgs);
+            
+            // ShowIt(command, commandLines, optionLines, writer, tabStop);
+            Painter.PrintCommandsAndOptions(command, commandLines, optionLines, 
+                tabStopCalculated, false, w, remainArgs);
 
-            writer.WriteLine("");
+            Painter.PrintTailLines(command, w, remainArgs);
+            Painter.PrintEpilogue(command, w, remainArgs);
+            // writer.WriteLine("");
         }
 
         public void DumpTreeForAllCommands(IBaseWorker w, params string[] remainArgs)
         {
             w.log.Debug("dump tree");
 
-            var writer = ColorifyEnabler.Colorify; // Console.Out;
+            // var writer = ColorifyEnabler.Colorify; // Console.Out;
             var commandLines = new SortedDictionary<string, List<TwoString>>();
             var optionLines = new SortedDictionary<int, CmdFlags>();
-            var tabStop = w.TabStop;
+            var command = w.ParsedCommand ?? w.RootCommand;
+            tabStopCalculated = w.TabStop;
 
-            w.Walk(w.ParsedCommand,
+            w.Walk(command,
                 (owner, cmd, level) =>
                 {
                     if (cmd.Hidden) return true;
@@ -294,7 +223,7 @@ namespace HzNS.Cmdr.Internal
                     if (!commandLines.ContainsKey(cmd.Group))
                         commandLines.TryAdd(cmd.Group, new List<TwoString>());
 
-                    if (sb.Length >= tabStop) tabStop = sb.Length + 1;
+                    if (sb.Length >= tabStopCalculated) tabStopCalculated = sb.Length + 1;
                     commandLines[cmd.Group].Add(new TwoString
                         {Part1 = sb.ToString(), Part2 = sb2.ToString()});
 
@@ -302,9 +231,18 @@ namespace HzNS.Cmdr.Internal
                 },
                 (owner, flag, level) => true);
 
-            ShowIt(w.ParsedCommand ?? w.RootCommand, commandLines, optionLines, writer, tabStop, true);
+            
+            Painter.PrintPrologue(command, w, remainArgs);
+            Painter.PrintPreface(command, w, remainArgs);
+            Painter.PrintHeadLines(command, w, remainArgs);
+            
+            // ShowIt(w.ParsedCommand ?? w.RootCommand, commandLines, optionLines, writer, tabStop, true);
+            Painter.PrintCommandsAndOptions(command, commandLines, optionLines, 
+                tabStopCalculated, true, w, remainArgs);
 
-            writer.WriteLine("");
+            Painter.PrintTailLines(command, w, remainArgs);
+            Painter.PrintEpilogue(command, w, remainArgs);
+            // writer.WriteLine("");
         }
 
         // ReSharper disable once InconsistentNaming
@@ -368,28 +306,6 @@ namespace HzNS.Cmdr.Internal
                 return true;
             };
         }
-
-        private class CmdFlags
-        {
-#pragma warning disable CS8618
-            internal ICommand cmd { get; set; }
-            internal SortedDictionary<string /*group*/, List<TwoString>> lines { get; set; }
-#pragma warning restore CS8618
-        }
-
-        private class TwoString
-        {
-#pragma warning disable CS8618
-            internal int Level { get; set; }
-            internal IFlag Flag { get; set; }
-            internal string Part1 { get; set; } = "";
-            internal string Part2 { get; set; } = "";
-#pragma warning restore CS8618
-        }
-
-        private const string ColorDesc = Colors.txtMuted;
-        private const string ColorGroup = Colors.txtMuted;
-        private const string ColorNormal = Colors.txtPrimary;
 
         private const int UpperBoundLevel = int.MaxValue;
 

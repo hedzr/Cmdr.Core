@@ -154,15 +154,7 @@ namespace HzNS.Cmdr
             }
             finally
             {
-                var dump = Util.GetEnvValueBool("CMDR_DUMP");
-                if (dump)
-                {
-                    Console.WriteLine("\n\nDump the Store:");
-                    var store = Cmdr.Instance.Store;
-                    store.Dump();
-                    Console.WriteLine("\n\nDump the Flags:");
-                    DumpValues();
-                }
+                ShowDumpScreen(this);
 
                 ColorifyEnabler.Reset();
             }
@@ -350,32 +342,6 @@ namespace HzNS.Cmdr
         }
 
         #endregion
-
-        private void DumpValues()
-        {
-            dumpValues(RootCommand);
-        }
-
-        private void dumpValues(ICommand parent)
-        {
-            walkFor(parent ?? _root,
-                commandsWatcher: (owner, Cmdr, level) => true,
-                flagsWatcher: (owner, flg, level) =>
-                {
-                    var s = Cmdr.Instance.Store;
-                    var (slot,vk) = s.FindByKeys(flg.ToKeys());
-                    // ReSharper disable once InvertIf
-                    if (slot != null)
-                    {
-                        var v = slot.Values[vk];
-                        // if (v?.GetType().IsArray == true)
-                        //     v = "[" + string.Join(",", v as object[] ?? throw new CmdrException()) + "]";
-                        Console.WriteLine($"  {flg.ToDottedKey(),-45}=> [{flg.HitCount}] {v?.ToStringEx()}");
-                    }
-
-                    return true;
-                });
-        }
 
         // #region helpers for Run() - match
         //
