@@ -1,12 +1,5 @@
 # Cmdr.Core
 
-- env
-- config files
-- option store
-
-- `--vvv`
-- `-abc`
-
 
 
 
@@ -55,6 +48,7 @@ cmdr has rich features:
     - `~~tree`: list all commands and sub-commands.
     - `--config <location>`: specify the location of the root config file.
   - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
+  <!--
   - [ ] Generate Commands:
     - [ ] `generate shell`: `—bash`/`—zsh`(*todo*)/`--auto`
     - [ ] `generate manual`:  man 1 ready.
@@ -62,6 +56,7 @@ cmdr has rich features:
   - `cmdr` Specials:
     - [ ] `--no-env-overrides`, and `--strict-mode`
     - [ ] `--no-color`: print the plain text to console without ANSI colors.
+  -->
 
 - [x] Groupable commands and options/flags.
 
@@ -77,16 +72,13 @@ cmdr has rich features:
   *priority level:* `defaultValue -> config-file -> env-var -> command-line opts`
 
 - [x] `Option Store` - Unify option value extraction:
-
   - [x] `object? Cmdr.Instance.Store.Get(key, defaultValue)`
-
   - [x] `T Cmdr.Instance.Store.GetAs<T>(key, defaultValue)`
-
   - [x] `object? Set<T>(key, value)`
-
   - [x] `object? SetByKeys(IEnumerable<string> keys, value)`
-
   - [x] `HasKeys`, `HasDottedKeys`, `FindByKeys`, `FindByDottedKeys`, ...
+
+  <!--
 
   - [ ] ??:
 
@@ -140,19 +132,17 @@ cmdr has rich features:
     fmt.Println(cmdr.GetStringR("kk"))          // = /home/ubuntu/Downloads
     ```
 
-- cmdr Options Store
+  -->
 
+- cmdr Options Store
   internal `rxxtOptions`
 
 - [x] Walkable
-
   - Customizable `Painter` interface to loop *each* command and flag.
   - Walks on all commands with `Walk(walker)`.
   
 - [x] Supports `-I/usr/include -I=/usr/include` `-I /usr/include -I:/usr` option argument specifications
-
   Automatically allows those formats (applied to long option too):
-
   - `-I file`, `-Ifile`, and `-I=files`
   - `-I 'file'`, `-I'file'`, and `-I='files'`
   - `-I "file"`, `-I"file"`, and `-I="files"`
@@ -160,17 +150,11 @@ cmdr has rich features:
 - [ ] Supports for **PassThrough** by `--`. (*Passing remaining command line arguments after -- (optional)*)
 
 - [ ] Predefined external config file locations:
-
   - `/etc/<appname>/<appname>.yml` and `conf.d` sub-directory.
-
   - `/usr/local/etc/<appname>/<appname>.yml` and `conf.d` sub-directory.
-
   - `$HOME/.config/<appname>/<appname>.yml` and `conf.d` sub-directory.
-
   - `$HOME/.<appname>/<appname>.yml` and `conf.d` sub-directory.
-
-  - all predefined locations are:
-
+  - the predefined locations are:
     ```go
     predefinedLocations: []string{
     	"./ci/etc/%s/%s.yml",       // for developer
@@ -186,27 +170,19 @@ cmdr has rich features:
   - since v1.5.0, uses `cmdr.WithPredefinedLocations("a","b",...),`
 
 - [ ] Watch `conf.d` directory:
-
   - `cmdr.WithConfigLoadedListener(listener)`
-
     - `AddOnConfigLoadedListener(c)`
     - `RemoveOnConfigLoadedListener(c)`  
     - `SetOnConfigLoadedListener(c, enabled)`
-
   - As a feature, do NOT watch the changes on `<appname>.yml`.
-
     - *since v1.6.9*, `WithWatchMainConfigFileToo(true)` allows the main config file `<appname>.yml`  to be watched.
-
   - on command-line:
-
     ```bash
     $ bin/demo --configci/etc/demo-yy ~~debug
     $ bin/demo --config=ci/etc/demo-yy/any.yml ~~debug
     $ bin/demo --config ci/etc/demo-yy/any.yml ~~debug
     ```
-
   - supports muiltiple file formats:
-
     - Yaml
     - JSON
     - TOML
@@ -222,7 +198,15 @@ cmdr has rich features:
 
 - 
 
-- 
+
+
+## LICENSE
+
+MIT
+
+
+
+<!--
 
 ---
 
@@ -430,4 +414,4 @@ cmdr has rich features:
 
 
 
-
+-->
