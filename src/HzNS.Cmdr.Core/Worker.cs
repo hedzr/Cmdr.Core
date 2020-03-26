@@ -63,7 +63,7 @@ namespace HzNS.Cmdr
         public bool Parsed { get; set; }
         public ICommand? ParsedCommand { get; set; }
         public IFlag? ParsedFlag { get; set; }
-        public string PrimaryConfigDir { get; internal set; }
+        public string PrimaryConfigDir { get; internal set; } = "";
 
 
         public bool EnableDuplicatedCharThrows { get; set; } = false;
@@ -305,7 +305,7 @@ namespace HzNS.Cmdr
 
         private void preparePrivateEnvVars()
         {
-            var currDir = Environment.CurrentDirectory;
+            string? currDir = Environment.CurrentDirectory;
 
 #if DEBUG
             // the predefined EnvVar 'CURR_DIR' will prevent the debugging source dir searching action:
@@ -319,7 +319,7 @@ namespace HzNS.Cmdr
                 if (pos >= 0) currDir = currDir.Substring(0, pos);
                 var projDir = currDir;
 
-                var dir = currDir;
+                string? dir = currDir;
                 while (!string.IsNullOrWhiteSpace(dir))
                 {
                     if (Directory.GetFiles(dir, "*.sln", SearchOption.AllDirectories).Length > 0)
@@ -349,9 +349,9 @@ namespace HzNS.Cmdr
 
             if (!Util.GetEnvValueBool("CMDR_VERBOSE")) return;
 
-            foreach (DictionaryEntry e in Environment.GetEnvironmentVariables())
+            foreach (DictionaryEntry? e in Environment.GetEnvironmentVariables())
             {
-                this.logDebug($"  - ENV[{e.Key}] = {e.Value}");
+                this.logDebug($"  - ENV[{e?.Key}] = {e?.Value}");
             }
         }
 
@@ -371,8 +371,6 @@ namespace HzNS.Cmdr
 
         private bool loadExternalConfigurationsFrom(string location, IBaseWorker w, IRootCommand root)
         {
-            var usedConfigDir = string.Empty;
-
             var s1 = Regex.Replace(location, @"\$([A-Za-z0-9_]+)", @"%$1%",
                 RegexOptions.Multiline | RegexOptions.IgnoreCase);
             var loc = Environment.ExpandEnvironmentVariables(s1).EatEnd(".yml");
@@ -399,11 +397,11 @@ namespace HzNS.Cmdr
                         yaml.Load(input);
                         if (yaml.Documents[0].RootNode is YamlMappingNode mapping)
                         {
-                            usedConfigDir = Path.GetDirectoryName(loc);
+                            var usedConfigDir = Path.GetDirectoryName(loc);
                             Debug.WriteLine($"usedConfigDir: {usedConfigDir}");
                             Environment.SetEnvironmentVariable("CONFIG_DIR", usedConfigDir);
                             Environment.SetEnvironmentVariable("CONF_DIR", usedConfigDir);
-                            PrimaryConfigDir = usedConfigDir;
+                            PrimaryConfigDir = usedConfigDir ?? string.Empty;
 
                             var ok = mergeMappingNode(mapping, new string[] { });
                             if (ok && Directory.Exists(Path.Join(PrimaryConfigDir, ConfigFileAutoSubDir)))
