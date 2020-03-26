@@ -293,7 +293,7 @@ namespace HzNS.Cmdr.Internal
         #endregion
 
         #region flagsWatcher
-        
+
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
@@ -357,8 +357,8 @@ namespace HzNS.Cmdr.Internal
         }
 
         #endregion
-        
-        
+
+
         private const int UpperBoundLevel = int.MaxValue;
 
         // // ReSharper disable once InconsistentNaming

@@ -56,7 +56,7 @@ namespace HzNS.Cmdr.Tool.Ext
 
 
     public static class StringExtensions
-    { 
+    {
         public static string ToStringEx(this object @this)
         {
             // ReSharper disable once InvertIf
@@ -69,23 +69,21 @@ namespace HzNS.Cmdr.Tool.Ext
             return @this.ToString() ?? "";
         }
 
-        
+
         public static bool ToBool(this object @this, bool defaultValue = false)
         {
             return StringEx.ToBool(@this, defaultValue);
         }
-        
-        
-        
+
+
         // string
-        
-        
-        
+
+
         public static bool ToBool(this string @this, bool defaultValue = false)
         {
             return StringEx.ToBool(@this, defaultValue);
         }
-        
+
         public static string EatStart(this string @this, string part)
         {
             return @this.StartsWith(part) ? @this.Substring(part.Length) : @this;

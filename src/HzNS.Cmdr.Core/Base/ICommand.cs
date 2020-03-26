@@ -6,6 +6,7 @@ namespace HzNS.Cmdr.Base
     {
         List<ICommand> SubCommands { get; }
         List<IFlag> Flags { get; }
+
         /// <summary>
         /// In the help screen, Usages line looks like:
         /// <code>
@@ -25,6 +26,7 @@ namespace HzNS.Cmdr.Base
         ICommand AddFlag<T>(IFlag<T> flag, bool required = false);
 
         bool IsRoot { get; }
+
         // IRootCommand? FindRoot();
         int FindLevel();
 

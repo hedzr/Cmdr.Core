@@ -5,10 +5,10 @@ namespace HzNS.Cmdr.Base
         string AppName { get; }
         string AppVersion { get; }
         int AppVersionInt { get; }
-        
+
         string Author { get; }
         string Copyright { get; }
-        
+
         string BuildTimestamp { get; }
 
         /// <summary>

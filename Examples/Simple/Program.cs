@@ -74,7 +74,8 @@ namespace Simple
                             root.OnSet = (worker, flag, oldValue, newValue) =>
                             {
                                 if (Cmdr.Instance.Store.GetAs<bool>("quiet")) return;
-                                if (Cmdr.Instance.Store.GetAs<bool>("verbose") && flag.Root?.FindFlag("verbose")?.HitCount>1)
+                                if (Cmdr.Instance.Store.GetAs<bool>("verbose") &&
+                                    flag.Root?.FindFlag("verbose")?.HitCount > 1)
                                     Console.WriteLine(
                                         $"--> [{Cmdr.Instance.Store.GetAs<bool>("quiet")}][root.onSet] {flag} set: {oldValue?.ToStringEx()} -> {newValue?.ToStringEx()}");
                             };

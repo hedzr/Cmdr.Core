@@ -55,7 +55,7 @@ namespace HzNS.Cmdr.Base
             // ReSharper disable once ConvertIfStatementToReturnStatement
             // if (Owner == null) return null;
             // return Owner.FindRoot();
-            
+
             var o = this is ICommand ? (ICommand?) this : Owner;
             while (o?.Owner != null && o.Owner != o) o = o?.Owner;
             return (IRootCommand?) o;
@@ -74,7 +74,7 @@ namespace HzNS.Cmdr.Base
             var r = from ?? FindRoot();
             return r?.Walk(r, commandsWatcher, flagsWatcher) ?? false;
         }
-        
+
         public bool Match(string s, bool isLongOpt = false, bool aliasAsLong = true)
         {
             if (isLongOpt)
