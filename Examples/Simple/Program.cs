@@ -32,7 +32,7 @@ namespace Simple
                             root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
                                 .AddCommand(new TagsAddCmd())
                                 .AddCommand(new TagsRemoveCmd())
-                                // .AddCommand(new TagsAddCmd { }) // dup-test
+                                // .AddCommand(new TagsAddCmd { }) // for dup-test
                                 .AddCommand(new TagsListCmd())
                                 .AddCommand(new TagsModifyCmd())
                                 .AddCommand(new TagsModeCmd())

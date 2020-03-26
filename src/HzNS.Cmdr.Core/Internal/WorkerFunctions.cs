@@ -90,7 +90,7 @@ namespace HzNS.Cmdr.Internal
         public void ShowHelpScreen(IBaseWorker w, params string[] remainArgs)
         {
             var commandLines = new SortedDictionary<string, List<TwoString>>();
-            var optionLines = new SortedDictionary<int, CmdFlags>();
+            var optionLines = new SortedDictionary<int, CmdFlagLines>();
             // var writer = ColorifyEnabler.Colorify; // Console.Out;
             var command = w.ParsedCommand ?? w.RootCommand;
             tabStopCalculated = w.TabStop;
@@ -149,7 +149,7 @@ namespace HzNS.Cmdr.Internal
 
             // var writer = ColorifyEnabler.Colorify; // Console.Out;
             var commandLines = new SortedDictionary<string, List<TwoString>>();
-            var optionLines = new SortedDictionary<int, CmdFlags>();
+            var optionLines = new SortedDictionary<int, CmdFlagLines>();
             var command = w.ParsedCommand ?? w.RootCommand;
             tabStopCalculated = w.TabStop;
 
@@ -200,7 +200,7 @@ namespace HzNS.Cmdr.Internal
         {
             // var writer = ColorifyEnabler.Colorify; // Console.Out;
             var commandLines = new SortedDictionary<string, List<TwoString>>();
-            var optionLines = new SortedDictionary<int, CmdFlags>();
+            var optionLines = new SortedDictionary<int, CmdFlagLines>();
             var command = w.ParsedCommand ?? w.RootCommand;
             tabStopCalculated = w.TabStop;
 
@@ -243,7 +243,7 @@ namespace HzNS.Cmdr.Internal
                     var lvl = UpperBoundLevel - owner.FindLevel();
                     if (!optionLines.ContainsKey(lvl))
                         optionLines.TryAdd(lvl,
-                            new CmdFlags {cmd = owner, lines = new SortedDictionary<string, List<TwoString>>()});
+                            new CmdFlagLines {cmd = owner, lines = new SortedDictionary<string, List<TwoString>>()});
                     if (!optionLines[lvl].lines.ContainsKey(flag.Group))
                         optionLines[lvl].lines.TryAdd(flag.Group, new List<TwoString>());
 
@@ -299,7 +299,7 @@ namespace HzNS.Cmdr.Internal
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
         private Func<ICommand, IFlag, int /*level*/, bool> flagsWatcher(IBaseWorker w,
             // SortedDictionary<string, List<TwoString>> commandLines,
-            SortedDictionary<int /*level*/, CmdFlags> optionLines,
+            SortedDictionary<int /*level*/, CmdFlagLines> optionLines,
             int tabStop, bool noBacktrace)
         {
             return (owner, flag, level) =>
@@ -329,7 +329,7 @@ namespace HzNS.Cmdr.Internal
                 var lvl = UpperBoundLevel - owner.FindLevel();
                 if (!optionLines.ContainsKey(lvl))
                     optionLines.TryAdd(lvl,
-                        new CmdFlags {cmd = owner, lines = new SortedDictionary<string, List<TwoString>>()});
+                        new CmdFlagLines {cmd = owner, lines = new SortedDictionary<string, List<TwoString>>()});
                 if (!optionLines[lvl].lines.ContainsKey(flag.Group))
                     optionLines[lvl].lines.TryAdd(flag.Group, new List<TwoString>());
 
