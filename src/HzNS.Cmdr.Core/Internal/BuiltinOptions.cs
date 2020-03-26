@@ -127,7 +127,7 @@ namespace HzNS.Cmdr.Internal
             {
                 DefaultValue = "",
                 PlaceHolder = "[Locations of config files]",
-                Long = "config", Short = "", Aliases = new[] {"config-location"},
+                Long = "config", Short = "", // Aliases = new[] {"config-location"},
                 Description = "load config files from where you specified",
                 Examples =
                     "        $ {{.AppName}} --configci/etc/demo-yy ~~debug\r\n" +

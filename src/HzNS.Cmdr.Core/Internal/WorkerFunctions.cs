@@ -37,6 +37,10 @@ namespace HzNS.Cmdr.Internal
         // ReSharper disable once MemberCanBePrivate.Global
         public IPainter Painter { get; set; } = new DefaultPainter();
 
+        
+        // ReSharper disable once MemberCanBePrivate.Global
+        public bool EnablePlaceHolderForShortAndAliasFlag { get; set; } = false;
+
 
         public abstract bool Walk(ICommand? parent = null,
             Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
@@ -97,30 +101,8 @@ namespace HzNS.Cmdr.Internal
             const bool noBacktrace = false;
 
             w.Walk(command,
-                (owner, cmd, level) =>
-                {
-                    if (level > 0) return false;
-                    if (cmd.Hidden) return true;
-
-                    var sb = new StringBuilder("  ");
-                    if (!string.IsNullOrWhiteSpace(cmd.Short)) sb.Append($"{cmd.Short}, ");
-                    if (!string.IsNullOrWhiteSpace(cmd.Long)) sb.Append($"{cmd.Long}, ");
-                    if (cmd.Aliases.Length > 0) sb.AppendJoin(',', cmd.Aliases);
-
-                    var sb2 = new StringBuilder();
-                    if (!string.IsNullOrWhiteSpace(cmd.Description)) sb2.Append(cmd.Description);
-                    else if (!string.IsNullOrWhiteSpace(cmd.DescriptionLong)) sb2.Append(cmd.DescriptionLong);
-
-                    if (!commandLines.ContainsKey(cmd.Group))
-                        commandLines.TryAdd(cmd.Group, new List<TwoString>());
-
-                    if (sb.Length >= tabStopCalculated) tabStopCalculated = sb.Length + 1;
-                    commandLines[cmd.Group].Add(new TwoString
-                        {Level = level, Part1 = sb.ToString(), Part2 = sb2.ToString()});
-
-                    return true;
-                },
-                flagsWatcher(w, optionLines, tabStopCalculated, noBacktrace));
+                commandsWatcherBuilder(w, commandLines, tabStopCalculated, noBacktrace),
+                flagsWatcherBuilder(w, optionLines, tabStopCalculated, noBacktrace));
 
             Painter.Setup(command, w, remainArgs);
             Painter.PrintPrologue(command, w, remainArgs);
@@ -292,14 +274,50 @@ namespace HzNS.Cmdr.Internal
 
         #endregion
 
-        #region flagsWatcher
+        #region commandsWatcherBuilder
 
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
-        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-        private Func<ICommand, IFlag, int /*level*/, bool> flagsWatcher(IBaseWorker w,
+        // ReSharper disable once SuggestBaseTypeForParameter
+        private Func<ICommand, ICommand, int, bool>? commandsWatcherBuilder(IBaseWorker w,
+            IDictionary<string, List<TwoString>> commandLines,
+            int tabStop, bool noBacktrace)
+        {
+            return (owner, cmd, level) =>
+            {
+                if (level > 0) return false;
+                if (cmd.Hidden) return true;
+
+                var sb = new StringBuilder("  ");
+                if (!string.IsNullOrWhiteSpace(cmd.Short)) sb.Append($"{cmd.Short}, ");
+                if (!string.IsNullOrWhiteSpace(cmd.Long)) sb.Append($"{cmd.Long}");
+                if (cmd.Aliases.Length > 0) sb.Append(", ").AppendJoin(',', cmd.Aliases);
+
+                var sb2 = new StringBuilder();
+                if (!string.IsNullOrWhiteSpace(cmd.Description)) sb2.Append(cmd.Description);
+                else if (!string.IsNullOrWhiteSpace(cmd.DescriptionLong)) sb2.Append(cmd.DescriptionLong);
+
+                if (!commandLines.ContainsKey(cmd.Group))
+                    commandLines.TryAdd(cmd.Group, new List<TwoString>());
+
+                if (sb.Length >= tabStopCalculated) tabStopCalculated = sb.Length + 1;
+                commandLines[cmd.Group].Add(new TwoString
+                    {Level = level, Part1 = sb.ToString(), Part2 = sb2.ToString()});
+
+                return true;
+            };
+        }
+
+        #endregion
+
+        #region flagsWatcherBuilder
+
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once MemberCanBeMadeStatic.Local
+        // ReSharper disable once SuggestBaseTypeForParameter
+        private Func<ICommand, IFlag, int /*level*/, bool> flagsWatcherBuilder(IBaseWorker w,
             // SortedDictionary<string, List<TwoString>> commandLines,
-            SortedDictionary<int /*level*/, CmdFlagLines> optionLines,
+            IDictionary<int, CmdFlagLines> optionLines,
             int tabStop, bool noBacktrace)
         {
             return (owner, flag, level) =>
@@ -308,13 +326,23 @@ namespace HzNS.Cmdr.Internal
                 if (flag.Hidden) return true;
 
                 var sb = new StringBuilder("  ");
+
+                var ph = string.IsNullOrWhiteSpace(flag.PlaceHolder) ? string.Empty : "=" + flag.PlaceHolder;
                 // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
                 if (!string.IsNullOrWhiteSpace(flag.Short))
-                    sb.Append($"{Util.SwitchChar(false)}{flag.Short}, ");
+                    if (EnablePlaceHolderForShortAndAliasFlag)
+                        sb.Append($"{Util.SwitchChar(false)}{flag.Short}{ph}, ");
+                    else
+                        sb.Append($"{Util.SwitchChar(false)}{flag.Short}, ");
                 else
                     sb.Append("    ");
-                if (!string.IsNullOrWhiteSpace(flag.Long)) sb.Append($"{Util.SwitchChar(true)}{flag.Long}, ");
-                if (flag.Aliases.Length > 0) sb.Append("--").AppendJoin(",--", flag.Aliases);
+                if (!string.IsNullOrWhiteSpace(flag.Long))
+                    sb.Append($"{Util.SwitchChar(true)}{flag.Long}{ph}");
+                if (flag.Aliases.Length > 0)
+                    if (EnablePlaceHolderForShortAndAliasFlag)
+                        sb.Append(", --").AppendJoin($"{ph},--", flag.Aliases).Append(ph);
+                    else
+                        sb.Append(", --").AppendJoin(",--", flag.Aliases);
 
                 var sb2 = new StringBuilder();
                 if (!string.IsNullOrWhiteSpace(flag.Description)) sb2.Append(flag.Description);
@@ -346,7 +374,7 @@ namespace HzNS.Cmdr.Internal
                     {
                         w.Walk(oo,
                             (o, c, l) => true,
-                            flagsWatcher(w, optionLines, tabStop, noBacktrace)
+                            flagsWatcherBuilder(w, optionLines, tabStop, noBacktrace)
                         );
                         oo = oo.Owner;
                     }

@@ -114,6 +114,7 @@ namespace HzNS.Cmdr.Painter
             }
         }
 
+
         #region PrintCommandsAndOptions
 
         public void PrintCommandsAndOptions(ICommand cmd,
@@ -192,7 +193,8 @@ namespace HzNS.Cmdr.Painter
                 foreach (var ts in twoStrings)
                 {
                     o(ts.Part1, ColorNormal);
-                    o(" ".Repeat(tabStop - ts.Part1.Length));
+                    var tst = tabStop - ts.Part1.Length;
+                    if (tst > 0) o(" ".Repeat(tst));
 
                     var c = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.Gray;
@@ -226,6 +228,7 @@ namespace HzNS.Cmdr.Painter
 
         #endregion
 
+
         public void PrintTailLines(ICommand cmd, IBaseWorker w, params string[] remainArgs)
         {
             if (_quiteMode) return;
@@ -240,6 +243,7 @@ namespace HzNS.Cmdr.Painter
             if (_quiteMode) return;
             oln("");
         }
+
 
         #region PrintDumpForDebug
 
@@ -257,6 +261,8 @@ namespace HzNS.Cmdr.Painter
         }
 
         #endregion
+
+        #region PrintBuildInfo
 
         public void PrintBuildInfo(ICommand cmd, in int tabStop, IBaseWorker w, params string[] remainArgs)
         {
@@ -278,6 +284,10 @@ namespace HzNS.Cmdr.Painter
                 }
             }
         }
+
+        #endregion
+
+        #region PrintVersions
 
         public void PrintVersions(ICommand cmd, in int tabStop, IBaseWorker w, params string[] remainArgs)
         {
@@ -304,6 +314,7 @@ namespace HzNS.Cmdr.Painter
             }
         }
 
+        #endregion
 
         #region PrintDumpForDebug - helpers
 
