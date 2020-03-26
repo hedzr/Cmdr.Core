@@ -1,9 +1,13 @@
 ﻿#nullable enable
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
+using System.Text.RegularExpressions;
 using Autofac;
 using AutofacSerilogIntegration;
 using HzNS.Cmdr.Base;
@@ -16,6 +20,7 @@ using HzNS.Cmdr.Tool.Ext;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using YamlDotNet.RepresentationModel;
 
 namespace HzNS.Cmdr
 {
@@ -58,12 +63,40 @@ namespace HzNS.Cmdr
         public bool Parsed { get; set; }
         public ICommand? ParsedCommand { get; set; }
         public IFlag? ParsedFlag { get; set; }
+        public string PrimaryConfigDir { get; internal set; }
+
 
         public bool EnableDuplicatedCharThrows { get; set; } = false;
         public bool EnableEmptyLongFieldThrows { get; set; } = false;
         public bool EnableUnknownCommandThrows { get; set; } = false;
         public bool EnableUnknownFlagThrows { get; set; } = false;
         public int TabStop { get; set; } = 45;
+
+        public bool EnableExternalConfigFilesLoading { get; set; } = true;
+        public bool NoPopulationAfterFirstExternalConfigLocationLoaded { get; set; } = true;
+
+        public string ConfigFileAutoSubDir { get; set; } = "conf.d";
+
+        private readonly string[] configFileSuffixes =
+        {
+            ".yaml", ".yml", ".json",
+        };
+
+        private readonly string[] configFileLocations =
+        {
+            "./ci/etc/$APPNAME/$APPNAME.yml", // for developer
+            "/etc/$APPNAME/$APPNAME.yml", // regular location: /etc/$APPNAME/$APPNAME.yml
+            "/usr/local/etc/$APPNAME/$APPNAME.yml", // regular macOS HomeBrew location
+            "$HOME/.config/$APPNAME/$APPNAME.yml", // per user: $HOME/.config/$APPNAME/$APPNAME.yml
+            "$HOME/.$APPNAME/$APPNAME.yml", // ext location per user
+            "$THIS/$APPNAME.yml", // executable directory
+            "$APPNAME.yml", // current directory
+        };
+
+        private readonly List<Action<IBaseWorker, IRootCommand>> _externalConfigurationsLoaders =
+            new List<Action<IBaseWorker, IRootCommand>>();
+
+        public bool DebuggerAttached => Debugger.IsAttached;
 
 
         internal Worker runOnce()
@@ -257,7 +290,196 @@ namespace HzNS.Cmdr
         {
             BuiltinOptions.InsertAll(_root);
             collectAndBuildXref(_root);
+            loadExternalConfigures();
         }
+
+        private void loadExternalConfigures()
+        {
+            preparePrivateEnvVars();
+            loadExternalConfigurationsFromPredefinedLocations(this, _root);
+            foreach (var loader in _externalConfigurationsLoaders)
+            {
+                loader(this, _root);
+            }
+        }
+
+        private void preparePrivateEnvVars()
+        {
+            var currDir = Environment.CurrentDirectory;
+
+#if DEBUG
+            // the predefined EnvVar 'CURR_DIR' will prevent the debugging source dir searching action:
+            if (Environment.GetEnvironmentVariable("CURR_DIR") == null)
+            {
+                var pos = currDir.IndexOf("/bin/Debug", StringComparison.Ordinal);
+                if (pos >= 0) currDir = currDir.Substring(0, pos);
+                pos = currDir.IndexOf("/bin/Release", StringComparison.Ordinal);
+                if (pos >= 0) currDir = currDir.Substring(0, pos);
+                pos = currDir.IndexOf("/bin/", StringComparison.Ordinal);
+                if (pos >= 0) currDir = currDir.Substring(0, pos);
+                var projDir = currDir;
+
+                var dir = currDir;
+                while (!string.IsNullOrWhiteSpace(dir))
+                {
+                    if (Directory.GetFiles(dir, "*.sln", SearchOption.AllDirectories).Length > 0)
+                    {
+                        currDir = dir;
+                        break;
+                    }
+
+                    dir = Path.GetDirectoryName(dir);
+                }
+
+                Environment.SetEnvironmentVariable("PROJ_DIR", projDir);
+                Environment.SetEnvironmentVariable("CURR_DIR", currDir);
+            }
+#else
+            Environment.SetEnvironmentVariable("PROJ_DIR", currDir);
+            Environment.SetEnvironmentVariable("CURR_DIR", currDir);
+#endif
+
+            var exe = System.Reflection.Assembly.GetEntryAssembly()?.Location;
+            var exeDir = Path.GetDirectoryName(exe) ?? Path.Join(Environment.CurrentDirectory, "1");
+            Environment.SetEnvironmentVariable("THIS", exe);
+            Environment.SetEnvironmentVariable("APPNAME", _root.AppInfo.AppName);
+            Environment.SetEnvironmentVariable("APPVERSION", _root.AppInfo.AppVersion);
+            Environment.SetEnvironmentVariable("TEAM_AUTHOR", _root.AppInfo.Author);
+            Environment.SetEnvironmentVariable("EXECUTABLE_DIR", exeDir);
+
+            if (!Util.GetEnvValueBool("CMDR_VERBOSE")) return;
+
+            foreach (DictionaryEntry e in Environment.GetEnvironmentVariables())
+            {
+                this.logDebug($"  - ENV[{e.Key}] = {e.Value}");
+            }
+        }
+
+        private void loadExternalConfigurationsFromPredefinedLocations(IBaseWorker w, IRootCommand root)
+        {
+            if (!EnableExternalConfigFilesLoading) return;
+
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var location in configFileLocations)
+            {
+                // ReSharper disable once InvertIf
+                if (loadExternalConfigurationsFrom(location, w, root))
+                    if (NoPopulationAfterFirstExternalConfigLocationLoaded)
+                        return;
+            }
+        }
+
+        private bool loadExternalConfigurationsFrom(string location, IBaseWorker w, IRootCommand root)
+        {
+            var usedConfigDir = string.Empty;
+
+            var s1 = Regex.Replace(location, @"\$([A-Za-z0-9_]+)", @"%$1%",
+                RegexOptions.Multiline | RegexOptions.IgnoreCase);
+            var loc = Environment.ExpandEnvironmentVariables(s1).EatEnd(".yml");
+            if (loc[0] == '.') loc = Path.Join(Environment.GetEnvironmentVariable("CURR_DIR"), loc);
+
+            this.logDebug($"loading: {location} | CURR_DIR = {Environment.GetEnvironmentVariable("CURR_DIR")}");
+            this.logDebug($"         loc = {loc}");
+
+            foreach (var suffix in configFileSuffixes)
+            {
+                switch (suffix)
+                {
+                    case ".yml":
+                    case ".yaml":
+                    {
+                        var filepath = string.Concat(loc, suffix);
+                        if (!File.Exists(filepath)) break;
+
+                        this.logDebug($"loading external config file: {filepath}");
+
+                        using var input = new StreamReader(string.Concat(loc, suffix));
+                        // using var input = new StringReader(yamlString);
+                        var yaml = new YamlStream();
+                        yaml.Load(input);
+                        if (yaml.Documents[0].RootNode is YamlMappingNode mapping)
+                        {
+                            usedConfigDir = Path.GetDirectoryName(loc);
+                            Debug.WriteLine($"usedConfigDir: {usedConfigDir}");
+                            Environment.SetEnvironmentVariable("CONFIG_DIR", usedConfigDir);
+                            Environment.SetEnvironmentVariable("CONF_DIR", usedConfigDir);
+                            PrimaryConfigDir = usedConfigDir;
+
+                            var ok = mergeMappingNode(mapping, new string[] { });
+                            if (ok && Directory.Exists(Path.Join(PrimaryConfigDir, ConfigFileAutoSubDir)))
+                            {
+                                watchThem(Path.Join(PrimaryConfigDir, ConfigFileAutoSubDir));
+                            }
+
+                            return ok;
+                        }
+
+                        break;
+                    }
+                    case ".json":
+                        break;
+                }
+            }
+
+            return false;
+        }
+
+        private void watchThem(string dir)
+        {
+            //
+        }
+
+        private bool mergeMappingNode(YamlMappingNode mapping, IEnumerable<string> keyParts,
+            bool overwriteExists = true)
+        {
+            var keyParts1 = keyParts.ToArray();
+            foreach (var (keyNode, val) in mapping.Children)
+            {
+                var key = keyNode as YamlScalarNode;
+                if (key == null) continue;
+
+                var parts = keyParts1.Append(key.Value);
+                switch (val)
+                {
+                    case YamlMappingNode map:
+                        this.logDebug($" [YAML] -> {"  ".Repeat(keyParts1.Length)}{key.Value}:");
+                        mergeMappingNode(map, parts, overwriteExists);
+                        break;
+                    case YamlScalarNode scalarNode:
+                        this.logDebug($" [YAML] -> {"  ".Repeat(keyParts1.Length)}{key.Value} = {scalarNode.Value}");
+
+                        if (overwriteExists)
+                            Cmdr.Instance.Store.SetByKeys(parts, scalarNode.Value);
+                        else if (!Cmdr.Instance.Store.HasKeys(parts))
+                            Cmdr.Instance.Store.SetByKeys(parts, scalarNode.Value);
+                        break;
+                }
+            }
+
+            return true;
+        }
+
+        void readMapFile(string filepath)
+        {
+            // Setup the input
+            using var input = new StringReader(filepath);
+
+            // Load the stream
+            var yaml = new YamlStream();
+            yaml.Load(input);
+
+            // Examine the stream
+            var mapping = (YamlMappingNode) yaml.Documents[0].RootNode;
+
+            foreach (var entry in mapping.Children)
+            {
+                Console.WriteLine(((YamlScalarNode) entry.Key).Value);
+            }
+
+            // List all the items
+            var items = (YamlSequenceNode) mapping.Children[new YamlScalarNode("aruco_bc_markers")];
+        }
+
 
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
@@ -388,6 +610,12 @@ namespace HzNS.Cmdr
         #endregion
 
         #endregion
+
+        public Worker RegisterExternalConfigurationsLoader(params Action<IBaseWorker, IRootCommand>[] loaders)
+        {
+            _externalConfigurationsLoaders.AddRange(loaders);
+            return this;
+        }
 
 
         #region helpers for Walk()
