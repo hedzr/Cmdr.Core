@@ -50,12 +50,6 @@ namespace HzNS.Cmdr
             log = Log.Logger;
         }
 
-        // public int ParsedCount { get; set; }
-        //
-        // public bool Parsed { get; set; }
-        //
-        // public ICommand? ParsedCommand { get; set; }
-        // public IFlag? ParsedFlag { get; set; }
 
         // ReSharper disable once ConvertToAutoPropertyWithPrivateSetter
         // ReSharper disable once UnusedMember.Global
@@ -68,11 +62,62 @@ namespace HzNS.Cmdr
         public string PrimaryConfigDir { get; internal set; } = "";
 
 
+        /// <summary>
+        /// greedy mode: prefer to longest Long option.
+        ///
+        /// for example, think about there are two options: `--addr` and `--add`, in the
+        /// greedy mode `--addr` will be picked for the input `--addr xxx`.
+        /// just the opposite, `--add` && `--r` will be split out.
+        /// </summary>
+        // ReSharper disable once MemberCanBeMadeStatic.Global
+        public bool EnableCmdrGreedyLongFlag
+        {
+            get => DefaultMatchers.EnableCmdrGreedyLongFlag;
+            set => DefaultMatchers.EnableCmdrGreedyLongFlag = value;
+        }
+
+        public bool EnableCmdrLogTrace
+        {
+            get => DefaultMatchers.EnableCmdrLogTrace;
+            set => DefaultMatchers.EnableCmdrLogTrace = value;
+        }
+
+        public bool EnableCmdrLogDebug
+        {
+            get => DefaultMatchers.EnableCmdrLogDebug;
+            set => DefaultMatchers.EnableCmdrLogDebug = value;
+        }
+
+        
+        public bool EnableAutoBoxingWhenExtracting
+        {
+            get => Cmdr.Instance.EnableAutoBoxingWhenExtracting;
+            set => Cmdr.Instance.EnableAutoBoxingWhenExtracting = value;
+        }
+
+        
+        public string[] Prefixes
+        {
+            get => Cmdr.Instance.Store.Prefixes;
+            set => Cmdr.Instance.Store.Prefixes = value;
+        }
+        
+        
+        // ReSharper disable once MemberCanBeMadeStatic.Global
+        public Store CmdrOptionStore => Cmdr.Instance.Store;
+
+
         public bool EnableDuplicatedCharThrows { get; set; } = false;
         public bool EnableEmptyLongFieldThrows { get; set; } = false;
         public bool EnableUnknownCommandThrows { get; set; } = false;
         public bool EnableUnknownFlagThrows { get; set; } = false;
+        
         public int TabStop { get; set; } = 45;
+
+        public bool AppVerboseMode => CmdrOptionStore.GetAs("verbose", false);
+        public bool AppQuietMode => CmdrOptionStore.GetAs("quiet", false);
+        public bool AppDebugMode => CmdrOptionStore.GetAs("debug", false);
+        public bool AppTraceMode => CmdrOptionStore.GetAs("trace", false);
 
         public bool EnableExternalConfigFilesLoading { get; set; } = true;
         public bool NoPopulationAfterFirstExternalConfigLocationLoaded { get; set; } = true;
@@ -84,7 +129,15 @@ namespace HzNS.Cmdr
             ".yaml", ".yml", ".json",
         };
 
-        private readonly string[] configFileLocations =
+        // ReSharper disable once ConvertToAutoPropertyWhenPossible
+        // ReSharper disable once UnusedMember.Global
+        public string[] ConfigFileLocations
+        {
+            get => _configFileLocations;
+            set => _configFileLocations = value;
+        }
+
+        private string[] _configFileLocations =
         {
             "./ci/etc/$APPNAME/$APPNAME.yml", // for developer
             "/etc/$APPNAME/$APPNAME.yml", // regular location: /etc/$APPNAME/$APPNAME.yml
@@ -95,6 +148,7 @@ namespace HzNS.Cmdr
             "$APPNAME.yml", // current directory
         };
 
+        // see also RegisterExternalConfigurationsLoader()
         private readonly List<Action<IBaseWorker, IRootCommand>> _externalConfigurationsLoaders =
             new List<Action<IBaseWorker, IRootCommand>>();
 
@@ -110,11 +164,11 @@ namespace HzNS.Cmdr
             if (DefaultMatchers.EnableCmdrLogTrace)
                 DefaultMatchers.EnableCmdrLogDebug = true;
             DefaultMatchers.EnableCmdrLogDebug = Util.GetEnvValueBool("CMDR_DEBUG");
-            Cmdr.Instance.Store.Set("debug", Util.GetEnvValueBool("DEBUG"));
-            Cmdr.Instance.Store.Set("trace", Util.GetEnvValueBool("TRACE"));
-            Cmdr.Instance.Store.Set("verbose", Util.GetEnvValueBool("VERBOSE"));
-            Cmdr.Instance.Store.Set("verbose-level", Util.GetEnvValueInt("VERBOSE_LEVEL", 5));
-            Cmdr.Instance.Store.Set("quiet", Util.GetEnvValueBool("QUIET"));
+            CmdrOptionStore.Set("debug", Util.GetEnvValueBool("DEBUG"));
+            CmdrOptionStore.Set("trace", Util.GetEnvValueBool("TRACE"));
+            CmdrOptionStore.Set("verbose", Util.GetEnvValueBool("VERBOSE"));
+            CmdrOptionStore.Set("verbose-level", Util.GetEnvValueInt("VERBOSE_LEVEL", 5));
+            CmdrOptionStore.Set("quiet", Util.GetEnvValueBool("QUIET"));
 
             return this;
         }
@@ -371,7 +425,7 @@ namespace HzNS.Cmdr
         {
             if (!EnableExternalConfigFilesLoading) return;
 
-            if (configFileLocations.Where(location =>
+            if (_configFileLocations.Where(location =>
                     loadExternalConfigurationsFrom(location, w, root))
                 .Any(location => NoPopulationAfterFirstExternalConfigLocationLoaded))
             {
@@ -388,12 +442,14 @@ namespace HzNS.Cmdr
         /// <param name="root"></param>
         /// <param name="overwriteExists"></param>
         /// <returns></returns>
-        public bool LoadExternalConfigurationsFile(string filepath, IBaseWorker? w = null, IRootCommand? root = null, bool overwriteExists = true)
+        public bool LoadExternalConfigurationsFile(string filepath, IBaseWorker? w = null, IRootCommand? root = null,
+            bool overwriteExists = true)
         {
             return loadExternalConfigurationsFile(filepath, w ?? this, root ?? _root, overwriteExists);
         }
 
-        private bool loadExternalConfigurationsFile(string filepath, IBaseWorker w, IRootCommand root, bool overwriteExists)
+        private bool loadExternalConfigurationsFile(string filepath, IBaseWorker w, IRootCommand root,
+            bool overwriteExists)
         {
             if (!File.Exists(filepath)) return false;
 
@@ -469,7 +525,7 @@ namespace HzNS.Cmdr
         }
 
         #region FilWatcher
-        
+
         private void watchThem(string dir)
         {
             foreach (var suffix in configFileSuffixes)
@@ -594,8 +650,8 @@ namespace HzNS.Cmdr
         }
 
         #endregion
-        
-        
+
+
         private bool mergeMappingNode(JObject o, IEnumerable<string> keyParts, bool overwriteExists)
         {
             var keyParts1 = keyParts.ToArray();
@@ -612,10 +668,10 @@ namespace HzNS.Cmdr
 
                 if (val is JArray ja)
                 {
-                    Cmdr.Instance.Store.SetByKeys(parts, ja);
+                    CmdrOptionStore.SetByKeys(parts, ja);
                     continue;
                 }
-                
+
                 // if (val is JArray ja)
                 // {
                 //     if (val.HasValues)
@@ -651,14 +707,14 @@ namespace HzNS.Cmdr
                 //         }
                 //
                 //         if (a != null)
-                //             Cmdr.Instance.Store.SetByKeys(parts, a);
+                //             CmdrOptionStore.SetByKeys(parts, a);
                 //     }
                 //
                 //     continue;
                 // }
 
                 var newVal = val.ToObject<object?>();
-                Cmdr.Instance.Store.SetByKeys(parts, newVal);
+                CmdrOptionStore.SetByKeys(parts, newVal);
             }
 
             return false;
@@ -676,19 +732,19 @@ namespace HzNS.Cmdr
                 switch (val)
                 {
                     case YamlMappingNode map:
-                        this.logDebug($" [YAML] -> {"  ".Repeat(keyParts1.Length)}{key.Value}:");
+                        if (AppVerboseMode) this.logDebug($" [YAML] -> {"  ".Repeat(keyParts1.Length)}{key.Value}:");
                         mergeMappingNode(map, parts, overwriteExists);
                         break;
                     case YamlScalarNode scalarNode:
-                        this.logDebug($" [YAML] -> {"  ".Repeat(keyParts1.Length)}{key.Value} = {scalarNode.Value}");
+                        if (AppVerboseMode) this.logDebug($" [YAML] -> {"  ".Repeat(keyParts1.Length)}{key.Value} = {scalarNode.Value}");
 
                         if (overwriteExists)
-                            Cmdr.Instance.Store.SetByKeys(parts, scalarNode.Value);
+                            CmdrOptionStore.SetByKeys(parts, scalarNode.Value);
                         else
                         {
                             var enumerable = parts as string[] ?? parts.ToArray();
-                            if (!Cmdr.Instance.Store.HasKeys(enumerable))
-                                Cmdr.Instance.Store.SetByKeys(enumerable, scalarNode.Value);
+                            if (!CmdrOptionStore.HasKeys(enumerable))
+                                CmdrOptionStore.SetByKeys(enumerable, scalarNode.Value);
                         }
 
                         break;
@@ -738,7 +794,7 @@ namespace HzNS.Cmdr
                 xx.TryAddAliases(this, owner, flag);
 
                 // build into Store too:
-                // bool exists = Cmdr.Instance.Store.HasKeys(flag.ToKeys());
+                // bool exists = CmdrOptionStore.HasKeys(flag.ToKeys());
                 var v = flag.getDefaultValue();
 
                 #region loading values from env vars
@@ -782,7 +838,7 @@ namespace HzNS.Cmdr
                 #endregion
 
                 if (v != null)
-                    Cmdr.Instance.Store.SetByKeysInternal(flag.ToKeys(), v);
+                    CmdrOptionStore.SetByKeysInternal(flag.ToKeys(), v);
 
                 return true; // return false to break the walkForFlags' loop.
             });

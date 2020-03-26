@@ -10,6 +10,11 @@ using HzNS.Cmdr.Tool.Ext;
 
 namespace HzNS.Cmdr.Internal
 {
+    /// <summary>
+    /// injected by IDefaultMatchers.
+    /// ref:
+    /// Worker : WorkerFunctions, IDefaultHandlers, IDefaultMatchers
+    /// </summary>
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public static class DefaultMatchers

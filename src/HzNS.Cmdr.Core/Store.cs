@@ -222,7 +222,9 @@ namespace HzNS.Cmdr
         private static void setIt(Slot node, string key, IEnumerable<string> remainsParts, JToken token,
             bool isArray = false, bool appendToArray = false)
         {
-            var old = node.Values[key];
+            object? old;
+            node.Values.TryGetValue(key, out old);
+            
             switch (token.Type)
             {
                 case JTokenType.Boolean:
@@ -283,9 +285,28 @@ namespace HzNS.Cmdr
                 case JTokenType.Undefined:
                 case JTokenType.Null:
                     break;
+                case JTokenType.Object:
+                    break;
+                case JTokenType.Array:
+                    break;
+                case JTokenType.Constructor:
+                    break;
+                case JTokenType.Property:
+                    break;
+                case JTokenType.Comment:
+                    break;
+                case JTokenType.Raw:
+                    break;
+                case JTokenType.Bytes:
+                    break;
+                case JTokenType.Guid:
+                    break;
+                case JTokenType.Uri:
+                    break;
                 default:
                 {
                     var v = token.ToObject<object>();
+                    // ReSharper disable once SuggestVarOrType_SimpleTypes
                     object av = v;
                     if (isArray) av = new object[] { };
                     if (setValueInternal(av, key, remainsParts, node, appendToArray, v))
@@ -298,9 +319,8 @@ namespace HzNS.Cmdr
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public static Action<Slot, string, object?, object?>? OnSetHandler { get; set; }
-        
-        
-        
+
+
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         private static bool setValueInternal<T>(object? dv, string key,
             IEnumerable<string>? parts, Slot node, bool appendToArray = false, params T[] val)
@@ -399,7 +419,7 @@ namespace HzNS.Cmdr
                 case string[] v:
                     foreach (var it in val)
                     {
-                        string z = it is string s ? s : (string) Convert.ChangeType(it, typeof(string));
+                        var z = it is string s ? s : Convert.ChangeType(it, typeof(string)) as string ?? string.Empty;
                         appendIts(node, key, v, z, appendToArray);
                     }
 
@@ -408,7 +428,7 @@ namespace HzNS.Cmdr
                 case bool[] v:
                     foreach (var it in val)
                     {
-                        appendIts(node, key, v, it is bool s ? s : (bool) Convert.ChangeType(it, typeof(bool)),
+                        appendIts(node, key, v, it is bool s ? s : (bool?) Convert.ChangeType(it, typeof(bool)) ?? false,
                             appendToArray);
                     }
 

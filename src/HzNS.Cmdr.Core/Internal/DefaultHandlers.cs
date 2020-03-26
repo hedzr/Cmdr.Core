@@ -1,17 +1,15 @@
 #nullable enable
 using System;
-using System.Diagnostics.CodeAnalysis;
 using HzNS.Cmdr.Base;
+using HzNS.Cmdr.Internal.Base;
 
 namespace HzNS.Cmdr.Internal
 {
-    [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
-    [SuppressMessage("ReSharper", "MemberCanBePrivate.Local")]
-    // ReSharper disable once InconsistentNaming
-    public interface IDefaultHandlers
-    {
-    }
-
+    /// <summary>
+    /// injected by IDefaultHandlers.
+    /// ref:
+    /// Worker : WorkerFunctions, IDefaultHandlers, IDefaultMatchers
+    /// </summary>
     public static class DefaultHandlers
     {
         public static void OnDuplicatedCommandChar<T>(this T t, bool isShort, string ch, ICommand cmd)

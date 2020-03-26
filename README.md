@@ -1,5 +1,9 @@
 # Cmdr.Core
 
+**WIP**
+
+The first release coming soon.
+
 
 
 
@@ -13,7 +17,7 @@ cmdr has rich features:
 - [x] builds multi-level command and sub-commands
 - [x] builds short, long and alias options with kinds of data types
 - [x] defines commands and options via fluent api style
-- [ ] full featured `Options Store` for hosted any application configurations
+- [x] full featured `Options Store` for hosted any application configurations
   - watchable external config file and child directory `conf.d`
   - watchable option value merging event: while option value modified in external config file and loaded automatically.
   - watchable option value modifying event: while option value modified (from config file, or programmatically)

@@ -26,6 +26,7 @@ namespace HzNS.Cmdr.Internal
     }
 
 
+    // 
     [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]

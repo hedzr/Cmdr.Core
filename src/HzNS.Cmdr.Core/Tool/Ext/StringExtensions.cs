@@ -316,6 +316,7 @@ namespace HzNS.Cmdr.Tool.Ext
                 }
 
 #pragma warning disable CS8643
+                // ReSharper disable once AssignNullToNotNullAttribute
                 var theValue = theConverter.ConvertFromString(null, cultureInfo, value);
                 convertedValue = isNullableType ? Activator.CreateInstance(destinationType, theValue) : theValue;
 #pragma warning restore CS8643

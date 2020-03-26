@@ -89,6 +89,8 @@ namespace Simple
                         // w.UseSerilog((configuration) => configuration.WriteTo.Console().CreateLogger())
                         //
 
+                        w.EnableCmdrGreedyLongFlag = true;
+
                         // w.EnableDuplicatedCharThrows = true;
 
                         // w.EnableEmptyLongFieldThrows = true;
