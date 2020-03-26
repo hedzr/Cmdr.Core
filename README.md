@@ -134,9 +134,8 @@ cmdr has rich features:
 
   -->
 
-- cmdr Options Store
-  internal `rxxtOptions`
-
+  
+  
 - [x] Walkable
   - Customizable `Painter` interface to loop *each* command and flag.
   - Walks on all commands with `Walk(walker)`.
@@ -149,7 +148,7 @@ cmdr has rich features:
 
 - [ ] Supports for **PassThrough** by `--`. (*Passing remaining command line arguments after -- (optional)*)
 
-- [ ] Predefined external config file locations:
+- [x] Predefined external config file locations:
   - `/etc/<appname>/<appname>.yml` and `conf.d` sub-directory.
   - `/usr/local/etc/<appname>/<appname>.yml` and `conf.d` sub-directory.
   - `$HOME/.config/<appname>/<appname>.yml` and `conf.d` sub-directory.
@@ -167,29 +166,11 @@ cmdr has rich features:
     },
     ```
 
-  - since v1.5.0, uses `cmdr.WithPredefinedLocations("a","b",...),`
+  - 
 
-- [ ] Watch `conf.d` directory:
-  - `cmdr.WithConfigLoadedListener(listener)`
-    - `AddOnConfigLoadedListener(c)`
-    - `RemoveOnConfigLoadedListener(c)`  
-    - `SetOnConfigLoadedListener(c, enabled)`
-  - As a feature, do NOT watch the changes on `<appname>.yml`.
-    - *since v1.6.9*, `WithWatchMainConfigFileToo(true)` allows the main config file `<appname>.yml`  to be watched.
-  - on command-line:
-    ```bash
-    $ bin/demo --configci/etc/demo-yy ~~debug
-    $ bin/demo --config=ci/etc/demo-yy/any.yml ~~debug
-    $ bin/demo --config ci/etc/demo-yy/any.yml ~~debug
-    ```
-  - supports muiltiple file formats:
-    - Yaml
-    - JSON
-    - TOML
-
-  - `cmdr.Exec(root, cmdr.WithNoLoadConfigFiles(false))`: disable loading external config files.
-
-- Handlers
+  - [x] Watch `conf.d` directory:
+  
+- [x] Handlers
 
   - Global Handlers: `RootCommand.OnPre/Post/Action()/OnSet()` will be triggered before/after the concrete `Command.OnPre/Post/Action()/OnSet()`
   - Command Actions: `OnPreAction/OnAction/OnPostAction/OnSet`

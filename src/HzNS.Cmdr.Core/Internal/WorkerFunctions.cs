@@ -279,6 +279,7 @@ namespace HzNS.Cmdr.Internal
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         // ReSharper disable once SuggestBaseTypeForParameter
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         private Func<ICommand, ICommand, int, bool>? commandsWatcherBuilder(IBaseWorker w,
             IDictionary<string, List<TwoString>> commandLines,
             int tabStop, bool noBacktrace)

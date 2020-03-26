@@ -4,6 +4,7 @@ using System.IO;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Internal;
+using HzNS.Cmdr.Internal.Base;
 using HzNS.Cmdr.Tool.Enrichers;
 using Serilog;
 using Serilog.Core;
@@ -51,6 +52,8 @@ namespace HzNS.Cmdr
 
             try
             {
+                Instance.Worker = worker;
+                Instance.Logger = worker;
                 worker.logDebug("EnableDuplicatedCharThrows: {EnableDuplicatedCharThrows}",
                     worker.EnableDuplicatedCharThrows);
                 if (root != null)
@@ -70,6 +73,13 @@ namespace HzNS.Cmdr
             return worker;
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public IBaseWorker? Worker { get; internal set; }
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public IDefaultMatchers? Logger { get; internal set; }
+        
         public Store Store { get; } = Store.Instance;
 
 

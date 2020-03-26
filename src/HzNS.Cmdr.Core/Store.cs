@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HzNS.Cmdr.Exception;
+using HzNS.Cmdr.Internal;
 using HzNS.Cmdr.Painter;
 using HzNS.Cmdr.Tool.Ext;
 using HzNS.Cmdr.Tool.ObjectCloner;
+using Newtonsoft.Json.Linq;
 
 namespace HzNS.Cmdr
 {
@@ -47,7 +49,8 @@ namespace HzNS.Cmdr
                 a.Add(key);
                 var path = string.Join(".", a.ToArray());
                 print($"  {path,-45}", DefaultPainter.ColorDesc);
-                print($"{val?.ToStringEx()}\n", DefaultPainter.ColorNormal);
+                print($"{val?.ToStringEx()}", DefaultPainter.ColorNormal);
+                print($" ({val?.GetType()})\n", DefaultPainter.ColorDesc);
             }
         }
 
@@ -161,16 +164,45 @@ namespace HzNS.Cmdr
                     var yes = node.Values.ContainsKey(key);
                     var dv = yes
                         ? node.Values[key]
-                        : (val.Length > 0 ? val[0] : (object?) true);
+                        : (val.Length > 0 ? val[0] : default);
                     if (!yes)
                     {
-                        node.Values[key] = val.Length == 1 ? dv : val;
+                        if (val.Length > 0 && val[0] is JArray ja)
+                        {
+                            // var old = node.Values[key]?.DeepClone();
+                            var remainsParts = enumerable.Skip(1).ToArray();
+                            foreach (var token in ja)
+                            {
+                                setIt(node, key, remainsParts, token, true, true);
+                            }
+                        }
+                        else
+                        {
+                            node.Values[key] = val.Length == 1 ? dv : val;
+                        }
+
                         return null;
                     }
+                    else
+                    {
+                        var old = node.Values[key]?.DeepClone();
+                        if (val.Length > 0 && val[0] is JArray ja)
+                        {
+                            // var old = node.Values[key]?.DeepClone();
+                            var remainsParts = enumerable.Skip(1).ToArray();
+                            foreach (var token in ja)
+                            {
+                                setIt(node, key, remainsParts, token, true, true);
+                            }
+                        }
+                        else
+                        {
+                            if (setValueInternal(dv, key, enumerable.Skip(1).ToArray(), node, true, val))
+                                OnSetHandler?.Invoke(node, key, old, node.Values[key]);
+                        }
 
-                    var old = node.Values[key]?.DeepClone();
-                    setValueInternal(dv, key, enumerable.Skip(1).ToArray(), node, val);
-                    return old;
+                        return old;
+                    }
                 }
 
                 var part = enumerable[0];
@@ -187,44 +219,278 @@ namespace HzNS.Cmdr
             return null;
         }
 
-        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
-        private static void setValueInternal<T>(object? dv, string key,
-            IEnumerable<string>? parts, Slot node, params T[] val)
+        private static void setIt(Slot node, string key, IEnumerable<string> remainsParts, JToken token,
+            bool isArray = false, bool appendToArray = false)
         {
+            var old = node.Values[key];
+            switch (token.Type)
+            {
+                case JTokenType.Boolean:
+                {
+                    var v = token.ToObject<bool>();
+                    object av = v;
+                    if (isArray) av = new bool[] { };
+                    if (setValueInternal(av, key, remainsParts, node, appendToArray, v))
+                        OnSetHandler?.Invoke(node, key, old, node.Values[key]);
+                    break;
+                }
+                case JTokenType.Date:
+                {
+                    var v = token.ToObject<DateTime>();
+                    object av = v;
+                    if (isArray) av = new DateTime[] { };
+                    if (setValueInternal(av, key, remainsParts, node, appendToArray, v))
+                        OnSetHandler?.Invoke(node, key, old, node.Values[key]);
+                    break;
+                }
+                case JTokenType.TimeSpan:
+                {
+                    var v = token.ToObject<TimeSpan>();
+                    object av = v;
+                    if (isArray) av = new TimeSpan[] { };
+                    if (setValueInternal(av, key, remainsParts, node, appendToArray, v))
+                        OnSetHandler?.Invoke(node, key, old, node.Values[key]);
+                    break;
+                }
+                case JTokenType.Float:
+                {
+                    var v = token.ToObject<double>();
+                    object av = v;
+                    if (isArray) av = new double[] { };
+                    if (setValueInternal(av, key, remainsParts, node, appendToArray, v))
+                        OnSetHandler?.Invoke(node, key, old, node.Values[key]);
+                    break;
+                }
+                case JTokenType.Integer:
+                {
+                    var v = token.ToObject<long>();
+                    object av = v;
+                    if (isArray) av = new long[] { };
+                    if (setValueInternal(av, key, remainsParts, node, appendToArray, v))
+                        OnSetHandler?.Invoke(node, key, old, node.Values[key]);
+                    break;
+                }
+                case JTokenType.String:
+                {
+                    var v = token.ToObject<string>();
+                    object av = v;
+                    if (isArray) av = new string[] { };
+                    if (setValueInternal(av, key, remainsParts, node, appendToArray, v))
+                        OnSetHandler?.Invoke(node, key, old, node.Values[key]);
+                    break;
+                }
+                case JTokenType.None:
+                case JTokenType.Undefined:
+                case JTokenType.Null:
+                    break;
+                default:
+                {
+                    var v = token.ToObject<object>();
+                    object av = v;
+                    if (isArray) av = new object[] { };
+                    if (setValueInternal(av, key, remainsParts, node, appendToArray, v))
+                        OnSetHandler?.Invoke(node, key, old, node.Values[key]);
+                    break;
+                }
+            }
+        }
+
+
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public static Action<Slot, string, object?, object?>? OnSetHandler { get; set; }
+        
+        
+        
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
+        private static bool setValueInternal<T>(object? dv, string key,
+            IEnumerable<string>? parts, Slot node, bool appendToArray = false, params T[] val)
+        {
+            // var old = node.Values[key];
             switch (dv)
             {
+                #region scalars
+
                 case bool _:
                     foreach (var v in val)
                     {
                         node.Values[key] = v;
                     }
 
-                    return;
+                    return true;
+
                 case string _:
                     foreach (var v in val)
                     {
                         node.Values[key] = v;
                     }
 
-                    return;
-                case string[] v:
-                    if (val.Length == 0)
-                        // v = new string[] { };
-                        Array.Clear(v, 0, v.Length);
+                    return true;
 
-#pragma warning disable CS8619
-                    // ReSharper disable once LoopCanBeConvertedToQuery
-                    foreach (var value in val)
+                case short _:
+                    foreach (var v in val)
                     {
-                        v = v.Append(value as string).ToArray();
+                        node.Values[key] = v;
                     }
-#pragma warning restore CS8619
 
-                    node.Values[key] = v;
-                    return;
+                    return true;
+                case int _:
+                    foreach (var v in val)
+                    {
+                        node.Values[key] = v;
+                    }
+
+                    return true;
+                case long _:
+                    foreach (var v in val)
+                    {
+                        node.Values[key] = v;
+                    }
+
+                    return true;
+
+                case float _:
+                    foreach (var v in val)
+                    {
+                        node.Values[key] = v;
+                    }
+
+                    return true;
+                case double _:
+                    foreach (var v in val)
+                    {
+                        node.Values[key] = v;
+                    }
+
+                    return true;
+                case decimal _:
+                    foreach (var v in val)
+                    {
+                        node.Values[key] = v;
+                    }
+
+                    return true;
+
+                #endregion
+
+                case DateTime _:
+                    foreach (var v in val)
+                    {
+                        node.Values[key] = v;
+                    }
+
+                    return true;
+                case TimeSpan _:
+                    foreach (var v in val)
+                    {
+                        node.Values[key] = v;
+                    }
+
+                    return true;
+                case DateTimeOffset _:
+                    foreach (var v in val)
+                    {
+                        node.Values[key] = v;
+                    }
+
+                    return true;
+
+                #region scalar array
+
+                case string[] v:
+                    foreach (var it in val)
+                    {
+                        string z = it is string s ? s : (string) Convert.ChangeType(it, typeof(string));
+                        appendIts(node, key, v, z, appendToArray);
+                    }
+
+                    return true;
+
+                case bool[] v:
+                    foreach (var it in val)
+                    {
+                        appendIts(node, key, v, it is bool s ? s : (bool) Convert.ChangeType(it, typeof(bool)),
+                            appendToArray);
+                    }
+
+                    return true;
+
+                case short[] v:
+                    foreach (var it in val)
+                    {
+                        appendIts(node, key, v, it is short s ? s : (short) Convert.ChangeType(it, typeof(short)),
+                            appendToArray);
+                    }
+
+                    return true;
+                case int[] v:
+                    foreach (var it in val)
+                    {
+                        appendIts(node, key, v, it is int s ? s : (int) Convert.ChangeType(it, typeof(int)),
+                            appendToArray);
+                    }
+
+                    return true;
+                case long[] v:
+                    foreach (var it in val)
+                    {
+                        appendIts(node, key, v, it is long s ? s : (long) Convert.ChangeType(it, typeof(long)),
+                            appendToArray);
+                    }
+
+                    return true;
+
+                case float[] v:
+                    foreach (var it in val)
+                    {
+                        appendIts(node, key, v, it is float s ? s : (float) Convert.ChangeType(it, typeof(float)),
+                            appendToArray);
+                    }
+
+                    return true;
+                case double[] v:
+                    foreach (var it in val)
+                    {
+                        appendIts(node, key, v, it is double s ? s : (double) Convert.ChangeType(it, typeof(double)),
+                            appendToArray);
+                    }
+
+                    return true;
+                case decimal[] v:
+                    foreach (var it in val)
+                    {
+                        appendIts(node, key, v, it is decimal s ? s : (decimal) Convert.ChangeType(it, typeof(decimal)),
+                            appendToArray);
+                    }
+
+                    return true;
+
+                #endregion
             }
 
             Console.WriteLine("1_1");
+            Cmdr.Instance.Logger?.logDebug(
+                $"[W][setter on {dv?.GetType()}, dv={dv}, new val={val}]: key = {parts?.ToStringEx()}");
+            return false;
+        }
+
+        private static void appendIts<T>(Slot node, string key, // IEnumerable<string>? parts,
+            T[] v, T val, bool appendToArray = false)
+        {
+            if (appendToArray == false)
+                Array.Clear(v, 0, v.Length);
+            else if (node.Values.ContainsKey((key)))
+                v = (T[]) Convert.ChangeType(node.Values[key], typeof(T[]));
+
+// #pragma warning disable CS8619
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            //foreach (var value in val)
+            //{
+            //    v = v.Append(value).ToArray();
+            //}
+            v = v.Append(val).ToArray();
+// #pragma warning restore CS8619
+
+            node.Values[key] = v;
         }
 
         #endregion

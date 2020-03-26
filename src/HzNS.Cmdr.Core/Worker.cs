@@ -6,8 +6,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Autofac;
 using AutofacSerilogIntegration;
 using HzNS.Cmdr.Base;
@@ -17,6 +18,7 @@ using HzNS.Cmdr.Internal.Base;
 using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Enrichers;
 using HzNS.Cmdr.Tool.Ext;
+using Newtonsoft.Json.Linq;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -132,7 +134,7 @@ namespace HzNS.Cmdr
             throw new System.Exception("test");
         }
 
-        public void Run(string[] args)
+        public void Run(string[] args, Func<int>? postRun = null)
         {
             // Entry.Log.Information("YES IT IS");
             // log.Information("YES IT IS");
@@ -189,7 +191,16 @@ namespace HzNS.Cmdr
             {
                 ShowDebugDumpFragment(this);
 
-                ColorifyEnabler.Reset();
+                try
+                {
+                    postRun?.Invoke();
+                }
+                finally
+                {
+                    _shouldTerminate.Set();
+                    CancelFileWatcher();
+                    ColorifyEnabler.Reset();
+                }
             }
         }
 
@@ -303,6 +314,7 @@ namespace HzNS.Cmdr
             }
         }
 
+        [SuppressMessage("ReSharper", "SuggestVarOrType_BuiltInTypes")]
         private void preparePrivateEnvVars()
         {
             string? currDir = Environment.CurrentDirectory;
@@ -359,15 +371,80 @@ namespace HzNS.Cmdr
         {
             if (!EnableExternalConfigFilesLoading) return;
 
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var location in configFileLocations)
+            if (configFileLocations.Where(location =>
+                    loadExternalConfigurationsFrom(location, w, root))
+                .Any(location => NoPopulationAfterFirstExternalConfigLocationLoaded))
             {
-                // ReSharper disable once InvertIf
-                if (loadExternalConfigurationsFrom(location, w, root))
-                    if (NoPopulationAfterFirstExternalConfigLocationLoaded)
-                        return;
+                // ReSharper disable once RedundantJumpStatement
+                return;
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filepath"></param>
+        /// <param name="w"></param>
+        /// <param name="root"></param>
+        /// <param name="overwriteExists"></param>
+        /// <returns></returns>
+        public bool LoadExternalConfigurationsFile(string filepath, IBaseWorker? w = null, IRootCommand? root = null, bool overwriteExists = true)
+        {
+            return loadExternalConfigurationsFile(filepath, w ?? this, root ?? _root, overwriteExists);
+        }
+
+        private bool loadExternalConfigurationsFile(string filepath, IBaseWorker w, IRootCommand root, bool overwriteExists)
+        {
+            if (!File.Exists(filepath)) return false;
+
+            using var input = new StreamReader(filepath);
+            this.logDebug($"loading external config file: {filepath}");
+
+            switch (Path.GetExtension(filepath))
+            {
+                case ".yml":
+                case ".yaml":
+                {
+                    // using var input = new StringReader(yamlString);
+                    var yaml = new YamlStream();
+                    yaml.Load(input);
+                    if (yaml.Documents[0].RootNode is YamlMappingNode mapping)
+                    {
+                        var usedConfigDir = Path.GetDirectoryName(filepath);
+                        Debug.WriteLine($"usedConfigDir: {usedConfigDir}");
+                        Environment.SetEnvironmentVariable("CONFIG_DIR", usedConfigDir);
+                        Environment.SetEnvironmentVariable("CONF_DIR", usedConfigDir);
+                        PrimaryConfigDir = usedConfigDir ?? string.Empty;
+
+                        var ok = mergeMappingNode(mapping, new string[] { }, overwriteExists);
+                        return ok;
+                    }
+
+                    break;
+                }
+                case ".json":
+                {
+                    // dynamic result = JsonConvert.DeserializeObject(input.ReadToEnd());
+
+                    // using var reader = new JsonTextReader(input);
+                    // var o2 = (JObject) JToken.ReadFrom(reader);
+
+                    var o = JObject.Parse(input.ReadToEnd());
+
+                    var usedConfigDir = Path.GetDirectoryName(filepath);
+                    Debug.WriteLine($"usedConfigDir: {usedConfigDir}");
+                    Environment.SetEnvironmentVariable("CONFIG_DIR", usedConfigDir);
+                    Environment.SetEnvironmentVariable("CONF_DIR", usedConfigDir);
+                    PrimaryConfigDir = usedConfigDir ?? string.Empty;
+
+                    var ok = mergeMappingNode(o, new string[] { }, overwriteExists);
+                    return ok;
+                }
+            }
+
+            return false;
+        }
+
 
         private bool loadExternalConfigurationsFrom(string location, IBaseWorker w, IRootCommand root)
         {
@@ -376,59 +453,218 @@ namespace HzNS.Cmdr
             var loc = Environment.ExpandEnvironmentVariables(s1).EatEnd(".yml");
             if (loc[0] == '.') loc = Path.Join(Environment.GetEnvironmentVariable("CURR_DIR"), loc);
 
-            this.logDebug($"loading: {location} | CURR_DIR = {Environment.GetEnvironmentVariable("CURR_DIR")}");
-            this.logDebug($"         loc = {loc}");
+            // this.logDebug($"loading: {location} | CURR_DIR = {Environment.GetEnvironmentVariable("CURR_DIR")}");
+            // this.logDebug($"         loc = {loc}");
 
+            var ok = configFileSuffixes.Select(suffix => string.Concat(loc, suffix)).Any(filepath =>
+                loadExternalConfigurationsFile(filepath, w, root, false) &&
+                NoPopulationAfterFirstExternalConfigLocationLoaded);
+
+            if (ok && Directory.Exists(Path.Join(PrimaryConfigDir, ConfigFileAutoSubDir)))
+            {
+                watchThem(Path.Join(PrimaryConfigDir, ConfigFileAutoSubDir));
+            }
+
+            return ok;
+        }
+
+        #region FilWatcher
+        
+        private void watchThem(string dir)
+        {
             foreach (var suffix in configFileSuffixes)
             {
-                switch (suffix)
+                var files = Directory.GetFiles(dir, "*" + suffix, SearchOption.TopDirectoryOnly);
+                foreach (var filepath in files)
                 {
-                    case ".yml":
-                    case ".yaml":
+                    if (File.Exists(filepath))
                     {
-                        var filepath = string.Concat(loc, suffix);
-                        if (!File.Exists(filepath)) break;
-
-                        this.logDebug($"loading external config file: {filepath}");
-
-                        using var input = new StreamReader(string.Concat(loc, suffix));
-                        // using var input = new StringReader(yamlString);
-                        var yaml = new YamlStream();
-                        yaml.Load(input);
-                        if (yaml.Documents[0].RootNode is YamlMappingNode mapping)
-                        {
-                            var usedConfigDir = Path.GetDirectoryName(loc);
-                            Debug.WriteLine($"usedConfigDir: {usedConfigDir}");
-                            Environment.SetEnvironmentVariable("CONFIG_DIR", usedConfigDir);
-                            Environment.SetEnvironmentVariable("CONF_DIR", usedConfigDir);
-                            PrimaryConfigDir = usedConfigDir ?? string.Empty;
-
-                            var ok = mergeMappingNode(mapping, new string[] { });
-                            if (ok && Directory.Exists(Path.Join(PrimaryConfigDir, ConfigFileAutoSubDir)))
-                            {
-                                watchThem(Path.Join(PrimaryConfigDir, ConfigFileAutoSubDir));
-                            }
-
-                            return ok;
-                        }
-
-                        break;
+                        loadExternalConfigurationsFile(filepath, this, _root, true);
                     }
-                    case ".json":
-                        break;
                 }
+            }
+
+            _taskWatcher = startWatcher(dir);
+        }
+
+        // ReSharper disable once MemberCanBeMadeStatic.Global
+        internal async void CancelFileWatcher()
+        {
+            if (_taskWatcher == null) return;
+
+            // cancel the task
+            _tokenSource.Cancel();
+            try
+            {
+                await _taskWatcher;
+                _taskWatcher = null;
+            }
+            catch (OperationCanceledException e)
+            {
+                // handle the exception 
+                this.logError(e, "cancel file watcher failed");
+            }
+        }
+
+        private Task startWatcher(string dir)
+        {
+            _shouldTerminate.Reset();
+            var cancellableTask = Task.Run(() =>
+            {
+                // fsw
+                RunFileWatcher(dir);
+
+                _shouldTerminate.Wait();
+                if (_tokenSource.Token.IsCancellationRequested)
+                {
+                    // clean up before exiting
+                    _tokenSource.Token.ThrowIfCancellationRequested();
+                }
+
+                watcher?.Dispose();
+                return 0;
+            }, _tokenSource.Token);
+            return cancellableTask;
+        }
+
+        private static readonly ManualResetEventSlim _shouldTerminate = new ManualResetEventSlim(false);
+        private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
+        private static Task? _taskWatcher;
+        private static FileSystemWatcher? watcher;
+
+
+        // [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
+        private void RunFileWatcher(string dir)
+        {
+            // Create a new FileSystemWatcher and set its properties.
+            watcher = new FileSystemWatcher
+            {
+                Path = dir,
+                NotifyFilter = NotifyFilters.LastAccess
+                               | NotifyFilters.LastWrite
+                               | NotifyFilters.FileName
+                               | NotifyFilters.DirectoryName,
+                // Filter = "*.json|*.yml|*.yaml",
+                Filters = {"*.json", "*.yml", "*.yaml",},
+                // IncludeSubdirectories = false,
+            };
+
+
+            // Watch for changes in LastAccess and LastWrite times, and
+            // the renaming of files or directories.
+
+            // Only watch text files.
+
+            // Add event handlers.
+            watcher.Changed += OnChanged;
+            watcher.Created += OnChanged;
+            watcher.Deleted += OnDeleted;
+            watcher.Renamed += OnRenamed;
+
+            // Begin watching.
+            watcher.EnableRaisingEvents = true;
+            Console.WriteLine($"FileWatcher running at {dir}");
+
+            // Wait for the user to quit the program.
+            // Console.WriteLine("Press 'q' to quit the sample.");
+            // while (Console.Read() != 'q') ;
+        }
+
+        private void OnChanged(object sender, FileSystemEventArgs e)
+        {
+            this.logDebug($"config file renamed: {e}");
+            if (loadExternalConfigurationsFile(e.FullPath, this, _root, false))
+            {
+                this.logDebug($"config file loaded and merged: {e.FullPath}");
+            }
+        }
+
+        private void OnDeleted(object sender, FileSystemEventArgs e)
+        {
+            this.logDebug($"config file deleted: {e}");
+        }
+
+        private void OnRenamed(object sender, RenamedEventArgs e)
+        {
+            this.logDebug($"config file renamed: {e}");
+            if (loadExternalConfigurationsFile(e.FullPath, this, _root, false))
+            {
+                this.logDebug($"config file loaded and merged: {e.FullPath}");
+            }
+        }
+
+        #endregion
+        
+        
+        private bool mergeMappingNode(JObject o, IEnumerable<string> keyParts, bool overwriteExists)
+        {
+            var keyParts1 = keyParts.ToArray();
+            foreach (var (key, val) in o)
+            {
+                var parts = keyParts1.Append(key);
+
+                // ReSharper disable once ConvertIfStatementToSwitchStatement
+                if (val is JObject jo)
+                {
+                    var ok = mergeMappingNode(jo, parts, overwriteExists);
+                    return ok;
+                }
+
+                if (val is JArray ja)
+                {
+                    Cmdr.Instance.Store.SetByKeys(parts, ja);
+                    continue;
+                }
+                
+                // if (val is JArray ja)
+                // {
+                //     if (val.HasValues)
+                //     {
+                //         object? a = null;
+                //         switch (val.First.Type)
+                //         {
+                //             case JTokenType.Boolean:
+                //                 a = val.Values<bool>();
+                //                 break;
+                //             case JTokenType.Date:
+                //                 a = val.Values<DateTime>();
+                //                 break;
+                //             case JTokenType.TimeSpan:
+                //                 a = val.Values<TimeSpan>();
+                //                 break;
+                //             case JTokenType.Float:
+                //                 a = val.Values<double>();
+                //                 break;
+                //             case JTokenType.Integer:
+                //                 a = ja.ToArray<long>();
+                //                 break;
+                //             case JTokenType.String:
+                //                 a = ja.ToArray<string>();
+                //                 break;
+                //             case JTokenType.None:
+                //             case JTokenType.Undefined:
+                //             case JTokenType.Null:
+                //                 break;
+                //             default:
+                //                 a = ja.ToArray<object>();
+                //                 break;
+                //         }
+                //
+                //         if (a != null)
+                //             Cmdr.Instance.Store.SetByKeys(parts, a);
+                //     }
+                //
+                //     continue;
+                // }
+
+                var newVal = val.ToObject<object?>();
+                Cmdr.Instance.Store.SetByKeys(parts, newVal);
             }
 
             return false;
         }
 
-        private void watchThem(string dir)
-        {
-            //
-        }
-
-        private bool mergeMappingNode(YamlMappingNode mapping, IEnumerable<string> keyParts,
-            bool overwriteExists = true)
+        private bool mergeMappingNode(YamlMappingNode mapping, IEnumerable<string> keyParts, bool overwriteExists)
         {
             var keyParts1 = keyParts.ToArray();
             foreach (var (keyNode, val) in mapping.Children)
@@ -448,34 +684,18 @@ namespace HzNS.Cmdr
 
                         if (overwriteExists)
                             Cmdr.Instance.Store.SetByKeys(parts, scalarNode.Value);
-                        else if (!Cmdr.Instance.Store.HasKeys(parts))
-                            Cmdr.Instance.Store.SetByKeys(parts, scalarNode.Value);
+                        else
+                        {
+                            var enumerable = parts as string[] ?? parts.ToArray();
+                            if (!Cmdr.Instance.Store.HasKeys(enumerable))
+                                Cmdr.Instance.Store.SetByKeys(enumerable, scalarNode.Value);
+                        }
+
                         break;
                 }
             }
 
             return true;
-        }
-
-        void readMapFile(string filepath)
-        {
-            // Setup the input
-            using var input = new StringReader(filepath);
-
-            // Load the stream
-            var yaml = new YamlStream();
-            yaml.Load(input);
-
-            // Examine the stream
-            var mapping = (YamlMappingNode) yaml.Documents[0].RootNode;
-
-            foreach (var entry in mapping.Children)
-            {
-                Console.WriteLine(((YamlScalarNode) entry.Key).Value);
-            }
-
-            // List all the items
-            var items = (YamlSequenceNode) mapping.Children[new YamlScalarNode("aruco_bc_markers")];
         }
 
 
@@ -643,13 +863,13 @@ namespace HzNS.Cmdr
 
         // ReSharper disable once UnusedMember.Local
         [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
-        private bool walkForFlags(ICommand parent, Func<ICommand, IFlag, int, bool> watcher, int level = 0)
+        private bool walkForFlags(ICommand parent, Func<ICommand, IFlag, int, bool> watcher1, int level = 0)
         {
-            if (parent.Flags.Any(f => watcher != null && watcher(parent, f, level) == false)) return false;
+            if (parent.Flags.Any(f => watcher1 != null && watcher1(parent, f, level) == false)) return false;
 
             if (parent.SubCommands == null) return true;
 
-            return parent.SubCommands.All(cmd => walkForFlags(cmd, watcher, level + 1));
+            return parent.SubCommands.All(cmd => walkForFlags(cmd, watcher1, level + 1));
         }
 
         #endregion

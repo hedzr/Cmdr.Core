@@ -1,11 +1,11 @@
 using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using HzNS.Cmdr.Exception;
 
 namespace HzNS.Cmdr.Tool.Ext
 {
@@ -60,11 +60,26 @@ namespace HzNS.Cmdr.Tool.Ext
         public static string ToStringEx(this object @this)
         {
             // ReSharper disable once InvertIf
-            if (@this.GetType().IsArray)
+            if (!(@this is string) && @this is IEnumerable a)
             {
-                var v = "[" + string.Join(",", @this as object[] ?? throw new CmdrException()) + "]";
+                var v = "[" + string.Join(",", a.Cast<object>()) + "]";
                 return v;
             }
+
+            // if (@this.GetType().IsArray)
+            // {
+            //     // try
+            //     // {
+            //     //     var a = Convert.ChangeType(@this, typeof(object[]));
+            //     //     var v = "[" + string.Join(",", a) + "]";
+            //     //     return v;
+            //     // }
+            //     // catch (System.Exception e)
+            //     // {
+            //     //     Console.WriteLine($"ToStringEx() cashed. data: {@this}, {@this.GetType()}");
+            //     //     Console.WriteLine(e.ToString());
+            //     // }
+            // }
 
             return @this.ToString() ?? "";
         }

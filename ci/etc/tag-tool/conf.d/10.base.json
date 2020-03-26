@@ -1,0 +1,30 @@
+{
+    "CPU": "Intel Core",
+    "PSU": "512W",
+    "Drives": [
+        "DVD read/writer"
+        /* (broken) 890 bug */,
+        "500 gigabyte hard drive",
+        "200 gigabyte hard drive"
+    ],
+    "Map": {
+        "DateInt": 123,
+        "ArrayOfDateTime": [
+            "2004-12-31",
+            "2005-1-31",
+        ],
+        "ArrayOfInt": [
+            71,
+            5,
+            31
+        ],
+        "ArrayOfBool": [
+            true,
+            false
+        ],
+        "ArrayOfFloat": [
+            8.1903,
+            3.141592653589793526535
+        ]
+    }
+}

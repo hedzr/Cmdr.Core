@@ -93,7 +93,18 @@ namespace Simple
 
                         // w.EnableEmptyLongFieldThrows = true;
                     })
-                .Run(args);
+                .Run(args, () =>
+                {
+                    // Wait for the user to quit the program.
+                    Console.WriteLine("Press 'q' to quit the sample.");
+                    while (Console.Read() != 'q')
+                    {
+                        //
+                    }
+
+                    return 0;
+                });
+
 
             // Log.CloseAndFlush();
             // Console.ReadKey();
