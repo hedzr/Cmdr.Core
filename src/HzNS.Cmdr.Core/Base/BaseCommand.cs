@@ -108,11 +108,57 @@ namespace HzNS.Cmdr.Base
 
         public bool IsRoot => Owner == null || Equals(this, Owner);
 
-        public IRootCommand? FindRoot()
+        public new IRootCommand? FindRoot()
         {
             ICommand? o = this;
             while (o?.Owner != null && o.Owner != o) o = o?.Owner;
             return (IRootCommand?) o;
+        }
+
+        public new IFlag? FindFlag(string dottedKey, IBaseOpt? from = null)
+        {
+            IFlag? fr = null;
+            walkFor(from as ICommand ?? this,
+                commandsWatcher: (owner, cmd, level) => true,
+                flagsWatcher: (owner, flag, level) =>
+                {
+                    // if (!flag.Match(UriPartial, true, false)) return true;
+                    if (string.Concat(flag.Owner?.backtraceTitles, ".", flag.Long) != dottedKey) return true;
+                    fr = flag;
+                    return false; // stop walkFor population.
+                });
+            return fr;
+        }
+
+        public new bool Walk(ICommand? from = null,
+            Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
+            Func<ICommand, IFlag, int, bool>? flagsWatcher = null)
+        {
+            return walkFor(from ?? this, commandsWatcher, flagsWatcher);
+        }
+
+        // ReSharper disable once InconsistentNaming
+        private static bool walkFor(ICommand parent,
+            Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
+            Func<ICommand, IFlag, int, bool>? flagsWatcher = null,
+            int level = 0)
+        {
+            // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+            foreach (var f in parent.Flags)
+                if (flagsWatcher != null && flagsWatcher(parent, f, level) == false)
+                    return false;
+
+            if (parent.SubCommands == null) return true;
+
+            foreach (var cmd in parent.SubCommands)
+            {
+                if (commandsWatcher != null && commandsWatcher.Invoke(parent, cmd, level) == false)
+                    return false;
+                if (walkFor(cmd, commandsWatcher, flagsWatcher, level + 1) == false)
+                    return false;
+            }
+
+            return true;
         }
 
         public int FindLevel()

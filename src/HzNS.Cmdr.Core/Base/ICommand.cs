@@ -25,7 +25,7 @@ namespace HzNS.Cmdr.Base
         ICommand AddFlag<T>(IFlag<T> flag, bool required = false);
 
         bool IsRoot { get; }
-        IRootCommand? FindRoot();
+        // IRootCommand? FindRoot();
         int FindLevel();
 
         bool IsEqual(string title);

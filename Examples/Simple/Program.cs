@@ -18,9 +18,17 @@ namespace Simple
 
             // Cmdr: A CommandLine Arguments Parser
             Cmdr.NewWorker(SimpleRootCmd.New(
-                        new AppInfo {AppName = "tag-tool", AppVersion = "v1.0.0", Author = "hedzr",},
+                        new AppInfo
+                        {
+                            AppName = "tag-tool", AppVersion = "v1.0.0", Author = "hedzr",
+                            Copyright = "Copyright © Hedzr Studio, 2020. All Rights Reserved.",
+                        },
                         (root) =>
                         {
+                            root.Description = "description here";
+                            root.DescriptionLong = "long description here";
+                            root.Examples = "examples here";
+
                             root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
                                 .AddCommand(new TagsAddCmd())
                                 .AddCommand(new TagsRemoveCmd())
@@ -66,7 +74,7 @@ namespace Simple
                             root.OnSet = (worker, flag, oldValue, newValue) =>
                             {
                                 if (Cmdr.Instance.Store.GetAs<bool>("quiet")) return;
-                                if (Cmdr.Instance.Store.GetAs<bool>("verbose"))
+                                if (Cmdr.Instance.Store.GetAs<bool>("verbose") && flag.Root?.FindFlag("verbose")?.HitCount>1)
                                     Console.WriteLine(
                                         $"--> [{Cmdr.Instance.Store.GetAs<bool>("quiet")}][root.onSet] {flag} set: {oldValue?.ToStringEx()} -> {newValue?.ToStringEx()}");
                             };

@@ -36,6 +36,14 @@ namespace HzNS.Cmdr.Base
         /// </summary>
         ICommand? Owner { get; set; }
 
+        IRootCommand? Root => FindRoot();
+
+        IRootCommand? FindRoot();
+        IFlag? FindFlag(string dottedKey, IBaseOpt? from = null);
+        bool Walk(ICommand? parent = null,
+            Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
+            Func<ICommand, IFlag, int, bool>? flagsWatcher = null);
+        
         bool Match(string s, bool isLongOpt = false, bool aliasAsLong = true);
         bool Match(string str, int pos, int len, bool isLong = false, bool aliasAsLong = true);
 

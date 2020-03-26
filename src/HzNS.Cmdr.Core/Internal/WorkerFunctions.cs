@@ -38,7 +38,8 @@ namespace HzNS.Cmdr.Internal
         public IPainter Painter { get; set; } = new DefaultPainter();
 
 
-        public abstract bool Walk(ICommand? parent = null, Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
+        public abstract bool Walk(ICommand? parent = null,
+            Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
             Func<ICommand, IFlag, int, bool>? flagsWatcher = null);
 
 
@@ -291,6 +292,8 @@ namespace HzNS.Cmdr.Internal
 
         #endregion
 
+        #region flagsWatcher
+        
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
@@ -353,6 +356,9 @@ namespace HzNS.Cmdr.Internal
             };
         }
 
+        #endregion
+        
+        
         private const int UpperBoundLevel = int.MaxValue;
 
         // // ReSharper disable once InconsistentNaming

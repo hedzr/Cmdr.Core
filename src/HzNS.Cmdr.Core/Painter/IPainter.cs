@@ -98,12 +98,12 @@ namespace HzNS.Cmdr.Painter
             oln($"{_root?.AppInfo.AppName} - {_root?.AppInfo.AppVersion} - {author}");
 
             if (!string.IsNullOrWhiteSpace(_root?.AppInfo.Copyright))
-                oln(_root?.AppInfo.Copyright);
+                olnPad(_root?.AppInfo.Copyright, ColorDesc, 4);
 
             if (!string.IsNullOrWhiteSpace(_root?.Description))
             {
-                oln("Description:");
-                oln(_root?.Description, ColorDesc);
+                oln("\nDescription:");
+                olnPad(_root?.Description, ColorDesc, 4);
             }
 
             // ReSharper disable once InvertIf
@@ -112,14 +112,14 @@ namespace HzNS.Cmdr.Painter
                 if (!string.IsNullOrWhiteSpace(_root?.DescriptionLong))
                 {
                     oln("");
-                    oln(_root?.DescriptionLong, ColorDesc);
+                    olnPad(_root?.DescriptionLong, ColorDesc, 4);
                 }
 
                 // ReSharper disable once InvertIf
                 if (!string.IsNullOrWhiteSpace(_root?.Examples))
                 {
-                    oln("Examples:");
-                    oln(_root?.Examples, ColorDesc);
+                    oln("\nExamples:");
+                    olnPad(_root?.Examples, ColorDesc, 4);
                 }
             }
         }
@@ -138,7 +138,7 @@ namespace HzNS.Cmdr.Painter
             var tails = "[Tail Args]|[Options]|[Parent/Global Options]";
             if (!string.IsNullOrWhiteSpace(cmd.TailArgs))
                 tails = cmd.TailArgs;
-            
+
             oln("");
             oln("Usages:");
             oln($"    {_root?.AppInfo.AppName} {cmds} {tails}");
@@ -377,6 +377,19 @@ namespace HzNS.Cmdr.Painter
 
         #endregion
 
+
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once MemberCanBeMadeStatic.Local
+        private void olnPad(string? text, string color = Colors.txtDefault, int leftPad = 8)
+        {
+            if (text == null) return;
+            var spaces = " ".Repeat(leftPad);
+            foreach (var line in text.Split('\n'))
+            {
+                ColorifyEnabler.Colorify.Write(spaces);
+                ColorifyEnabler.Colorify.WriteLine(line, color);
+            }
+        }
 
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
