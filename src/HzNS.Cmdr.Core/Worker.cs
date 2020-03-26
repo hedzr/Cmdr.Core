@@ -303,40 +303,41 @@ namespace HzNS.Cmdr
 
                 #region loading values from env vars
 
-                // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
-                // if (v == null)
-                {
-                    if (flag.EnvVars.Length > 0)
-                    {
-                        foreach (var ek in flag.EnvVars)
-                        {
-                            var tv = Util.GetEnvValue<object>(ek);
-                            // ReSharper disable once InvertIf
-                            if (tv != default)
-                            {
-                                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-                                if (v != null)
-                                    v = v is bool ? tv.ToBool() : Convert.ChangeType(tv, v.GetType());
-                                else
-                                    v = tv;
-
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        var tv = Util.GetEnvValue<object>(Store.Instance.WrapKeys(flag.ToKeys()));
-                        if (tv != default)
-                        {
-                            // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-                            if (v != null)
-                                v = v is bool ? tv.ToBool() : Convert.ChangeType(tv, v.GetType());
-                            else
-                                v = tv;
-                        }
-                    }
-                }
+                applyValueFromEnv(flag, ref v);
+                // // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
+                // // if (v == null)
+                // {
+                //     if (flag.EnvVars.Length > 0)
+                //     {
+                //         foreach (var ek in flag.EnvVars)
+                //         {
+                //             var tv = Util.GetEnvValue<object>(ek);
+                //             // ReSharper disable once InvertIf
+                //             if (tv != default)
+                //             {
+                //                 // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+                //                 if (v != null)
+                //                     v = v is bool ? tv.ToBool() : Convert.ChangeType(tv, v.GetType());
+                //                 else
+                //                     v = tv;
+                //
+                //                 break;
+                //             }
+                //         }
+                //     }
+                //     else
+                //     {
+                //         var tv = Util.GetEnvValue<object>(Store.Instance.WrapKeys(flag.ToKeys()));
+                //         if (tv != default)
+                //         {
+                //             // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+                //             if (v != null)
+                //                 v = v is bool ? tv.ToBool() : Convert.ChangeType(tv, v.GetType());
+                //             else
+                //                 v = tv;
+                //         }
+                //     }
+                // }
 
                 #endregion
 
@@ -348,6 +349,42 @@ namespace HzNS.Cmdr
             this.logDebug("_xrefs was built.");
         }
 
+        // ReSharper disable once SuggestBaseTypeForParameter
+        private void applyValueFromEnv(IFlag flag, ref object? v)
+        {
+            if (flag.EnvVars.Length > 0)
+            {
+                foreach (var ek in flag.EnvVars)
+                {
+                    var tv = Util.GetEnvValue<object>(ek);
+                    // ReSharper disable once InvertIf
+                    if (tv != default)
+                    {
+                        // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+                        if (v != null)
+                            v = v is bool ? tv.ToBool() : Convert.ChangeType(tv, v.GetType());
+                        else
+                            v = tv;
+
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                var tv = Util.GetEnvValue<object>(Store.Instance.WrapKeys(flag.ToKeys()));
+                // ReSharper disable once InvertIf
+                if (tv != default)
+                {
+                    // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+                    if (v != null)
+                        v = v is bool ? tv.ToBool() : Convert.ChangeType(tv, v.GetType());
+                    else
+                        v = tv;
+                }
+            }
+        }
+        
         #endregion
 
         #endregion
