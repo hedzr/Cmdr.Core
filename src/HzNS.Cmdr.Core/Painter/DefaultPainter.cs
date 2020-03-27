@@ -301,8 +301,6 @@ namespace HzNS.Cmdr.Painter
             if (root != null)
             {
                 oln(string.Empty);
-                var hash = root.AppInfo.BuildVcsHash;
-                if (string.IsNullOrWhiteSpace(hash)) hash = VersionUtil.InformationalVersion;
                 
                 if (_quiteMode)
                 {
@@ -310,26 +308,25 @@ namespace HzNS.Cmdr.Painter
                     oln($"{root.AppInfo.AppName}");
                     oln($"{root.AppInfo.BuildTimestamp}");
                     // oln($"{root.AppInfo.BuildVcsHash}");
-                    oln($"{root.AppInfo.Builder}");
-                    oln($"{hash}");
+                    // oln($"{root.AppInfo.Builder}");
                     oln($"{root.AppInfo.LinkerTimestampUtc}");
-                    oln($"{VersionUtil.CommitHashPrb}");
                     oln($"{VersionUtil.AssemblyProductAttribute}");
-                    oln($"{VersionUtil.CommitHashPrb}");
-                    oln($"{VersionUtil.CommitHashPrb}");
                 }
                 else
                 {
-                    oln($"                 Version: {root.AppInfo.AppVersion}");
+                    oln($"             App Version: {root.AppInfo.AppVersion}");
                     oln($"                App Name: {root.AppInfo.AppName}");
                     oln($"         Build Timestamp: {root.AppInfo.BuildTimestamp}");
-                    oln($"                Built by: {root.AppInfo.Builder}");
-                    oln($"           Build Githash: {hash}");
+                    // oln($"                Built by: {root.AppInfo.Builder}");
                     oln($"        Linker Timestamp: {root.AppInfo.LinkerTimestampUtc}");
-                    oln($"           CommitHashPrb: {VersionUtil.CommitHashPrb}");
                     oln($"AssemblyProductAttribute: {VersionUtil.AssemblyProductAttribute}");
-                    oln($"           CommitHashPrb: {VersionUtil.CommitHashPrb}");
-                    oln($"           CommitHashPrb: {VersionUtil.CommitHashPrb}");
+                    oln("");
+                    oln($"            Cmdr Version: {VersionUtil.CmdrAssemblyInformationalVersion}");
+                    oln($"       Cmdr File Version: {VersionUtil.CmdrAssemblyFileVersion}");
+                    oln($"     Cmdr Assembly Title: {VersionUtil.CmdrAssemblyTitle}");
+                    oln($"       Cmdr Git CommitId: {VersionUtil.CmdrGitCommitId}");
+                    oln($"    Cmdr Git Commit Date: {VersionUtil.CmdrGitCommitDate}");
+                    oln($"     Cmdr Root Namespace: {VersionUtil.CmdrRootNamespace}");
                 }
 
                 // oln(string.Empty);
