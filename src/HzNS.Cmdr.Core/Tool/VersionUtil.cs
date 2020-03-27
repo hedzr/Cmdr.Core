@@ -17,12 +17,14 @@ namespace HzNS.Cmdr.Tool
         // ReSharper disable once InconsistentNaming
         private static readonly Foo _foo = new Foo();
 
+        public static Assembly CmdrAssembly => _foo.GetType().Assembly;
+
         /// <summary>
         /// Where other assemblies that reference your assembly will look.
         /// If this number changes, other assemblies have to update their
         /// references to your assembly.
         /// </summary>
-        public static string AssemblyVersion => _foo.GetType().Assembly.GetName().Version.ToString();
+        public static string AssemblyVersion => CmdrAssembly.GetName().Version?.ToString() ?? string.Empty;
 
         /// <summary>
         /// Used for deployment. You can increase this number for every
@@ -39,30 +41,31 @@ namespace HzNS.Cmdr.Tool
         /// for development stage (Alpha, Beta, RC and RTM), service packs and
         /// hot fixes. 
         /// </summary>
-        public static string? FileVersion => GetFileVersion(_foo.GetType().Assembly);
+        public static string? FileVersion => GetFileVersion(CmdrAssembly);
 
         /// <summary>
         /// The Product version of the assembly. This is the version you would
         /// use when talking to customers or for display on your website.
         /// This version can be a string, like '1.0 Release Candidate'.
         /// </summary>
-        public static string InformationalVersion => GetInformationalVersion(_foo.GetType().Assembly);
+        public static string InformationalVersion => GetInformationalVersion(CmdrAssembly) ?? string.Empty;
 
-        public static string PackageVersion => GetInformationalVersion(_foo.GetType().Assembly);
+        public static string PackageVersion => GetInformationalVersion(CmdrAssembly) ?? string.Empty;
 
-        public static string AppEntryFileVersion => GetFileVersion(Assembly.GetEntryAssembly());
+        public static string AppEntryFileVersion =>
+            GetFileVersion(Assembly.GetEntryAssembly() ?? CmdrAssembly) ?? string.Empty;
 
-        public static DateTime LinkerTimestampUtc => GetLinkerTimestampUtc(_foo.GetType().Assembly);
-        
-        
-        public static string? GetFileVersion(Assembly? assembly)
+        public static DateTime LinkerTimestampUtc => GetLinkerTimestampUtc(CmdrAssembly);
+
+
+        public static string? GetFileVersion(Assembly assembly)
         {
-            return assembly?.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
+            return assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
         }
 
-        public static string? GetInformationalVersion(Assembly? assembly)
+        public static string? GetInformationalVersion(Assembly assembly)
         {
-            return assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            return assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
         }
 
         public static string? GetPackageVersion(Assembly? assembly)
@@ -99,7 +102,7 @@ namespace HzNS.Cmdr.Tool
             return dt.AddSeconds(secondsSince1970);
         }
 
-        public static DateTime BuildTimestamp => GetBuildDate(_foo.GetType().Assembly);
+        public static DateTime BuildTimestamp => GetBuildDate(CmdrAssembly);
 
         /// <summary>
         /// get custom attribute from assembly.
@@ -114,9 +117,9 @@ namespace HzNS.Cmdr.Tool
             var attribute = assembly.GetCustomAttribute<BuildDateAttribute>();
             return attribute?.DateTime ?? default(DateTime);
         }
-        
-        
-        public static string CommitHashPrb => GetCommitHashPrb(_foo.GetType().Assembly);
+
+
+        public static string CommitHashPrb => GetCommitHashPrb(CmdrAssembly);
 
         private static string GetCommitHashPrb(Assembly assembly)
         {
@@ -129,7 +132,7 @@ namespace HzNS.Cmdr.Tool
         {
             get
             {
-                var attr = GetAssemblyProductAttribute(_foo.GetType().Assembly);
+                var attr = GetAssemblyProductAttribute(CmdrAssembly);
                 return attr?.Product ?? string.Empty;
             }
         }
@@ -145,8 +148,8 @@ namespace HzNS.Cmdr.Tool
 
             return attribute;
         }
-        
-        public static FileVersionInfo FileVersionInfo => FileVersionInfo.GetVersionInfo(_foo.GetType().Assembly.Location);
+
+        public static FileVersionInfo FileVersionInfo => FileVersionInfo.GetVersionInfo(CmdrAssembly.Location);
     }
 
     public static class ShellExtensions

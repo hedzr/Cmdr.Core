@@ -224,7 +224,7 @@ namespace HzNS.Cmdr
         {
             object? old;
             node.Values.TryGetValue(key, out old);
-            
+
             switch (token.Type)
             {
                 case JTokenType.Boolean:
@@ -419,8 +419,7 @@ namespace HzNS.Cmdr
                 case string[] v:
                     foreach (var it in val)
                     {
-                        var z = it is string s ? s : Convert.ChangeType(it, typeof(string)) as string ?? string.Empty;
-                        appendIts(node, key, v, z, appendToArray);
+                        appendIts(node, key, v, toT<string>(it), appendToArray);
                     }
 
                     return true;
@@ -428,8 +427,7 @@ namespace HzNS.Cmdr
                 case bool[] v:
                     foreach (var it in val)
                     {
-                        appendIts(node, key, v, it is bool s ? s : (bool?) Convert.ChangeType(it, typeof(bool)) ?? false,
-                            appendToArray);
+                        appendIts(node, key, v,toT<bool>(it), appendToArray);
                     }
 
                     return true;
@@ -437,24 +435,21 @@ namespace HzNS.Cmdr
                 case short[] v:
                     foreach (var it in val)
                     {
-                        appendIts(node, key, v, it is short s ? s : (short) Convert.ChangeType(it, typeof(short)),
-                            appendToArray);
+                        appendIts(node, key, v, toT<short>(it), appendToArray);
                     }
 
                     return true;
                 case int[] v:
                     foreach (var it in val)
                     {
-                        appendIts(node, key, v, it is int s ? s : (int) Convert.ChangeType(it, typeof(int)),
-                            appendToArray);
+                        appendIts(node, key, v, toT<int>(it), appendToArray);
                     }
 
                     return true;
                 case long[] v:
                     foreach (var it in val)
                     {
-                        appendIts(node, key, v, it is long s ? s : (long) Convert.ChangeType(it, typeof(long)),
-                            appendToArray);
+                        appendIts(node, key, v, toT<long>(it), appendToArray);
                     }
 
                     return true;
@@ -462,24 +457,21 @@ namespace HzNS.Cmdr
                 case float[] v:
                     foreach (var it in val)
                     {
-                        appendIts(node, key, v, it is float s ? s : (float) Convert.ChangeType(it, typeof(float)),
-                            appendToArray);
+                        appendIts(node, key, v, toT<float>(it), appendToArray);
                     }
 
                     return true;
                 case double[] v:
                     foreach (var it in val)
                     {
-                        appendIts(node, key, v, it is double s ? s : (double) Convert.ChangeType(it, typeof(double)),
-                            appendToArray);
+                        appendIts(node, key, v, toT<double>(it), appendToArray);
                     }
 
                     return true;
                 case decimal[] v:
                     foreach (var it in val)
                     {
-                        appendIts(node, key, v, it is decimal s ? s : (decimal) Convert.ChangeType(it, typeof(decimal)),
-                            appendToArray);
+                        appendIts(node, key, v, toT<decimal>(it), appendToArray);
                     }
 
                     return true;
@@ -493,13 +485,35 @@ namespace HzNS.Cmdr
             return false;
         }
 
+        private static T toT<T>(object? it)
+        {
+#pragma warning disable CS8602, CS8653
+            var tv = default(T);
+#pragma warning restore CS8602, CS8653
+            if (it is T tst) tv = tst;
+            else
+            {
+                var t = Convert.ChangeType(it, typeof(T));
+                if (t is T ts) tv = ts;
+            }
+
+            return tv;
+        }
+
         private static void appendIts<T>(Slot node, string key, // IEnumerable<string>? parts,
             T[] v, T val, bool appendToArray = false)
         {
             if (appendToArray == false)
                 Array.Clear(v, 0, v.Length);
             else if (node.Values.ContainsKey((key)))
-                v = (T[]) Convert.ChangeType(node.Values[key], typeof(T[]));
+            {
+                var tv = Convert.ChangeType(node.Values[key], typeof(T[]));
+                if (tv == null)
+#pragma warning disable CS8600
+                    v = default(T[]);
+#pragma warning restore CS8600
+                else v = (T[]) tv;
+            }
 
 // #pragma warning disable CS8619
             // ReSharper disable once LoopCanBeConvertedToQuery
