@@ -24,7 +24,7 @@ namespace HzNS.Cmdr.Painter
         {
         }
 
-        void PrintHeadLines(ICommand cmd, IBaseWorker w, params string[] remainArgs);
+        void PrintHeadLines(ICommand cmd, IBaseWorker w, bool singleLine = false, params string[] remainArgs);
         void PrintTailLines(ICommand cmd, IBaseWorker w, params string[] remainArgs);
 
 

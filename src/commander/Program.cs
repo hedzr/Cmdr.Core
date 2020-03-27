@@ -21,7 +21,7 @@ namespace commander
             // throw new Exception("sys");
 
             // Cmdr: A CommandLine Arguments Parser
-            Cmdr.NewWorker(RootCommand.New(new AppInfo {AppName = "commander", AppVersion = "1.0.0"}, (root) =>
+            Cmdr.NewWorker(RootCommand.New(new AppInfo {AppName = "commander"}, (root) =>
                     {
                         root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
                             .AddCommand(new TagsAddCmd())

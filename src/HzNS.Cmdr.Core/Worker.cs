@@ -619,7 +619,7 @@ namespace HzNS.Cmdr
 
             // Begin watching.
             watcher.EnableRaisingEvents = true;
-            Console.WriteLine($"FileWatcher running at {dir}");
+            this.logDebug($"FileWatcher running at {dir}");
 
             // Wait for the user to quit the program.
             // Console.WriteLine("Press 'q' to quit the sample.");

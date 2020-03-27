@@ -7,17 +7,45 @@
         <Authors>Hedzr Yeh</Authors>
         <PackageTags>cmdr, commandline, commandline-arguments</PackageTags>
         <TargetFramework>netcoreapp3.1</TargetFramework>
+        <Title>Cmdr.Core</Title>
+        <Description>Cmdr.Core </Description>
+        <AssemblyVersion>1.0.1</AssemblyVersion>
+        <FileVersion>1.0.1</FileVersion>
+        <PackageVersion>1.0.2</PackageVersion>
+        <Copyright>Copyright (c) by Hedzr, 2020.</Copyright>
+        <PackageProjectUrl>https://github.com/hedzr/Cmdr.Core</PackageProjectUrl>
+<!--        <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>-->
+<!--        <PackageIconUrl>https://github.com/hedzr/Cmdr.Core</PackageIconUrl>-->
+        <RepositoryUrl>https://github.com/hedzr/Cmdr.Core</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageReleaseNotes>command-line argument POSIX style parser</PackageReleaseNotes>
+			  <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
+			  <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
+			<NrtShowRevision>true</NrtShowRevision>
+        <NrtRevisionFormat>{semvertag+chash:7}-{c:uymd}{c:uhms}</NrtRevisionFormat>
     </PropertyGroup>
 
     <ItemGroup>
+        <AssemblyAttribute Include="HzNS.Cmdr.Builder.BuildDateAttribute">
+            <_Parameter1>$([System.DateTime]::UtcNow.ToString("yyyyMMddHHmmss"))</_Parameter1>
+        </AssemblyAttribute>
         <PackageReference Include="AutofacSerilogIntegration" Version="2.1.0" />
         <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
         <PackageReference Include="Serilog" Version="2.9.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
         <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
+        <PackageReference Include="Unclassified.NetRevisionTask" Version="0.3.0" PrivateAssets="all" />
         <PackageReference Include="YamlDotNet.NetCore" Version="1.0.0" />
+        <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="$(CommitHash) != ''">
+            <_Parameter1>CommitHash</_Parameter1>
+            <_Parameter2>$(CommitHash)</_Parameter2>
+        </AssemblyAttribute>
     </ItemGroup>
 
+<!--		<Target Name="UpdateVersion" BeforeTargets="CoreCompile">-->
+<!--			<Exec Command="php &quot;$(SolutionDir)build.php&quot; $(SolutionDir) &quot;$(ProjectDir)Server.csproj&quot;" />-->
+<!--		</Target>-->
+	
     <ItemGroup>
         <Compile Remove="Tool\Log\**" />
     </ItemGroup>

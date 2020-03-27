@@ -9,7 +9,7 @@ namespace Tests.HzNS.Cmdr
     public abstract class root
     {
         public static IRootCommand RootCmd => RootCommand.New(
-            new AppInfo {AppName = "tag-tool", AppVersion = "1.0.0"},
+            new AppInfo {AppName = "tag-tool"},
             (root) =>
             {
                 root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}

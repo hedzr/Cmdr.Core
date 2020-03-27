@@ -45,7 +45,7 @@ namespace HzNS.Cmdr.Painter
         }
 
 
-        public void PrintHeadLines(ICommand cmd, IBaseWorker w, params string[] remainArgs)
+        public void PrintHeadLines(ICommand cmd, IBaseWorker w, bool singleLine = false, params string[] remainArgs)
         {
             if (_quiteMode) return;
 
@@ -54,6 +54,8 @@ namespace HzNS.Cmdr.Painter
                 author = "Freeman";
 
             oln($"{_root?.AppInfo.AppName} - {_root?.AppInfo.AppVersion} - {author}");
+
+            if (singleLine) return;
 
             if (!string.IsNullOrWhiteSpace(_root?.AppInfo.Copyright))
                 olnPad(_root?.AppInfo.Copyright, ColorDesc, 4);
@@ -258,6 +260,7 @@ namespace HzNS.Cmdr.Painter
 
             oln("\n\nDump the Flags (Hit only):");
             dumpValues(w.RootCommand, w, tabStop, hitOnly);
+            oln(string.Empty);
         }
 
         #endregion
@@ -282,6 +285,8 @@ namespace HzNS.Cmdr.Painter
                     oln($"Build Timestamp: {root.AppInfo.BuildTimestamp}");
                     oln($"  Build Githash: {root.AppInfo.BuildVcsHash}");
                 }
+
+                oln(string.Empty);
             }
         }
 
@@ -295,22 +300,39 @@ namespace HzNS.Cmdr.Painter
             // ReSharper disable once InvertIf
             if (root != null)
             {
+                oln(string.Empty);
+                var hash = root.AppInfo.BuildVcsHash;
+                if (string.IsNullOrWhiteSpace(hash)) hash = VersionUtil.InformationalVersion;
+                
                 if (_quiteMode)
                 {
                     oln($"{root.AppInfo.AppVersion}");
                     oln($"{root.AppInfo.AppName}");
                     oln($"{root.AppInfo.BuildTimestamp}");
-                    oln($"{root.AppInfo.BuildVcsHash}");
+                    // oln($"{root.AppInfo.BuildVcsHash}");
                     oln($"{root.AppInfo.Builder}");
+                    oln($"{hash}");
+                    oln($"{root.AppInfo.LinkerTimestampUtc}");
+                    oln($"{VersionUtil.CommitHashPrb}");
+                    oln($"{VersionUtil.AssemblyProductAttribute}");
+                    oln($"{VersionUtil.CommitHashPrb}");
+                    oln($"{VersionUtil.CommitHashPrb}");
                 }
                 else
                 {
-                    oln($"        Version: {root.AppInfo.AppVersion}");
-                    oln($"       App Name: {root.AppInfo.AppName}");
-                    oln($"       Built by: {root.AppInfo.Builder}");
-                    oln($"Build Timestamp: {root.AppInfo.BuildTimestamp}");
-                    oln($"  Build Githash: {root.AppInfo.BuildVcsHash}");
+                    oln($"                 Version: {root.AppInfo.AppVersion}");
+                    oln($"                App Name: {root.AppInfo.AppName}");
+                    oln($"         Build Timestamp: {root.AppInfo.BuildTimestamp}");
+                    oln($"                Built by: {root.AppInfo.Builder}");
+                    oln($"           Build Githash: {hash}");
+                    oln($"        Linker Timestamp: {root.AppInfo.LinkerTimestampUtc}");
+                    oln($"           CommitHashPrb: {VersionUtil.CommitHashPrb}");
+                    oln($"AssemblyProductAttribute: {VersionUtil.AssemblyProductAttribute}");
+                    oln($"           CommitHashPrb: {VersionUtil.CommitHashPrb}");
+                    oln($"           CommitHashPrb: {VersionUtil.CommitHashPrb}");
                 }
+
+                // oln(string.Empty);
             }
         }
 

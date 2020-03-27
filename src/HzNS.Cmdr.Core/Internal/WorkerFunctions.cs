@@ -56,13 +56,22 @@ namespace HzNS.Cmdr.Internal
             tabStopCalculated = w.TabStop;
 
             Painter.Setup(command, w, remainArgs);
+            if (w.AppQuietMode)
+            {
+                Painter.PrintVersions(command, tabStopCalculated, w, remainArgs);
+                return;
+            }
+            
             Painter.PrintPrologue(command, w, remainArgs);
             Painter.PrintPreface(command, w, remainArgs);
-            Painter.PrintHeadLines(command, w, remainArgs);
+            Painter.PrintHeadLines(command, w, true, remainArgs);
+
+            // Painter.PrintUsages(command, w, remainArgs);
+            // Painter.PrintExamples(command, w, remainArgs);
 
             Painter.PrintVersions(command, tabStopCalculated, w, remainArgs);
 
-            Painter.PrintTailLines(command, w, remainArgs);
+            // Painter.PrintTailLines(command, w, remainArgs);
             Painter.PrintEpilogue(command, w, remainArgs);
             // writer.WriteLine("");
         }
@@ -77,13 +86,22 @@ namespace HzNS.Cmdr.Internal
             tabStopCalculated = w.TabStop;
 
             Painter.Setup(command, w, remainArgs);
+            if (w.AppQuietMode)
+            {
+                Painter.PrintBuildInfo(command, tabStopCalculated, w, remainArgs);
+                return;
+            }
+            
             Painter.PrintPrologue(command, w, remainArgs);
             Painter.PrintPreface(command, w, remainArgs);
-            Painter.PrintHeadLines(command, w, remainArgs);
+            Painter.PrintHeadLines(command, w, true, remainArgs);
+
+            // Painter.PrintUsages(command, w, remainArgs);
+            // Painter.PrintExamples(command, w, remainArgs);
 
             Painter.PrintBuildInfo(command, tabStopCalculated, w, remainArgs);
 
-            Painter.PrintTailLines(command, w, remainArgs);
+            // Painter.PrintTailLines(command, w, remainArgs);
             Painter.PrintEpilogue(command, w, remainArgs);
             // writer.WriteLine("");
         }
@@ -108,7 +126,7 @@ namespace HzNS.Cmdr.Internal
             Painter.Setup(command, w, remainArgs);
             Painter.PrintPrologue(command, w, remainArgs);
             Painter.PrintPreface(command, w, remainArgs);
-            Painter.PrintHeadLines(command, w, remainArgs);
+            Painter.PrintHeadLines(command, w, false, remainArgs);
 
             Painter.PrintUsages(command, w, remainArgs);
             Painter.PrintExamples(command, w, remainArgs);
@@ -117,7 +135,7 @@ namespace HzNS.Cmdr.Internal
             Painter.PrintCommandsAndOptions(command, commandLines, optionLines,
                 tabStopCalculated, false, w, remainArgs);
 
-            Painter.PrintTailLines(command, w, remainArgs);
+            // Painter.PrintTailLines(command, w, remainArgs);
             Painter.PrintEpilogue(command, w, remainArgs);
             // writer.WriteLine("");
         }
@@ -164,13 +182,13 @@ namespace HzNS.Cmdr.Internal
             Painter.Setup(command, w, remainArgs);
             Painter.PrintPrologue(command, w, remainArgs);
             Painter.PrintPreface(command, w, remainArgs);
-            Painter.PrintHeadLines(command, w, remainArgs);
+            Painter.PrintHeadLines(command, w, false, remainArgs);
 
             // ShowIt(w.ParsedCommand ?? w.RootCommand, commandLines, optionLines, writer, tabStop, true);
             Painter.PrintCommandsAndOptions(command, commandLines, optionLines,
                 tabStopCalculated, true, w, remainArgs);
 
-            Painter.PrintTailLines(command, w, remainArgs);
+            // Painter.PrintTailLines(command, w, remainArgs);
             Painter.PrintEpilogue(command, w, remainArgs);
             // writer.WriteLine("");
         }
@@ -249,14 +267,14 @@ namespace HzNS.Cmdr.Internal
             Painter.Setup(command, w, remainArgs);
             Painter.PrintPrologue(command, w, remainArgs);
             Painter.PrintPreface(command, w, remainArgs);
-            Painter.PrintHeadLines(command, w, remainArgs);
+            Painter.PrintHeadLines(command, w, false, remainArgs);
 
             // ShowIt(w.ParsedCommand ?? w.RootCommand, commandLines, optionLines, writer, tabStop);
             // // ShowIt(command, commandLines, optionLines, writer, tabStop);
             Painter.PrintCommandsAndOptions(command, commandLines, optionLines,
                 tabStopCalculated, false, w, remainArgs);
 
-            Painter.PrintTailLines(command, w, remainArgs);
+            // Painter.PrintTailLines(command, w, remainArgs);
             Painter.PrintEpilogue(command, w, remainArgs);
             // writer.WriteLine("");
 

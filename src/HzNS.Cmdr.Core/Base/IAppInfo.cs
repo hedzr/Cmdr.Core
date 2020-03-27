@@ -1,3 +1,5 @@
+using System;
+
 namespace HzNS.Cmdr.Base
 {
     public interface IAppInfo
@@ -9,7 +11,8 @@ namespace HzNS.Cmdr.Base
         string Author { get; }
         string Copyright { get; }
 
-        string BuildTimestamp { get; }
+        DateTime BuildTimestamp { get; }
+        DateTime LinkerTimestampUtc { get; }
 
         /// <summary>
         /// The Tracing Release Tag in Team

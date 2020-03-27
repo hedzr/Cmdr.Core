@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
+using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Ext;
 
 namespace Simple
@@ -20,7 +23,9 @@ namespace Simple
             Cmdr.NewWorker(SimpleRootCmd.New(
                         new AppInfo
                         {
-                            AppName = "tag-tool", AppVersion = "v1.0.0", Author = "hedzr",
+                            AppName = "tag-tool",
+                            // AppVersion = "v1.0.0",
+                            Author = "hedzr",
                             Copyright = "Copyright © Hedzr Studio, 2020. All Rights Reserved.",
                         },
                         (root) =>
@@ -98,11 +103,19 @@ namespace Simple
                 .Run(args, () =>
                 {
                     // Wait for the user to quit the program.
-                    Console.WriteLine("Press 'q' to quit the sample.");
-                    while (Console.Read() != 'q')
-                    {
-                        //
-                    }
+                    
+                    Console.WriteLine($"         AssemblyVersion: {VersionUtil.AssemblyVersion}");
+                    Console.WriteLine($"             FileVersion: {VersionUtil.FileVersion}");
+                    Console.WriteLine($"    InformationalVersion: {VersionUtil.InformationalVersion}");
+                    Console.WriteLine($"AssemblyProductAttribute: {VersionUtil.AssemblyProductAttribute}");
+                    Console.WriteLine($"      FileProductVersion: {VersionUtil.FileVersionInfo.ProductVersion}");
+                    Console.WriteLine();
+                    
+                    // Console.WriteLine("Press 'q' to quit the sample.");
+                    // while (Console.Read() != 'q')
+                    // {
+                    //     //
+                    // }
 
                     return 0;
                 });

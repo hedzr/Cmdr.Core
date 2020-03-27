@@ -19,6 +19,11 @@ namespace HzNS.Cmdr.Internal.Base
         bool EnableUnknownFlagThrows { get; set; }
         int TabStop { get; set; }
 
+        public bool AppVerboseMode { get; }
+        public bool AppQuietMode { get; }
+        public bool AppDebugMode { get; }
+        public bool AppTraceMode { get; }
+
 
         // ReSharper disable once CollectionNeverUpdated.Local
         [SuppressMessage("ReSharper", "InconsistentNaming")]
