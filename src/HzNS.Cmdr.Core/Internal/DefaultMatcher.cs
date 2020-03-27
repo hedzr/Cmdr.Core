@@ -133,6 +133,12 @@ namespace HzNS.Cmdr.Internal
                 #region forEachFragmentParts
 
                 var part = fragment.Substring(pos, len);
+                if (part.Length == 0 && longOpt)
+                {
+                    // "--"
+                    matchedPosition = i + 1;
+                    break;
+                }
 
                 @this.logDebug("    - try finding flags for ccc: {CommandTitle}", ccc.backtraceTitles);
 

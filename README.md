@@ -51,16 +51,7 @@ cmdr has rich features:
     - `~~tree`: list all commands and sub-commands.
     - `--config <location>`: specify the location of the root config file.
   - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
-    <!--
-  - [ ] Generate Commands:
-    - [ ] `generate shell`: `—bash`/`—zsh`(*todo*)/`--auto`
-    - [ ] `generate manual`:  man 1 ready.
-    - [ ] `generate doc`: markdown ready.
-  - `cmdr` Specials:
-    - [ ] `--no-env-overrides`, and `--strict-mode`
-    - [ ] `--no-color`: print the plain text to console without ANSI colors.
-      -->
-
+    
 - [x] Groupable commands and options/flags.
 
   Sortable group name with `[0-9A-Za-z]+\..+` format, eg:
@@ -72,7 +63,7 @@ cmdr has rich features:
 
 - [x] Overrides by environment variables.
 
-  *priority level:* `defaultValue -> config-file -> env-var -> command-line opts`
+  *priority level:* `defaultValue < config-file < env-var < command-line opts`
 
 - [x] `Option Store` - Unify option value extraction:
 
@@ -81,6 +72,8 @@ cmdr has rich features:
   - [x] `object? Set<T>(key, value)`
   - [x] `object? SetByKeys(IEnumerable<string> keys, value)`
   - [x] `HasKeys`, `HasDottedKeys`, `FindByKeys`, `FindByDottedKeys`, ...
+  - ---
+  - [x] `Cmdr.Instance.Store.OnSetHandler`
 
   <!--
 
@@ -162,7 +155,7 @@ cmdr has rich features:
   - `-I 'file'`, `-I'file'`, and `-I='files'`
   - `-I "file"`, `-I"file"`, and `-I="files"`
 
-- [ ] Supports for **PassThrough** by `--`. (*Passing remaining command line arguments after -- (optional)*)
+- [x] Supports for **PassThrough** by `--`. (*Passing remaining command line arguments after -- (optional)*)
 
 - [x] Predefined external config file locations:
 

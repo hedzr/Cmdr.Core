@@ -219,8 +219,8 @@ namespace HzNS.Cmdr
             return null;
         }
 
-        private static void setIt(Slot node, string key, IEnumerable<string> remainsParts, JToken token,
-            bool isArray = false, bool appendToArray = false)
+        private static void setIt(Slot node, string key, IEnumerable<string> remainsParts, 
+            JToken token, bool isArray = false, bool appendToArray = false)
         {
             object? old;
             node.Values.TryGetValue(key, out old);

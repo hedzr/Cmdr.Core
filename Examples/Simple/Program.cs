@@ -102,12 +102,12 @@ namespace Simple
                 {
                     // Wait for the user to quit the program.
                     
-                    Console.WriteLine($"         AssemblyVersion: {VersionUtil.AssemblyVersion}");
-                    Console.WriteLine($"             FileVersion: {VersionUtil.FileVersion}");
-                    Console.WriteLine($"    InformationalVersion: {VersionUtil.InformationalVersion}");
-                    Console.WriteLine($"AssemblyProductAttribute: {VersionUtil.AssemblyProductAttribute}");
-                    Console.WriteLine($"      FileProductVersion: {VersionUtil.FileVersionInfo.ProductVersion}");
-                    Console.WriteLine();
+                    // Console.WriteLine($"         AssemblyVersion: {VersionUtil.AssemblyVersion}");
+                    // Console.WriteLine($"             FileVersion: {VersionUtil.FileVersion}");
+                    // Console.WriteLine($"    InformationalVersion: {VersionUtil.InformationalVersion}");
+                    // Console.WriteLine($"AssemblyProductAttribute: {VersionUtil.AssemblyProductAttribute}");
+                    // Console.WriteLine($"      FileProductVersion: {VersionUtil.FileVersionInfo.ProductVersion}");
+                    // Console.WriteLine();
                     
                     // Console.WriteLine("Press 'q' to quit the sample.");
                     // while (Console.Read() != 'q')
