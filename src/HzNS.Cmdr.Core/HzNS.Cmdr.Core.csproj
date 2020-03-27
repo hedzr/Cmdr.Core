@@ -5,8 +5,7 @@
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Authors>Hedzr Yeh</Authors>
-        <PackageTags>cmdr, commandline, commandline-arguments</PackageTags>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <PackageTags>cmdr, commandline, commandline-arguments, configuration, hierarchy configurations, parser, option, argument, </PackageTags>
         <Title>Cmdr.Core</Title>
         <Description>Cmdr.Core </Description>
         <AssemblyVersion>1.0.1</AssemblyVersion>
@@ -23,6 +22,9 @@
 			  <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
 			<NrtShowRevision>true</NrtShowRevision>
         <NrtRevisionFormat>{semvertag+chash:7}-ts{c:uymd}{c:uhm}</NrtRevisionFormat>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+<!--        <TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>-->
+        <PackageVersion />
     </PropertyGroup>
 
     <ItemGroup>

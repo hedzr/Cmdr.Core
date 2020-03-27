@@ -8,7 +8,6 @@ The first release coming soon.
 
 
 
-
 ## Features
 
 cmdr has rich features:
@@ -52,7 +51,7 @@ cmdr has rich features:
     - `~~tree`: list all commands and sub-commands.
     - `--config <location>`: specify the location of the root config file.
   - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
-  <!--
+    <!--
   - [ ] Generate Commands:
     - [ ] `generate shell`: `—bash`/`—zsh`(*todo*)/`--auto`
     - [ ] `generate manual`:  man 1 ready.
@@ -60,7 +59,7 @@ cmdr has rich features:
   - `cmdr` Specials:
     - [ ] `--no-env-overrides`, and `--strict-mode`
     - [ ] `--no-color`: print the plain text to console without ANSI colors.
-  -->
+      -->
 
 - [x] Groupable commands and options/flags.
 
@@ -70,12 +69,13 @@ cmdr has rich features:
   - `abcd.c++`, `b999.golang`, `zzzz.java`, …;
 
 - [x] Supports for unlimited multi-level sub-commands.
-  
+
 - [x] Overrides by environment variables.
 
   *priority level:* `defaultValue -> config-file -> env-var -> command-line opts`
 
 - [x] `Option Store` - Unify option value extraction:
+
   - [x] `object? Cmdr.Instance.Store.Get(key, defaultValue)`
   - [x] `T Cmdr.Instance.Store.GetAs<T>(key, defaultValue)`
   - [x] `object? Set<T>(key, value)`
@@ -87,26 +87,36 @@ cmdr has rich features:
   - [ ] ??:
 
     `cmdr.GetBool(key)`, `cmdr.GetInt(key)`, `cmdr.GetString(key)`, `cmdr.GetStringSlice(key, defaultValues...)` and `cmdr.GetIntSlice(key, defaultValues...)`, `cmdr.GetDuration(key)` for Option value extractions.
-    
+
     - bool
+
     - int, int64, uint, uint64, float32, float64
+
       ```bash
       $ app -t 1    #  float: 1.1, 1e10, hex: 0x9d, oct: 0700, bin: 0b00010010
       ```
+
     - string
+
     - string slice, int slice (comma-separated)
+
       ```bash
       $ app -t apple,banana      # => []string{"apple", "banana"}
       $ app -t apple -t banana   # => []string{"apple", "banana"}
       ```
+
     - time duration (1ns, 1ms, 1s, 1m, 1h, 1d, ...)
+
       ```bash
       $ app -t 1ns -t 1ms -t 1s -t 1m -t 1h -t 1d
       ```
+
     - ~~*todo: float, time, duration, int slice, …, all primitive go types*~~
+
     - map
+
     - struct: `cmdr.GetSectionFrom(sectionKeyPath, &holderStruct)`
-    
+
   - ??: `cmdr.Set(key, value)`, `cmdr.SerNx(key, value)`
 
     - `Set()` set value by key without RxxtPrefix, eg: `cmdr.Set("debug", true)` for `--debug`.
@@ -119,18 +129,18 @@ cmdr has rich features:
     - `cmdr.GetRP(prefix, key)`, `cmdr.GetBoolRP(prefix, key)`, ….
 
     As a fact, `cmdr.Get("app.server.port")` == `cmdr.GetP("app.server", "port")` == `cmdr.GetR("server.port")`
-  (*if cmdr.RxxtPrefix == ["app"]*); so:
+    (*if cmdr.RxxtPrefix == ["app"]*); so:
 
     ```go
     cmdr.Set("server.port", 7100)
     assert cmdr.GetR("server.port") == 7100
     assert cmdr.Get("app.server.port") == 7100
     ```
-    
+
     In most cases, **GetXxxR()** are recommended.
-    
+
     While extracting string value, the evnvar will be expanded automatically but raw version `GetStringNoExpandXXX()` available since v1.6.7. For example:
-    
+
     ```go
     fmt.Println(cmdr.GetStringNoExpandR("kk"))  // = $HOME/Downloads
     fmt.Println(cmdr.GetStringR("kk"))          // = /home/ubuntu/Downloads
@@ -139,13 +149,15 @@ cmdr has rich features:
   -->
 
   
-  
+
 - [x] Walkable
+
   - Customizable `Painter` interface to loop *each* command and flag.
   - Walks on all commands with `Walk(walker)`.
-  
+
 - [x] Supports `-I/usr/include -I=/usr/include` `-I /usr/include -I:/usr` option argument specifications
   Automatically allows those formats (applied to long option too):
+
   - `-I file`, `-Ifile`, and `-I=files`
   - `-I 'file'`, `-I'file'`, and `-I='files'`
   - `-I "file"`, `-I"file"`, and `-I="files"`
@@ -153,11 +165,13 @@ cmdr has rich features:
 - [ ] Supports for **PassThrough** by `--`. (*Passing remaining command line arguments after -- (optional)*)
 
 - [x] Predefined external config file locations:
+
   - `/etc/<appname>/<appname>.yml` and `conf.d` sub-directory.
   - `/usr/local/etc/<appname>/<appname>.yml` and `conf.d` sub-directory.
   - `$HOME/.config/<appname>/<appname>.yml` and `conf.d` sub-directory.
   - `$HOME/.<appname>/<appname>.yml` and `conf.d` sub-directory.
   - the predefined locations are:
+
     ```go
     predefinedLocations: []string{
     	"./ci/etc/%s/%s.yml",       // for developer
@@ -169,11 +183,9 @@ cmdr has rich features:
     	"%s.yml",                   // current directory
     },
     ```
-
-  - 
-
+    
   - [x] Watch `conf.d` directory:
-  
+
 - [x] Handlers
 
   - Global Handlers: `RootCommand.OnPre/Post/Action()/OnSet()` will be triggered before/after the concrete `Command.OnPre/Post/Action()/OnSet()`
@@ -193,41 +205,47 @@ MIT
 
 <!--
 
----
+------
 
 - Strict Mode (`-`)
 
   - `EnableUnknownCommandThrows` & `EnableUnknownFlagThrows`
+
   - Old/Abandoned:
+
     - *false*: Ignoring unknown command line options (default)
+
     - *true*: Report error on unknown commands and options if strict mode enabled (optional)
       enable strict mode:
+
       - env var `APP_STRICT_MODE=true`
+
       - hidden option: `--strict-mode` (if `cmdr.EnableCmdrCommands == true`)
+
       - entry in config file:
+
         ```yaml
         app:
           strict-mode: true
         ```
 
 - 
-  
+
 - Supports for options being specified multiple times, with different values
 
   > since v1.5.0:
   >
   > - and multiple flags `-vvv` == `-v -v -v`, then `cmdr.FindFlagRecursive("verbose", nil).GetTriggeredTimes()` should be `3`
-  >
   > - for bool, string, int, ... flags, last one will be kept and others abandoned:
   >
-  >   `-t 1 -t 2 -t3` == `-t 3`
+  > `-t 1 -t 2 -t3` == `-t 3`
   >
   > - for slice flags, all of its will be merged (NOTE that duplicated entries are as is):
   >
-  >   slice flag overlapped
+  > slice flag overlapped
   >
-  >   - `--root A --root B,C,D --root Z,A` == `--root A,B,C,D,Z`
-  >     cmdr.GetStringSliceR("root") will return `[]string{"A","B","C","D","Z"}`
+  > - `--root A --root B,C,D --root Z,A` == `--root A,B,C,D,Z`
+  >   cmdr.GetStringSliceR("root") will return `[]string{"A","B","C","D","Z"}`
 
 - Smart suggestions for wrong command and flags
 
@@ -243,12 +261,12 @@ MIT
 
   - Bash and Zsh (*not yet, todo*) completion.
 
-     ```bash
-     $ bin/wget-demo generate shell --bash
-     ```
+    ```bash
+    $ bin/wget-demo generate shell --bash
+    ```
 
 - 
-  
+
 - Daemon (*Linux Only*)
 
   > rewrote since v1.6.0
@@ -257,8 +275,8 @@ MIT
   import "github.com/hedzr/cmdr/plugin/daemon"
   func main() {
   	if err := cmdr.Exec(rootCmd,
-	    daemon.WithDaemon(NewDaemon(), nil,nil,nil),
-		); err != nil {
+      daemon.WithDaemon(NewDaemon(), nil,nil,nil),
+  	); err != nil {
   		log.Fatal("Error:", err)
   	}
   }
@@ -295,24 +313,23 @@ MIT
     $ bin/demo -? ~~debug ~~env  # print envvar k-v pairs too
     $ bin/demo -? ~~debug --more
     ```
-    
+
     `~~debug` depends on `--help` present (or invoking a command which have one ore more children)
 
   - `InDebugging()`, isdelve (refer to [here](https://stackoverflow.com/questions/47879070/how-can-i-see-if-the-goland-debugger-is-running-in-the-program/47890273#47890273)) - To use it, add `-tags=delve`:
-  
+
     ```bash
     go build -tags=delve cli/main.go
     go run -tags=delve cli/main.go --help
     ```
-  
+
 - `~~tree`: dump all sub-commands
-  
-    ```bash
-    $ bin/demo ~~tree
-    ```
 
-   `~~tree` is a special option/flag like a command.
+  ```bash
+  $ bin/demo ~~tree
+  ```
 
+  `~~tree` is a special option/flag like a command.
 
 - More Advanced features
 
@@ -320,9 +337,9 @@ MIT
 
     just like `git -m`, try this command:
 
-     ```bash
+    ```bash
      $ EDITOR=nano bin/demo -m ~~debug
-     ```
+    ```
 
      Default is `vim`. And `-m "something"` can skip the launching.
 
@@ -393,7 +410,6 @@ MIT
       }
       ```
     </details>
-
 
 - More...
 
