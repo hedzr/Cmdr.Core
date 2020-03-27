@@ -1,0 +1,16 @@
+{
+    "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
+    "version": "1.0",
+    "assemblyVersion": {
+        "precision": "revision"
+    },
+    "publicReleaseRefSpec": [
+        "^refs/heads/master$", // we release out of master
+        "^refs/tags/v\\d+\\.\\d+.\\d+",
+        "^refs/heads/devel$",
+        "^refs/heads/v\\d+\\.\\d+.\\d+$" // we also release vX.Y branches
+    ],
+    "nugetPackageVersion": {
+        "semVer": 2
+    }
+}

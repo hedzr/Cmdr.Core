@@ -19,6 +19,18 @@ namespace HzNS.Cmdr.Tool
 
         public static Assembly CmdrAssembly => _foo.GetType().Assembly;
 
+        public static string CmdrAssemblyVersion => ThisAssembly.AssemblyVersion;
+        public static string CmdrAssemblyFileVersion => ThisAssembly.AssemblyFileVersion;
+        public static string CmdrAssemblyInformationalVersion => ThisAssembly.AssemblyInformationalVersion;
+        public static string CmdrAssemblyName => ThisAssembly.AssemblyName;
+        public static string CmdrAssemblyTitle => ThisAssembly.AssemblyTitle;
+        public static string CmdrAssemblyConfiguration => ThisAssembly.AssemblyConfiguration;
+        public static string CmdrGitCommitId => ThisAssembly.GitCommitId;
+        public static bool CmdrIsPublicRelease => ThisAssembly.IsPublicRelease;
+        public static bool CmdrIsPrerelease => ThisAssembly.IsPrerelease;
+        public static DateTime CmdrGitCommitDate  => ThisAssembly.GitCommitDate;
+        public static string CmdrRootNamespace  => ThisAssembly.RootNamespace;
+        
         /// <summary>
         /// Where other assemblies that reference your assembly will look.
         /// If this number changes, other assemblies have to update their
@@ -48,7 +60,8 @@ namespace HzNS.Cmdr.Tool
         /// use when talking to customers or for display on your website.
         /// This version can be a string, like '1.0 Release Candidate'.
         /// </summary>
-        public static string InformationalVersion => GetInformationalVersion(CmdrAssembly) ?? string.Empty;
+        public static string InformationalVersion => GetInformationalVersion(Assembly.GetEntryAssembly() ?? CmdrAssembly) ?? string.Empty;
+        public static string CmdrInformationalVersion => GetInformationalVersion(CmdrAssembly) ?? string.Empty;
 
         public static string PackageVersion => GetInformationalVersion(CmdrAssembly) ?? string.Empty;
 
