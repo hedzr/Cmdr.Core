@@ -3,11 +3,12 @@ using System;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Tool.ObjectCloner;
+using YamlDotNet.Serialization;
 
 // ReSharper disable MemberCanBePrivate.Global
 namespace Tests.HzNS.Cmdr
 {
-    public class TagsAddCmd : BaseCommand
+   public class TagsAddCmd : BaseCommand
     {
         public TagsAddCmd() : base("a", "add", new[] {"create", "new"}, "add tags to a service", "", "")
         {
@@ -141,6 +142,12 @@ namespace Tests.HzNS.Cmdr
                 Console.WriteLine($"[HIT] mode settings. remains: '{string.Join(",", remainArgs)}'");
             };
 
+            PostAction = (worker, sender, remainArgs) =>
+            {
+                Console.WriteLine($"[POSTACTION] [HIT] mode settings. remains: '{string.Join(",", remainArgs)}'");
+            };
+
+
             // adds flags here
 
             #region flags
@@ -222,7 +229,7 @@ namespace Tests.HzNS.Cmdr
                 {
                     DefaultValue = false, Long = "clear2", Short = "c2", Group = "Operate",
                     Description = "clear all tags."
-                })
+                }, true)
                 .AddFlag(new Flag<bool>
                 {
                     DefaultValue = false, Long = "such2", Short = "s2", Aliases = new[] {"such-a"},
@@ -234,6 +241,24 @@ namespace Tests.HzNS.Cmdr
                     DefaultValue = false, Long = "retry2", Short = "t2", Aliases = new[] {"retry-times"},
                     ToggleGroup = "Mode",
                     Description = "dify with the `key`."
+                })
+                .AddAction((worker, opt, args) =>
+                {
+                    var map = worker.OptionsStore.GetAsMap("tags.mode");
+
+                    // worker.log.Information("tag.mode => {OptionsMap}", map);
+
+                    {
+                        var serializer = new SerializerBuilder().Build();
+                        var yaml = serializer.Serialize(map);
+                        Console.WriteLine(yaml);
+                    }
+                    // {
+                    //     var m = worker.OptionsStore.FindByDottedKey("tags.mode");
+                    //     var serializer = new SerializerBuilder().Build();
+                    //     var yaml = serializer.Serialize(m);
+                    //     Console.WriteLine(yaml);
+                    // }
                 });
 
             AddCommand(new Command {Short = "s1", Long = "sub1", Description = "sub-command 1 operations"}
@@ -254,6 +279,13 @@ namespace Tests.HzNS.Cmdr
                     DefaultValue = false, Long = "retry", Short = "t", Aliases = new[] {"retry-times"},
                     ToggleGroup = "Mode",
                     Description = "dify with the `key`."
+                })
+                .AddFlag(new Flag<string>
+                {
+                    DefaultValue = "api.github.com", Long = "addr", Short = "", Aliases = new[] {"address"},
+                    PlaceHolder = "HOST[:PORT]",
+                    ToggleGroup = "Server",
+                    Description = "network address of the remote server."
                 })
                 .AddCommand(s2.DeepClone()));
 

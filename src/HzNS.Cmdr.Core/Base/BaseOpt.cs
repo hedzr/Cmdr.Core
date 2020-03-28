@@ -101,18 +101,21 @@ namespace HzNS.Cmdr.Base
 
         // ReSharper disable once InconsistentNaming
         private static bool equals(ref string s, string input, int pos, bool enableCmdrGreedyLongFlag,
-            params string[] a)
+            bool reverse, params string[] a)
         {
             foreach (var it in a)
             {
                 if (string.IsNullOrWhiteSpace(it)) continue;
                 if (s == it) return true;
+                
                 // ReSharper disable once InvertIf
                 if (pos + it.Length <= input.Length &&
                     ((enableCmdrGreedyLongFlag && s.Length > it.Length) ||
                      (!enableCmdrGreedyLongFlag && s.Length < it.Length)))
                 {
-                    var st = input.Substring(pos, it.Length);
+                    var st = enableCmdrGreedyLongFlag
+                        ? input.Substring(input.Length - it.Length, it.Length)
+                        : input.Substring(pos, it.Length);
                     // ReSharper disable once InvertIf
                     if (st == it)
                     {
@@ -126,23 +129,23 @@ namespace HzNS.Cmdr.Base
         }
 
         public bool Match(ref string s, string input, int pos, bool isLong = false, bool aliasAsLong = true,
-            bool enableCmdrGreedyLongFlag = false)
+            bool enableCmdrGreedyLongFlag = false, bool reverse = false)
         {
             if (isLong)
             {
                 // ReSharper disable once InvertIf
                 if (aliasAsLong)
                 {
-                    if (@equals(ref s, input, pos, enableCmdrGreedyLongFlag, Aliases))
+                    if (equals(ref s, input, pos, enableCmdrGreedyLongFlag, reverse,Aliases))
                         return true;
                 }
 
-                if (@equals(ref s, input, pos, enableCmdrGreedyLongFlag, Long))
+                if (equals(ref s, input, pos, enableCmdrGreedyLongFlag, reverse,Long))
                     return true;
             }
             else
             {
-                if (@equals(ref s, input, pos, enableCmdrGreedyLongFlag, Short))
+                if (equals(ref s, input, pos, enableCmdrGreedyLongFlag, reverse, Short))
                     return true;
             }
 

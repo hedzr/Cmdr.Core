@@ -130,16 +130,39 @@ namespace HzNS.Cmdr.Internal
 
                 var ccc = command;
                 var fragment = longOpt ? arg.Substring(2) : arg.Substring(1);
-                var pos = 0;
-                var len = EnableCmdrGreedyLongFlag ? fragment.Length : 1;
-                var siz = fragment.Length;
                 var ate = 0;
+                var siz = fragment.Length;
+
+                int incLen, incPos, pos, len;
+                if (longOpt)
+                {
+                    pos = 0;
+                    len = siz;
+                    incLen = 1; // unuse
+                    incPos = 1; // unuse
+                }
+                else
+                {
+                    pos = 0;
+                    if (EnableCmdrGreedyLongFlag)
+                    {
+                        len = siz;
+                        incLen = -1;
+                        incPos = 1;
+                    }
+                    else
+                    {
+                        len = 1;
+                        incLen = 1;
+                        incPos = 0;
+                    }
+                }
 
                 forEachFragmentParts:
 
                 #region forEachFragmentParts
 
-                var part = fragment.Substring(pos, len);
+                var part = fragment.Substring(pos, len).EatEnd("+", "-");
                 if (part.Length == 0 && longOpt)
                 {
                     // "--"
@@ -147,12 +170,13 @@ namespace HzNS.Cmdr.Internal
                     break;
                 }
 
-                @this.logDebug("    - try finding flags for ccc: {CommandTitle}", ccc.backtraceTitles);
+                @this.logDebug("    - try finding flag part {part} for `ccc`: {CommandTitle}", part,
+                    ccc.backtraceTitles);
 
                 backtraceAllParentFlags:
 
                 var decidedLen = 0;
-                IFlag? decidedFlg = null;
+                IFlag? decidedFlg = null, matchedFlag = null;
                 object? value = null, oldValue = null;
 
                 #region backtraceAllParentFlags
@@ -160,15 +184,17 @@ namespace HzNS.Cmdr.Internal
                 // ok = false;
                 foreach (var flg in ccc.Flags)
                 {
-                    ok = flg.Match(ref part, fragment, pos, longOpt, true, EnableCmdrGreedyLongFlag);
+                    ok = flg.Match(ref part, part, pos, longOpt, true, EnableCmdrGreedyLongFlag);
                     if (!ok) continue;
 
                     // a flag matched ok, try extracting its value from commandline arguments
-                    (ate, value, oldValue) = tryExtractingValue(@this, flg, args, i, fragment, part, pos);
+                    (ate, value, oldValue) =
+                        tryExtractingValue(@this, flg, args, i, fragment, part, pos, !longOpt && incLen < 0);
 
-                    @this.logDebug("    ++ flag matched: {SW:l}{Part:l} {value}",
+                    @this.logDebug("    ++ flag matched: {SW:l}{Part:l} = {value}",
                         Util.SwitchChar(longOpt), part, value);
 
+                    matchedFlag = flg;
                     if (len > decidedLen)
                     {
                         decidedFlg = flg;
@@ -178,46 +204,55 @@ namespace HzNS.Cmdr.Internal
                     break;
                 }
 
-                if (decidedFlg == null)
+                if (matchedFlag == null)
                 {
                     if (ccc.Owner != null && ccc.Owner != ccc)
                     {
                         ccc = ccc.Owner;
-                        @this.logDebug("    - try finding flags for its(ccc) parent: {CommandTitle}",
-                            ccc.backtraceTitles);
+                        @this.logDebug("    - try finding flag part {part} for `ccc`'s parent: {CommandTitle}",
+                            part, ccc.backtraceTitles);
                         goto backtraceAllParentFlags;
                     }
 
                     @this.logDebug("can't match a flag: {Argument}/part={Part}/fragment={Fragment}.", arg, part,
                         fragment);
                     onFlagCannotMatched(@this, args, i, part, longOpt, command);
-                    decidedLen = 1;
+                    // decidedLen = 1;
                 }
                 else
                 {
-                    // matched
-
-                    @this.ParsedFlag = decidedFlg;
-                    onFlagMatched(@this, args, i + 1, part, longOpt, decidedFlg, oldValue, value);
+                    @this.ParsedFlag = matchedFlag;
+                    onFlagMatched(@this, args, i + 1, part, longOpt, matchedFlag, oldValue, value);
                     matchedPosition = i + 1;
-                    // decidedLen = part.Length;
                 }
 
-                if (pos + decidedLen < siz)
+                if (pos + part.Length < siz && !longOpt)
                 {
-                    if (EnableCmdrGreedyLongFlag && decidedFlg == null)
+                    if (matchedFlag == null)
                     {
-                        len--;
+                        len += incLen;
+                        pos += incPos;
                     }
                     else
                     {
-                        pos += decidedLen;
-                        len = 1;
+                        siz -= part.Length;
+                        if (EnableCmdrGreedyLongFlag)
+                        {
+                            pos = 0;
+                            len = siz;
+                        }
+                        else
+                        {
+                            pos += part.Length;
+                            len = 1;
+                        }
                     }
 
-                    @this.logDebug("    - for next part: {Part}", fragment.Substring(pos, len));
+                    @this.logDebug("    - for next part: {Part}, greedy={greedy}, pos={pos}, len={len}, siz={siz}",
+                        fragment.Substring(pos, len),
+                        EnableCmdrGreedyLongFlag, pos, len, siz);
                     ccc = command;
-                    if (len > 0)
+                    if (len > 0 && pos < siz)
                         goto forEachFragmentParts;
                 }
 
@@ -249,7 +284,7 @@ namespace HzNS.Cmdr.Internal
         internal static (int ate, object? value, object? old) tryExtractingValue<T>(
             this T @this, IFlag flg,
             string[] args, int i, string fragment,
-            string part, int pos)
+            string part, int pos, bool forward)
             where T : IDefaultMatchers
         {
             var ate = 0;
@@ -257,7 +292,7 @@ namespace HzNS.Cmdr.Internal
 
             var remains = fragment.Substring(pos + part.Length);
             bool? flipChar = null;
-            if (remains.Length > 0)
+            if ((!forward && remains.Length > 0) || (forward && remains.Length == 1))
             {
                 flipChar = remains[0] switch
                 {
@@ -276,7 +311,7 @@ namespace HzNS.Cmdr.Internal
                 return (ate, val, old);
             }
 
-            (ate, val) = valFrom(args, i, remains);
+            (ate, val) = valFrom(args, i, remains, forward);
 
             // ReSharper disable once InvertIf
             if (val is string v)
@@ -387,11 +422,11 @@ namespace HzNS.Cmdr.Internal
             return (ate, val, old);
         }
 
-        private static (int ate, object? val) valFrom(IReadOnlyList<string> args, int i, string remains)
+        private static (int ate, object? val) valFrom(IReadOnlyList<string> args, int i, string remains, bool forward)
         {
             var ate = 1;
             object? val;
-            if (remains.Length > 0)
+            if (remains.Length > 0 && !forward)
             {
                 // const string sep = "=";
                 remains = remains.EatStart("=", ":").Trim('\'', '"');
@@ -622,15 +657,23 @@ namespace HzNS.Cmdr.Internal
         {
             do
             {
-                var xref = @this.xrefs[cmd];
-                if (longOpt)
+                try
                 {
-                    @this.suggestFor(fragment, longOpt, xref.FlagsLongNames);
-                    @this.suggestFor(fragment, longOpt, xref.FlagsAliasNames);
+                    var xref = @this.xrefs[cmd];
+                    if (longOpt)
+                    {
+                        @this.suggestFor(fragment, longOpt, xref.FlagsLongNames);
+                        @this.suggestFor(fragment, longOpt, xref.FlagsAliasNames);
+                    }
+                    else
+                    {
+                        @this.suggestFor(fragment, longOpt, xref.FlagsShortNames);
+                    }
                 }
-                else
+                catch (KeyNotFoundException ex)
                 {
-                    @this.suggestFor(fragment, longOpt, xref.FlagsShortNames);
+                    throw new CmdrException(
+                        $"Unexpect case: suggesting for '{fragment}' (position {position} and '{args[position]}')", ex);
                 }
 
                 if (!cmd.IsRoot)
@@ -810,6 +853,17 @@ namespace HzNS.Cmdr.Internal
             if (EnableCmdrLogTrace)
             {
                 @this.log.ForContext("SKIP_", 1).Debug(messageTemplate, property0, property1, property2, property3);
+            }
+        }
+
+        public static void logDebug<T, T0, T1, T2, T3, T4>(this T @this, string messageTemplate,
+            T0 property0, T1 property1, T2 property2, T3 property3, T4 property4)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.ForContext("SKIP_", 1)
+                    .Debug(messageTemplate, property0, property1, property2, property3, property4);
             }
         }
 

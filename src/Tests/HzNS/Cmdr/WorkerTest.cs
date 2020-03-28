@@ -20,16 +20,20 @@ namespace Tests.HzNS.Cmdr
         [Fact]
         public void Test1()
         {
+            var idx = 0;
             foreach (var ti in new[]
             {
                 new testItem
-                {
-                    args = "tags mode s1 s2 --address consul.local -h", ok = true, expected = (w, args) =>
-                    {
-                        // ReSharper disable once ConvertToLambdaExpression
-                        return w.ParsedCommand?.IsEqual("s2") ?? false;
-                    }
-                },
+                    {args = "tags mode s1 s2 -Dk -2mpgtcid test-ok -h jit", ok = true, expected = (w, args) => true},
+
+                // new testItem
+                // {
+                //     args = "tags mode s1 s2 --address consul.local -h", ok = true, expected = (w, args) =>
+                //     {
+                //         // ReSharper disable once ConvertToLambdaExpression
+                //         return w.ParsedCommand?.IsEqual("s2") ?? false;
+                //     }
+                // },
 
                 new testItem {args = "--help", ok = true, expected = (w, args) => true},
                 new testItem {args = "-h", ok = true, expected = (w, args) => true},
@@ -76,16 +80,17 @@ namespace Tests.HzNS.Cmdr
                 },
             })
             {
-                TestLarge(ti.args, ti.ok, ti.expected);
+                TestLarge(idx, ti.args, ti.ok, ti.expected);
+                idx++;
             }
         }
 
         //[Theory]
         //[InlineData("--help", true, (w, args) => true)]
         // ReSharper disable once MemberCanBeMadeStatic.Local
-        private void TestLarge(string inputArgs, bool ok, Func<Worker, string, bool>? expected)
+        private void TestLarge(int idx, string inputArgs, bool ok, Func<Worker, string, bool>? expected)
         {
-            Output.WriteLine($"- test for: {inputArgs} ...");
+            Output.WriteLine($"- test #{idx} for: {inputArgs} ...");
             var w = global::HzNS.Cmdr.Cmdr.NewWorker(root.RootCmd);
             w.Run(inputArgs.Split(" "));
             Assert.Equal(ok, w.Parsed);

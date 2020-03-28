@@ -65,7 +65,7 @@ namespace HzNS.Cmdr.Exception
 
         // ReSharper disable once MemberCanBePrivate.Global
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public string[] RemainArgs { get; private set; } = { };
+        public string[] RemainArgs { get; } = { };
     }
 
     public class ShouldBeStopException : CmdrException

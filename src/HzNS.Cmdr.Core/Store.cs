@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.Json;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Internal;
 using HzNS.Cmdr.Painter;
@@ -309,11 +310,12 @@ namespace HzNS.Cmdr
                 {
                     var key = enumerable[0];
                     var yes = node.Values.ContainsKey(key);
-                    var dv = yes
-                        ? node.Values[key]
-                        : (val.Length > 0 ? val[0] : default);
+                    // var dv = yes
+                    //     ? node.Values[key]
+                    //     : (val.Length > 0 ? val[0] : default);
                     if (!yes)
                     {
+                        var dv = val.Length > 0 ? val[0] : default;
                         if (val.Length > 0 && val[0] is JArray ja)
                         {
                             // var old = node.Values[key]?.DeepClone();
@@ -325,14 +327,18 @@ namespace HzNS.Cmdr
                         }
                         else
                         {
-                            node.Values[key] = val.Length == 1 ? dv : val;
+                            foreach (var vt in val)
+                            {
+                                node.Values[key] = vt; // val.Length == 1 ? (object?) dv : val;
+                            }
                         }
 
                         return null;
                     }
                     else
                     {
-                        var old = node.Values[key]?.DeepClone();
+                        var dv = node.Values[key];
+                        var old = dv?.DeepClone();
                         if (val.Length > 0 && val[0] is JArray ja)
                         {
                             // var old = node.Values[key]?.DeepClone();
@@ -344,8 +350,11 @@ namespace HzNS.Cmdr
                         }
                         else
                         {
-                            if (setValueInternal(dv, key, enumerable.Skip(1).ToArray(), node, true, val))
-                                OnSetHandler?.Invoke(node, key, old, node.Values[key]);
+                            foreach (var vt in val)
+                            {
+                                if (setValueInternal(dv, key, enumerable.Skip(1).ToArray(), node, true, vt))
+                                    OnSetHandler?.Invoke(node, key, old, node.Values[key]);
+                            }
                         }
 
                         return old;
@@ -465,7 +474,7 @@ namespace HzNS.Cmdr
 
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         private static bool setValueInternal<T>(object? dv, string key,
-            IEnumerable<string>? parts, Slot node, bool appendToArray = false, params T[] val)
+            IEnumerable<string>? parts, Slot node, bool appendToArray, T val)
         {
             // var old = node.Values[key];
             switch (dv)
@@ -473,149 +482,73 @@ namespace HzNS.Cmdr
                 #region scalars
 
                 case bool _:
-                    foreach (var v in val)
-                    {
-                        node.Values[key] = v;
-                    }
-
+                    node.Values[key] = val;
                     return true;
 
                 case string _:
-                    foreach (var v in val)
-                    {
-                        node.Values[key] = v;
-                    }
-
+                    node.Values[key] = val;
                     return true;
 
                 case short _:
-                    foreach (var v in val)
-                    {
-                        node.Values[key] = v;
-                    }
-
+                    node.Values[key] = val;
                     return true;
                 case int _:
-                    foreach (var v in val)
-                    {
-                        node.Values[key] = v;
-                    }
-
+                    node.Values[key] = val;
                     return true;
                 case long _:
-                    foreach (var v in val)
-                    {
-                        node.Values[key] = v;
-                    }
-
+                    node.Values[key] = val;
                     return true;
 
                 case float _:
-                    foreach (var v in val)
-                    {
-                        node.Values[key] = v;
-                    }
-
+                    node.Values[key] = val;
                     return true;
                 case double _:
-                    foreach (var v in val)
-                    {
-                        node.Values[key] = v;
-                    }
-
+                    node.Values[key] = val;
                     return true;
                 case decimal _:
-                    foreach (var v in val)
-                    {
-                        node.Values[key] = v;
-                    }
-
+                    node.Values[key] = val;
                     return true;
 
                 #endregion
 
                 case DateTime _:
-                    foreach (var v in val)
-                    {
-                        node.Values[key] = v;
-                    }
-
+                    node.Values[key] = val;
                     return true;
                 case TimeSpan _:
-                    foreach (var v in val)
-                    {
-                        node.Values[key] = v;
-                    }
-
+                    node.Values[key] = val;
                     return true;
                 case DateTimeOffset _:
-                    foreach (var v in val)
-                    {
-                        node.Values[key] = v;
-                    }
-
+                    node.Values[key] = val;
                     return true;
 
                 #region scalar array
 
                 case string[] v:
-                    foreach (var it in val)
-                    {
-                        appendIts(node, key, v, toT<string>(it), appendToArray);
-                    }
-
+                    appendTArray(node, key, v, appendToArray, val);
                     return true;
 
                 case bool[] v:
-                    foreach (var it in val)
-                    {
-                        appendIts(node, key, v, toT<bool>(it), appendToArray);
-                    }
-
+                    appendTArray(node, key, v, appendToArray, val);
                     return true;
 
                 case short[] v:
-                    foreach (var it in val)
-                    {
-                        appendIts(node, key, v, toT<short>(it), appendToArray);
-                    }
-
+                    appendTArray(node, key, v, appendToArray, val);
                     return true;
                 case int[] v:
-                    foreach (var it in val)
-                    {
-                        appendIts(node, key, v, toT<int>(it), appendToArray);
-                    }
-
+                    appendTArray(node, key, v, appendToArray, val);
                     return true;
                 case long[] v:
-                    foreach (var it in val)
-                    {
-                        appendIts(node, key, v, toT<long>(it), appendToArray);
-                    }
-
+                    appendTArray(node, key, v, appendToArray, val);
                     return true;
 
                 case float[] v:
-                    foreach (var it in val)
-                    {
-                        appendIts(node, key, v, toT<float>(it), appendToArray);
-                    }
-
+                    appendTArray(node, key, v, appendToArray, val);
                     return true;
                 case double[] v:
-                    foreach (var it in val)
-                    {
-                        appendIts(node, key, v, toT<double>(it), appendToArray);
-                    }
-
+                    appendTArray(node, key, v, appendToArray, val);
                     return true;
                 case decimal[] v:
-                    foreach (var it in val)
-                    {
-                        appendIts(node, key, v, toT<decimal>(it), appendToArray);
-                    }
-
+                    appendTArray(node, key, v, appendToArray, val);
                     return true;
 
                 #endregion
@@ -627,6 +560,21 @@ namespace HzNS.Cmdr
             return false;
         }
 
+        // ReSharper disable once SuggestBaseTypeForParameter
+        private static void appendTArray<T>(Slot node, string key, T[] v, bool appendToArray, object? val)
+        {
+            var (ok, valArray) = toTSafe<T[]>(val);
+            if (ok)
+            {
+                foreach (var val1 in valArray)
+                {
+                    appendIts(node, key, v, toT<T>(val1), appendToArray);
+                }
+            }
+            else
+                appendIts(node, key, v, toT<T>(val), appendToArray);
+        }
+        
         private static T toT<T>(object? it)
         {
 #pragma warning disable CS8602, CS8653
@@ -635,11 +583,44 @@ namespace HzNS.Cmdr
             if (it is T tst) tv = tst;
             else
             {
-                var t = Convert.ChangeType(it, typeof(T));
+                object? t;
+                try
+                {
+                    t = Convert.ChangeType(it, typeof(T));
+                }
+                catch (InvalidCastException ex)
+                {
+                    throw new CmdrException($"converting {it} to {typeof(T)} failed.", ex);
+                }
+
                 if (t is T ts) tv = ts;
             }
 
             return tv;
+        }
+
+        private static (bool ok, T) toTSafe<T>(object? it)
+        {
+#pragma warning disable CS8602, CS8653
+            var tv = default(T);
+#pragma warning restore CS8602, CS8653
+            if (it is T tst) tv = tst;
+            else
+            {
+                object? t;
+                try
+                {
+                    t = Convert.ChangeType(it, typeof(T));
+                }
+                catch (InvalidCastException)
+                {
+                    return (false, default);
+                }
+
+                if (t is T ts) tv = ts;
+            }
+
+            return (true, tv);
         }
 
         private static void appendIts<T>(Slot node, string key, // IEnumerable<string>? parts,

@@ -95,7 +95,7 @@ namespace Tests
 
             //可以用ToList()从IEnumerable<out T>创建一个List<T>,并获得长度3
             Console.WriteLine(FilterWithoutYield().ToList().Count());
-            Console.ReadLine();
+            // Console.ReadLine();
         }
 
         static List<int> Data()
@@ -161,6 +161,8 @@ namespace Tests
 
             process1.Join();
             process2.Join();
+
+            Console.WriteLine("UnitTest3 ok");
         }
 
         private static void TestSingleton(string value)

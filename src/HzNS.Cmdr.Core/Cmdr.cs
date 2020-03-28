@@ -54,8 +54,8 @@ namespace HzNS.Cmdr
             {
                 Instance.Worker = worker;
                 Instance.Logger = worker;
-                worker.logDebug("EnableDuplicatedCharThrows: {EnableDuplicatedCharThrows}",
-                    worker.EnableDuplicatedCharThrows);
+                // worker.logDebug("EnableDuplicatedCharThrows: {EnableDuplicatedCharThrows}",
+                //     worker.EnableDuplicatedCharThrows);
                 if (root != null)
                     worker.With(root);
             }
@@ -67,7 +67,8 @@ namespace HzNS.Cmdr
             // }
             catch (CmdrException ex)
             {
-                worker.logError(ex, "Error occurs");
+                worker.logError(ex, "Cmdr Error occurs");
+                throw; // don't ignore it
             }
 
             return worker;

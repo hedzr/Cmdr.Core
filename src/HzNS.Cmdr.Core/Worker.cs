@@ -296,6 +296,8 @@ namespace HzNS.Cmdr
                 // this.logError(ex,
                 //     $"Cmdr Error occurs. args: {args.JoinBy(',').QuoteByBracket()}, position: {position}");
                 this.logError(ex, "Cmdr Error occurs. args: {args}, position: {position}", args, position);
+                if (ex.InnerException is KeyNotFoundException)
+                    throw;
                 return -1;
             }
             // NEW: free any application exceptions to the unhandled capturers:

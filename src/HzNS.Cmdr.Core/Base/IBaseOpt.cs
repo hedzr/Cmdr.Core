@@ -49,7 +49,7 @@ namespace HzNS.Cmdr.Base
         bool Match(string str, int pos, int len, bool isLong = false, bool aliasAsLong = true);
 
         bool Match(ref string s, string input, int pos, bool isLong = false, bool aliasAsLong = true,
-            bool enableCmdrGreedyLongFlag = false);
+            bool enableCmdrGreedyLongFlag = false, bool reverse = false);
 
         string ToDottedKey();
         IEnumerable<string> ToKeys();
