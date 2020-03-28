@@ -239,7 +239,7 @@ namespace HzNS.Cmdr
         #endregion
 
 
-        #region Set<T>(), SetByKeys<T>()
+        #region Set<T>(), SetByKeys<T>(), SetWithoutPrefix()
 
         /// <summary>
         /// 
@@ -273,31 +273,30 @@ namespace HzNS.Cmdr
             return setValue(parts, Root, val);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="keys"></param>
-        /// <param name="val"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>the old value</returns>
-        public object? SetByKeys<T>(IEnumerable<string> keys, params T[] val)
-        {
-            var parts = WrapKeys(keys);
-            return setValue(parts, Root, val);
-        }
-
         // /// <summary>
-        // /// no 
+        // /// 
         // /// </summary>
         // /// <param name="keys"></param>
         // /// <param name="val"></param>
         // /// <typeparam name="T"></typeparam>
-        // /// <returns></returns>
-        // internal object? SetByKeysInternal<T>(IEnumerable<string> keys, T val)
+        // /// <returns>the old value</returns>
+        // public object? SetByKeys<T>(IEnumerable<string> keys, params T[] val)
         // {
         //     var parts = WrapKeys(keys);
         //     return setValue(parts, Root, val);
         // }
+
+        /// <summary>
+        /// no 
+        /// </summary>
+        /// <param name="keys"></param>
+        /// <param name="val"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        internal object? SetWithoutPrefix<T>(IEnumerable<string> keys, T val)
+        {
+            return setValue(keys, Root, val);
+        }
 
 
         private static object? setValue<T>(IEnumerable<string> parts, Slot? node, params T[] val)
@@ -709,7 +708,7 @@ namespace HzNS.Cmdr
         #endregion
 
 
-        #region HasKeys(), HasDottedKeys()
+        #region HasKeys(), HasKeysWithoutPrefix()
 
         public bool HasKeys(IEnumerable<string> keys)
         {
@@ -723,9 +722,15 @@ namespace HzNS.Cmdr
             return ok;
         }
 
-        public bool HasDottedKey(string dottedKey)
+        // public bool HasDottedKey(string dottedKey)
+        // {
+        //     var (ok, _, _) = hasKeys(WrapKeys(dottedKey), Root);
+        //     return ok;
+        // }
+
+        public bool HasKeysWithoutPrefix(IEnumerable<string> keys)
         {
-            var (ok, _, _) = hasKeys(WrapKeys(dottedKey), Root);
+            var (ok, _, _) = hasKeys(keys, Root);
             return ok;
         }
 

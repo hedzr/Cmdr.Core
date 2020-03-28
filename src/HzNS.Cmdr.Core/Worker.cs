@@ -685,7 +685,7 @@ namespace HzNS.Cmdr
 
                 if (val is JArray ja)
                 {
-                    OptionsStore.SetByKeys(parts, ja);
+                    OptionsStore.Set(parts, ja);
                     continue;
                 }
 
@@ -731,7 +731,7 @@ namespace HzNS.Cmdr
                 // }
 
                 var newVal = val.ToObject<object?>();
-                OptionsStore.SetByKeys(parts, newVal);
+                OptionsStore.Set(parts, newVal);
             }
 
             return false;
@@ -758,12 +758,12 @@ namespace HzNS.Cmdr
                                 $" [YAML] -> {"  ".Repeat(keyParts1.Length)}{key.Value} = {scalarNode.Value}");
 
                         if (overwriteExists)
-                            OptionsStore.SetByKeys(parts, scalarNode.Value);
+                            OptionsStore.SetWithoutPrefix(parts, scalarNode.Value);
                         else
                         {
                             var enumerable = parts as string[] ?? parts.ToArray();
-                            if (!OptionsStore.HasKeys(enumerable))
-                                OptionsStore.SetByKeys(enumerable, scalarNode.Value);
+                            if (!OptionsStore.HasKeysWithoutPrefix(enumerable))
+                                OptionsStore.SetWithoutPrefix(enumerable, scalarNode.Value);
                         }
 
                         break;
@@ -858,7 +858,7 @@ namespace HzNS.Cmdr
                 #endregion
 
                 if (v != null)
-                    OptionsStore.SetByKeys(flag.ToKeys(), v);
+                    OptionsStore.Set(flag.ToKeys(), v);
 
                 return true; // return false to break the walkForFlags' loop.
             });
