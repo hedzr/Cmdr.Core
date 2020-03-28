@@ -56,11 +56,13 @@ namespace HzNS.Cmdr.Internal
             {
                 bool ok;
                 var arg = args[i];
+                if (string.IsNullOrWhiteSpace(arg)) continue;
+                @this.logDebug("    -> arg {Index}: {Argument}", i, arg);
                 var hiddenOpt = arg.StartsWith("~~");
                 var isOpt = arg[0] == '-' || arg[0] == '/' || hiddenOpt;
                 var longOpt = arg.StartsWith("--") || hiddenOpt;
+                var preAte = 0;
 
-                @this.logDebug("    -> arg {Index}: {Argument}", i, arg);
                 if (!isOpt)
                 {
                     #region matching command
@@ -162,16 +164,18 @@ namespace HzNS.Cmdr.Internal
 
                 #region forEachFragmentParts
 
-                var part = fragment.Substring(pos, len).EatEnd("+", "-");
-                if (part.Length == 0 && longOpt)
+                var partFull = fragment.Substring(pos, len);
+                var part = partFull.EatEnd("+", "-");
+                var bsw = partFull.Length != part.Length ? 1 : 0;
+                if (partFull.Length == 0 && longOpt)
                 {
                     // "--"
                     matchedPosition = i + 1;
                     break;
                 }
 
-                @this.logDebug("    - try finding flag part {part} for `ccc`: {CommandTitle}", part,
-                    ccc.backtraceTitles);
+                @this.logDebug("    - try finding flag part {part} for `ccc`: {CommandTitle}",
+                    part, ccc.backtraceTitles);
 
                 backtraceAllParentFlags:
 
@@ -190,9 +194,10 @@ namespace HzNS.Cmdr.Internal
                     // a flag matched ok, try extracting its value from commandline arguments
                     (ate, value, oldValue) =
                         tryExtractingValue(@this, flg, args, i, fragment, part, pos, !longOpt && incLen < 0);
+                    preAte += ate;
 
-                    @this.logDebug("    ++ flag matched: {SW:l}{Part:l} = {value}",
-                        Util.SwitchChar(longOpt), part, value);
+                    @this.logDebug("    ++ flag matched: {SW:l}{Part:l} = {oldval} -> {value}",
+                        Util.SwitchChar(longOpt), part, oldValue, value);
 
                     matchedFlag = flg;
                     if (len > decidedLen)
@@ -226,7 +231,7 @@ namespace HzNS.Cmdr.Internal
                     matchedPosition = i + 1;
                 }
 
-                if (pos + part.Length < siz && !longOpt)
+                if (pos + part.Length + bsw < siz && !longOpt)
                 {
                     if (matchedFlag == null)
                     {
@@ -252,7 +257,7 @@ namespace HzNS.Cmdr.Internal
                         fragment.Substring(pos, len),
                         EnableCmdrGreedyLongFlag, pos, len, siz);
                     ccc = command;
-                    if (len > 0 && pos < siz)
+                    if (len > 0 && pos < siz - bsw)
                         goto forEachFragmentParts;
                 }
 
@@ -260,8 +265,8 @@ namespace HzNS.Cmdr.Internal
 
                 #endregion
 
-                if (ate > 0)
-                    i += ate;
+                if (preAte > 0)
+                    i += preAte;
 
                 #endregion
             }

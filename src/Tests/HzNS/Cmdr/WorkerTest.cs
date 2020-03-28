@@ -66,6 +66,12 @@ namespace Tests.HzNS.Cmdr
                 new testItem
                     {args = "tags mode s1 s2 -Dk -2mpgtcid test-ok -h jit", ok = true, expected = (w, args) => true},
                 new testItem
+                    {args = "tags mode s1 s2 -Dk -2mpgtcid test-ok -2- -h voip jit", ok = true, expected = (w, args) => true},
+                new testItem
+                    {args = "tags mode s1 s2 -Dk -2mpgtcid test-ok -2-  -vvv --addr cash.io.local --add 8,9,k -c2- --add 34 -h voip jit", ok = true, expected = (w, args) => true},
+                new testItem
+                    {args = "tags mode s1 s2 -Dk -2mpgtcid test-ok -2-  -vvv --addr cash.io.local --add 8,9,k -c2- --add  -h voip jit", ok = true, expected = (w, args) => true},
+                new testItem
                 {
                     args = "tags mode s1 s2 --name test-redis -a consul.local -h", ok = true,
                     expected = (w, args) => true
