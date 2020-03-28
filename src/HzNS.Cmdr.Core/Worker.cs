@@ -182,7 +182,7 @@ namespace HzNS.Cmdr
 
             int retCode;
             var position = 0;
-            
+
             var ue = Cmdr_CurrentDomain_UnhandledException_Builder(this);
             var currentDomain = AppDomain.CurrentDomain;
             currentDomain.UnhandledException += ue;
@@ -265,7 +265,8 @@ namespace HzNS.Cmdr
             return (sender, e) =>
             {
                 Debug.Write("Cmdr: ");
-                w.logInfo("Cmdr: unhandled exception captured. cmd: {Command}, flag: {Flag}, pos: {Position}", w.ParsedCommand, w.ParsedFlag, w.ParsedCount);
+                w.logInfo("Cmdr: unhandled exception captured. cmd: {Command}, flag: {Flag}, pos: {Position}",
+                    w.ParsedCommand, w.ParsedFlag, w.ParsedCount);
                 Debug.WriteLine((e.ExceptionObject as System.Exception)?.Message);
             };
         }
@@ -547,13 +548,18 @@ namespace HzNS.Cmdr
         {
             foreach (var suffix in configFileSuffixes)
             {
+                var found = new SortedList<string, bool>();
+
                 var files = Directory.GetFiles(dir, "*" + suffix, SearchOption.TopDirectoryOnly);
                 foreach (var filepath in files)
                 {
                     if (File.Exists(filepath))
-                    {
-                        loadExternalConfigurationsFile(filepath, this, _root, true);
-                    }
+                        found.Add(filepath, true);
+                }
+
+                foreach (var (filepath, _) in found)
+                {
+                    loadExternalConfigurationsFile(filepath, this, _root, true);
                 }
             }
 
@@ -819,7 +825,7 @@ namespace HzNS.Cmdr
                 #region loading values from env vars
 
                 applyValueFromEnv(flag, ref v);
-                
+
                 // // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
                 // // if (v == null)
                 // {
