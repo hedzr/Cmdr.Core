@@ -628,6 +628,62 @@ namespace HzNS.Cmdr.Internal
 
         #endregion
 
+        #region debug helpers: logInfo
+
+        public static void logInfo<T>(this T @this, string messageTemplate)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.ForContext("SKIP_", 1)
+                    // logEvent.AddPropertyIfAbsent(new LogEventProperty("SourceFileName",
+                    // new ScalarValue(stack.GetFileName())));
+                    .Information(messageTemplate);
+            }
+        }
+
+        public static void logInfo<T, T0>(this T @this, string messageTemplate,
+            T0 property0)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.ForContext("SKIP_", 1).Information(messageTemplate, property0);
+            }
+        }
+
+        public static void logInfo<T, T0, T1>(this T @this, string messageTemplate,
+            T0 property0, T1 property1)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.ForContext("SKIP_", 1).Information(messageTemplate, property0, property1);
+            }
+        }
+
+        public static void logInfo<T, T0, T1, T2>(this T @this, string messageTemplate,
+            T0 property0, T1 property1, T2 property2)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.ForContext("SKIP_", 1).Information(messageTemplate, property0, property1, property2);
+            }
+        }
+
+        public static void logInfo<T, T0, T1, T2, T3>(this T @this, string messageTemplate,
+            T0 property0, T1 property1, T2 property2, T3 property3)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.ForContext("SKIP_", 1).Information(messageTemplate, property0, property1, property2, property3);
+            }
+        }
+
+        #endregion
+
         #region debug helpers: logDebug
 
         public static void logDebug<T>(this T @this, string messageTemplate)
