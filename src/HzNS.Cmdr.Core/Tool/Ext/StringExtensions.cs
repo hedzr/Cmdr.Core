@@ -81,7 +81,7 @@ namespace HzNS.Cmdr.Tool.Ext
             return v;
         }
 
-        public static string ToStringEx(this object @this)
+        public static string ToStringEx(this object @this, bool quoteForString = false)
         {
             // ReSharper disable once InvertIf
             if (!(@this is string) && @this is IEnumerable a)
@@ -90,6 +90,11 @@ namespace HzNS.Cmdr.Tool.Ext
                 return v;
             }
 
+            if (@this is string s && quoteForString)
+            {
+                return Quote(s, true);
+            }
+            
             // if (@this.GetType().IsArray)
             // {
             //     // try

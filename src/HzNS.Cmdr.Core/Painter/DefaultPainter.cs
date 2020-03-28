@@ -356,7 +356,7 @@ namespace HzNS.Cmdr.Painter
                             .Append(flg.ToDottedKey());
                         txt.Append(" ".Repeat(tabStop - txt.Length - 1));
                         o(txt.ToString(), ColorDesc);
-                        oln($"=> [{flg.HitCount}] {v?.ToStringEx()}");
+                        oln($"=> [{flg.HitCount}] {v?.ToStringEx(true)}");
                     }
 
                     return true;
