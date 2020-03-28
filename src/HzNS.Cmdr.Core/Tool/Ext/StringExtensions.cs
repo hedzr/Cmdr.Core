@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace HzNS.Cmdr.Tool.Ext
 {
@@ -60,11 +61,22 @@ namespace HzNS.Cmdr.Tool.Ext
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public static class StringExtensions
     {
+        /// <summary>
+        /// no way, this codes can't take effect
+        /// </summary>
+        /// <param name="this"></param>
+        /// <returns></returns>
         public static string ToString(this string[] @this)
         {
             var v = "[" + string.Join(",", @this) + "]";
             return v;
         }
+        
+        /// <summary>
+        /// no way, this codes can't take effect
+        /// </summary>
+        /// <param name="this"></param>
+        /// <returns></returns>
         public static string ToString(this IEnumerable @this)
         {
             var v = "[" + string.Join(",", @this.Cast<object>()) + "]";
@@ -165,6 +177,31 @@ namespace HzNS.Cmdr.Tool.Ext
             return t;
         }
 
+
+        public static string UrlPathEncode(this string s)
+        {
+            return HttpUtility.UrlPathEncode(s);
+        }
+
+        public static string UrlEncode(this string s)
+        {
+            return HttpUtility.UrlEncode(s);
+        }
+
+        public static string UrlDecode(this string s)
+        {
+            return HttpUtility.UrlEncode(s);
+        }
+        
+        public static string HtmlEncode(this string s)
+        {
+            return HttpUtility.HtmlEncode(s);
+        }
+        
+        public static string HtmlDecode(this string s)
+        {
+            return HttpUtility.HtmlDecode(s);
+        }
 
         /// <summary>
         /// Remove double quoting wrapping since I do it in the js
