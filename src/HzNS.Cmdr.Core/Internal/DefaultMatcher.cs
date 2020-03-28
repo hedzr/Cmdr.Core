@@ -30,6 +30,9 @@ namespace HzNS.Cmdr.Internal
 
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public static bool EnableCmdrLogInfo { get; set; } = true;
+
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public static bool EnableCmdrLogTrace { get; set; }
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
@@ -633,7 +636,7 @@ namespace HzNS.Cmdr.Internal
         public static void logInfo<T>(this T @this, string messageTemplate)
             where T : IDefaultMatchers
         {
-            if (EnableCmdrLogTrace)
+            if (EnableCmdrLogInfo)
             {
                 @this.log.ForContext("SKIP_", 1)
                     // logEvent.AddPropertyIfAbsent(new LogEventProperty("SourceFileName",
@@ -646,7 +649,7 @@ namespace HzNS.Cmdr.Internal
             T0 property0)
             where T : IDefaultMatchers
         {
-            if (EnableCmdrLogTrace)
+            if (EnableCmdrLogInfo)
             {
                 @this.log.ForContext("SKIP_", 1).Information(messageTemplate, property0);
             }
@@ -656,7 +659,7 @@ namespace HzNS.Cmdr.Internal
             T0 property0, T1 property1)
             where T : IDefaultMatchers
         {
-            if (EnableCmdrLogTrace)
+            if (EnableCmdrLogInfo)
             {
                 @this.log.ForContext("SKIP_", 1).Information(messageTemplate, property0, property1);
             }
@@ -666,7 +669,7 @@ namespace HzNS.Cmdr.Internal
             T0 property0, T1 property1, T2 property2)
             where T : IDefaultMatchers
         {
-            if (EnableCmdrLogTrace)
+            if (EnableCmdrLogInfo)
             {
                 @this.log.ForContext("SKIP_", 1).Information(messageTemplate, property0, property1, property2);
             }
@@ -676,7 +679,7 @@ namespace HzNS.Cmdr.Internal
             T0 property0, T1 property1, T2 property2, T3 property3)
             where T : IDefaultMatchers
         {
-            if (EnableCmdrLogTrace)
+            if (EnableCmdrLogInfo)
             {
                 @this.log.ForContext("SKIP_", 1).Information(messageTemplate, property0, property1, property2, property3);
             }

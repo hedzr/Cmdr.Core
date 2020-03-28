@@ -180,10 +180,13 @@ namespace HzNS.Cmdr
             if (_root == null)
                 return 0;
 
-            AppDomain.CurrentDomain.UnhandledException += Cmdr_CurrentDomain_UnhandledException;
-
             int retCode;
             var position = 0;
+            
+            var ue = Cmdr_CurrentDomain_UnhandledException_Builder(this);
+            var currentDomain = AppDomain.CurrentDomain;
+            currentDomain.UnhandledException += ue;
+
             try
             {
                 position = this.match(_root, args, position, 1);
@@ -227,13 +230,14 @@ namespace HzNS.Cmdr
                 this.logError(ex, "Cmdr Error occurs. args: {args}, position: {position}", args, position);
                 return -1;
             }
-            catch (System.Exception ex)
-            {
-                // this.logError(ex, $"Error occurs. args: {args.ToStringEx()}, position: {position}");
-                this.logError(ex, "Error occurs. args: {args}, position: {position}", args, position);
-                // throw;
-                return -2;
-            }
+            // NEW: free any application exceptions to the unhandled capturers:
+            // catch (System.Exception ex)
+            // {
+            //     // this.logError(ex, $"Error occurs. args: {args.ToStringEx()}, position: {position}");
+            //     this.logError(ex, "Error occurs. args: {args}, position: {position}", args, position);
+            //     // throw;
+            //     return -2;
+            // }
             finally
             {
                 ShowDebugDumpFragment(this);
@@ -249,18 +253,21 @@ namespace HzNS.Cmdr
                     ColorifyEnabler.Reset();
                 }
 
-                AppDomain.CurrentDomain.UnhandledException -= Cmdr_CurrentDomain_UnhandledException;
+                currentDomain.UnhandledException -= ue;
             }
 
             return retCode;
         }
 
 
-        private void Cmdr_CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        private static UnhandledExceptionEventHandler Cmdr_CurrentDomain_UnhandledException_Builder(Worker w)
         {
-            this.logInfo("Cmdr: captured.");
-            Debug.Write("Cmdr: ");
-            Debug.WriteLine((e.ExceptionObject as System.Exception)?.Message);
+            return (sender, e) =>
+            {
+                Debug.Write("Cmdr: ");
+                w.logInfo("Cmdr: unhandled exception captured. cmd: {Command}, flag: {Flag}, pos: {Position}", w.ParsedCommand, w.ParsedFlag, w.ParsedCount);
+                Debug.WriteLine((e.ExceptionObject as System.Exception)?.Message);
+            };
         }
 
 
