@@ -54,9 +54,9 @@ namespace HzNS.Cmdr.Internal
             {
                 bool ok;
                 var arg = args[i];
-                var isOpt = arg[0] == '-' || arg[0] == '/';
-                var longOpt = arg.StartsWith("--");
                 var hiddenOpt = arg.StartsWith("~~");
+                var isOpt = arg[0] == '-' || arg[0] == '/' || hiddenOpt;
+                var longOpt = arg.StartsWith("--") || hiddenOpt;
 
                 @this.logDebug("    -> arg {Index}: {Argument}", i, arg);
                 if (!isOpt)
@@ -112,8 +112,10 @@ namespace HzNS.Cmdr.Internal
                     }
                     else
                     {
-                        @this.logDebug("level {Level} (no sub-cmds): returning {Position}", level, matchedPosition);
-                        onCommandCannotMatched(@this, args, i, arg, command);
+                        // treat as remains args normally
+                        
+                        // @this.logDebug("level {Level} (no sub-cmds): returning {Position}", level, matchedPosition);
+                        // onCommandCannotMatched(@this, args, i, arg, command);
                         return matchedPosition;
                     }
 
