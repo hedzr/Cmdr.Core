@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
+using System.Text;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Internal.Base;
@@ -164,13 +166,6 @@ namespace HzNS.Cmdr.Internal
                     // a flag matched ok, try extracting its value from commandline arguments
                     (ate, value, oldValue) = tryExtractingValue(@this, flg, args, i, fragment, part, pos);
 
-#if DEBUG
-                    if (value != null && ate > 0)
-                    {
-                        //
-                    }
-#endif
-
                     @this.logDebug("    ++ flag matched: {SW:l}{Part:l} {value}",
                         Util.SwitchChar(longOpt), part, value);
 
@@ -205,14 +200,24 @@ namespace HzNS.Cmdr.Internal
                     @this.ParsedFlag = decidedFlg;
                     onFlagMatched(@this, args, i + 1, part, longOpt, decidedFlg, oldValue, value);
                     matchedPosition = i + 1;
+                    // decidedLen = part.Length;
                 }
 
                 if (pos + decidedLen < siz)
                 {
+                    if (EnableCmdrGreedyLongFlag && decidedFlg == null)
+                    {
+                        len--;
+                    }
+                    else
+                    {
                     pos += decidedLen;
-                    len = EnableCmdrGreedyLongFlag ? fragment.Length - pos : 1;
+                        len = 1;
+                    }
+
                     @this.logDebug("    - for next part: {Part}", fragment.Substring(pos, len));
                     ccc = command;
+                    if (len > 0)
                     goto forEachFragmentParts;
                 }
 
@@ -586,6 +591,8 @@ namespace HzNS.Cmdr.Internal
             in bool longOpt, ICommand cmd)
             where T : IDefaultMatchers
         {
+            if (OnFlagCannotMatched?.Invoke(cmd, fragment, !longOpt, args[position]) == true)
+                return;
             var sw = Util.SwitchChar(longOpt);
             errPrint($"- Unknown flag({sw}{fragment}): '{args[position]}'. context: '{cmd.backtraceTitles}'");
             @this.suggestFlags(args, position, fragment, longOpt, cmd);
