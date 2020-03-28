@@ -229,13 +229,13 @@ namespace Simple
                 {
                     DefaultValue = false, Long = "clear2", Short = "c2", Group = "Operate",
                     Description = "clear all tags."
-                }, true)
+                })
                 .AddFlag(new Flag<bool>
                 {
                     DefaultValue = false, Long = "such2", Short = "s2", Aliases = new[] {"such-a"},
                     ToggleGroup = "Mode",
                     Description = "such a bit."
-                })
+                }, true)
                 .AddFlag(new Flag<bool>
                 {
                     DefaultValue = false, Long = "retry2", Short = "t2", Aliases = new[] {"retry-times"},

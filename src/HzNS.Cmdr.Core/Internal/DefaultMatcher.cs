@@ -50,7 +50,7 @@ namespace HzNS.Cmdr.Internal
             @this.logDebug("  - match for command: {CommandTitle}", command.backtraceTitles);
 
             var matchedPosition = -1;
-
+            
             // ReSharper disable once ForCanBeConvertedToForeach
             for (var i = position; i < args.Length; i++)
             {
@@ -117,7 +117,7 @@ namespace HzNS.Cmdr.Internal
                     else
                     {
                         // treat as remains args normally
-
+                        
                         // @this.logDebug("level {Level} (no sub-cmds): returning {Position}", level, matchedPosition);
                         // onCommandCannotMatched(@this, args, i, arg, command);
                         return matchedPosition;
@@ -128,7 +128,7 @@ namespace HzNS.Cmdr.Internal
                     continue;
                 }
 
-                #region matching for flags of 'command'
+                #region matching for flags
 
                 var ccc = command;
                 var fragment = longOpt ? arg.Substring(2) : arg.Substring(1);
@@ -528,15 +528,13 @@ namespace HzNS.Cmdr.Internal
         {
             // ReSharper disable once SuggestVarOrType_SimpleTypes
             ICommand? o = cmd;
-            while (o?.Owner != null && o.Owner != o)
+            while (o?.IsRoot == false)
             {
                 // var ready = true;
-                foreach (var f in (o?.RequiredFlags).Where(f =>
-                    // f.getDefaultValue() != null && 
-                    !Cmdr.Instance.Store.HasKeys(f.ToKeys())))
+                foreach (var f in o.RequiredFlags)
                 {
-                    // ready = false;
-                    throw new MissedRequiredFlagException(f);
+                    if (f.HitCount < 1)
+                        throw new MissedRequiredFlagException(f);
                 }
 
                 o = o?.Owner;
