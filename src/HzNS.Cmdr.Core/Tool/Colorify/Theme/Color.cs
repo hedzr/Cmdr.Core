@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace HzNS.Cmdr.Tool.Colorify.Theme

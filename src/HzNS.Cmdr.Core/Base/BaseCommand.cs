@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -88,7 +89,7 @@ namespace HzNS.Cmdr.Base
         public ICommand AddFlag<T>(IFlag<T> flag, bool required = false)
         {
             flag.Owner = this;
-
+            
             _flags.Add(flag);
 
             if (required)

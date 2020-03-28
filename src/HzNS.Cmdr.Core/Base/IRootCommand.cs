@@ -1,3 +1,4 @@
+#nullable enable
 namespace HzNS.Cmdr.Base
 {
     public interface IRootCommand : ICommand

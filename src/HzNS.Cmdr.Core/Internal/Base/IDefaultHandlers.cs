@@ -1,3 +1,4 @@
+#nullable enable
 using System.Diagnostics.CodeAnalysis;
 
 namespace HzNS.Cmdr.Internal.Base

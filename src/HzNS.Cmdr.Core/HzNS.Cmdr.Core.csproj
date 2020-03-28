@@ -22,9 +22,9 @@
 			  <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
 			<NrtShowRevision>true</NrtShowRevision>
         <NrtRevisionFormat>{semvertag+chash:7}-ts{c:uymd}{c:uhm}</NrtRevisionFormat>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
 <!--        <TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>-->
         <PackageVersion />
+        <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>

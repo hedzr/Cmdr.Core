@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -180,6 +181,7 @@ namespace HzNS.Cmdr.Internal
                 backtraceAllParentFlags:
 
                 var decidedLen = 0;
+                // ReSharper disable once NotAccessedVariable
                 IFlag? decidedFlg = null, matchedFlag = null;
                 object? value = null, oldValue = null;
 
@@ -1018,6 +1020,7 @@ namespace HzNS.Cmdr.Internal
                         transpositions++;
                 }
 
+                // ReSharper disable once NotAccessedVariable
                 int j = 0;
                 j += 1;
 

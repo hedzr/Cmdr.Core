@@ -1,3 +1,4 @@
+#nullable enable
 using System.Diagnostics;
 using System.Linq;
 using Serilog.Configuration;

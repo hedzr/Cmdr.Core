@@ -63,7 +63,7 @@ namespace HzNS.Cmdr
         public ICommand? ParsedCommand { get; set; }
         public IFlag? ParsedFlag { get; set; }
 
-        
+
         /// <summary>
         /// The primary config file folder of $APPNAME.yml, .yaml, .json.
         /// Cmdr.Core will watch its sub-directory `conf.d` and all files in it.
@@ -296,7 +296,7 @@ namespace HzNS.Cmdr
                 // this.logError(ex,
                 //     $"Cmdr Error occurs. args: {args.JoinBy(',').QuoteByBracket()}, position: {position}");
                 this.logError(ex, "Cmdr Error occurs. args: {args}, position: {position}", args, position);
-                if (ex.InnerException is KeyNotFoundException)
+                if (ex.InnerException is KeyNotFoundException || ex is CmdrFatalException)
                     throw;
                 return -1;
             }
@@ -695,10 +695,21 @@ namespace HzNS.Cmdr
                                | NotifyFilters.FileName
                                | NotifyFilters.DirectoryName,
                 // Filter = "*.json|*.yml|*.yaml",
-                Filters = {"*.json", "*.yml", "*.yaml",},
                 // IncludeSubdirectories = false,
-            };
+// #if NET451
+//                 Filter = "*.*",
+// #elif NETSTANDARD2_0
+//                 Filter = "*.*",
+// #elif NETCOREAPP3_1
+//                 Filters = {"*.json", "*.yml", "*.yaml",},
+// #endif
 
+#if NETCOREAPP3_1
+                Filters = {"*.json", "*.yml", "*.yaml",},
+#else
+                Filter = "*.*",
+#endif
+            };
 
             // Watch for changes in LastAccess and LastWrite times, and
             // the renaming of files or directories.

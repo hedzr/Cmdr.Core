@@ -1,3 +1,4 @@
+#nullable enable
 using System.Diagnostics.CodeAnalysis;
 
 namespace HzNS.Cmdr.Base
@@ -9,7 +10,7 @@ namespace HzNS.Cmdr.Base
         string ToggleGroup { get; set; }
 
         /// <summary>
-        /// For a TimeSpan Flag, enable string parser with
+        /// For a TimeSpan Flag, enables string parser with
         /// MomentJs format.
         /// The form likes: "3d89s5139ms".
         /// </summary>

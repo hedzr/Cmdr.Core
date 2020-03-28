@@ -1,4 +1,5 @@
-﻿namespace HzNS.Cmdr.Tool.ObjectCloner
+﻿#nullable enable
+namespace HzNS.Cmdr.Tool.ObjectCloner
 {
     public static class ObjectExtensions
     {

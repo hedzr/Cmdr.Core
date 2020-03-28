@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using HzNS.Cmdr.Tool.Ext;
 
 namespace HzNS.Cmdr.Tool.Colorify.Terminal

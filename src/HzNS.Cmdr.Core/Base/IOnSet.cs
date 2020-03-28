@@ -1,3 +1,4 @@
+#nullable enable
 using HzNS.Cmdr.Internal.Base;
 
 namespace HzNS.Cmdr.Base

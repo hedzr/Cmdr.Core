@@ -8,7 +8,9 @@ Normal command line argument parser for .Net Core 3.1+. Hierarchy configurations
 
 The Pre-release is coming soon.
 
-Just for dotNetCore.
+- dotNet Core 3.0+
+- dotNet Standard 2.1+
+- dotNet 4.8+ [?] (*NOT SURE*)
 
 
 ## NuGet
@@ -20,7 +22,8 @@ TODO
 
 cmdr has rich features:
 
-- [x] POSIX Compatible (Unix [*getopt*(3)](http://man7.org/linux/man-pages/man3/getopt.3.html))
+- [x] **POSIX Compatible** (Unix [*getopt*(3)](http://man7.org/linux/man-pages/man3/getopt.3.html))
+- [x] **[IEEE Standard](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html)** Compartiblities
 - [x] builds multi-level command and sub-commands
 - [x] builds short, long and alias options with kinds of data types
 - [x] defines commands and options via fluent api style

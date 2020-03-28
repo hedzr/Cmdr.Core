@@ -72,10 +72,14 @@ namespace HzNS.Cmdr.Exception
     {
     }
 
+    public class CmdrFatalException : CmdrException
+    {
+    }
+
 
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    public class MissedRequiredFlagException : CmdrException
+    public class MissedRequiredFlagException : CmdrFatalException
     {
         public MissedRequiredFlagException(IFlag f)
         {

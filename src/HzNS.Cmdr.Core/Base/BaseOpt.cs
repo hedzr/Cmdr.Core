@@ -101,6 +101,7 @@ namespace HzNS.Cmdr.Base
 
         // ReSharper disable once InconsistentNaming
         private static bool equals(ref string s, string input, int pos, bool enableCmdrGreedyLongFlag,
+            // ReSharper disable once UnusedParameter.Local
             bool reverse, params string[] a)
         {
             foreach (var it in a)

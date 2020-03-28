@@ -1,8 +1,8 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text.Json;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Internal;
 using HzNS.Cmdr.Painter;
@@ -315,6 +315,7 @@ namespace HzNS.Cmdr
                     //     : (val.Length > 0 ? val[0] : default);
                     if (!yes)
                     {
+                        // ReSharper disable once UnusedVariable
                         var dv = val.Length > 0 ? val[0] : default;
                         if (val.Length > 0 && val[0] is JArray ja)
                         {
