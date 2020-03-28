@@ -3,6 +3,7 @@ using System;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Tool.ObjectCloner;
+using YamlDotNet.Serialization;
 
 // ReSharper disable MemberCanBePrivate.Global
 namespace Simple
@@ -141,6 +142,12 @@ namespace Simple
                 Console.WriteLine($"[HIT] mode settings. remains: '{string.Join(",", remainArgs)}'");
             };
 
+            PostAction = (worker, sender, remainArgs) =>
+            {
+                Console.WriteLine($"[POSTACTION] [HIT] mode settings. remains: '{string.Join(",", remainArgs)}'");
+            };
+
+
             // adds flags here
 
             #region flags
@@ -234,6 +241,24 @@ namespace Simple
                     DefaultValue = false, Long = "retry2", Short = "t2", Aliases = new[] {"retry-times"},
                     ToggleGroup = "Mode",
                     Description = "dify with the `key`."
+                })
+                .AddAction((worker, opt, args) =>
+                {
+                    var map = worker.OptionsStore.GetAsMap("tags.mode");
+
+                    // worker.log.Information("tag.mode => {OptionsMap}", map);
+
+                    {
+                        var serializer = new SerializerBuilder().Build();
+                        var yaml = serializer.Serialize(map);
+                        Console.WriteLine(yaml);
+                    }
+                    // {
+                    //     var m = worker.OptionsStore.FindByDottedKey("tags.mode");
+                    //     var serializer = new SerializerBuilder().Build();
+                    //     var yaml = serializer.Serialize(m);
+                    //     Console.WriteLine(yaml);
+                    // }
                 });
 
             AddCommand(new Command {Short = "s1", Long = "sub1", Description = "sub-command 1 operations"}
