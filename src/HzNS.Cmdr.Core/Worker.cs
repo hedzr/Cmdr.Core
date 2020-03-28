@@ -63,6 +63,7 @@ namespace HzNS.Cmdr
         public ICommand? ParsedCommand { get; set; }
         public IFlag? ParsedFlag { get; set; }
 
+        
         /// <summary>
         /// The primary config file folder of $APPNAME.yml, .yaml, .json.
         /// Cmdr.Core will watch its sub-directory `conf.d` and all files in it.
@@ -146,6 +147,73 @@ namespace HzNS.Cmdr
         {
             get => _configFileLocations;
             set => _configFileLocations = value;
+        }
+
+        /// <summary>
+        /// <code>bool OnDuplicatedCommandChar(IBaseWorker worker, ICommand command,
+        ///     bool isShort, string matchingArg)</code>
+        /// returning true means the event has been processed.
+        /// </summary>
+        public Func<IBaseWorker, ICommand, bool, string, bool>? OnDuplicatedCommandChar { get; set; }
+
+        /// <summary>
+        /// <code>bool OnDuplicatedFlagChar(IBaseWorker worker,
+        ///     ICommand command, IFlag flag,
+        ///     bool isShort, string matchingArg)</code>
+        /// returning true means the event has been processed. 
+        /// </summary>
+        public Func<IBaseWorker, ICommand, IFlag, bool, string, bool>? OnDuplicatedFlagChar { get; set; }
+
+
+        /// <summary>
+        /// <code>bool OnCommandCannotMatched(ICommand parsedCommand, string matchingArg)</code>
+        /// returning true means the event has been processed.
+        /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        // ReSharper disable once MemberCanBeMadeStatic.Global
+        public Func<ICommand, string, bool>? OnCommandCannotMatched
+        {
+            get => DefaultMatchers.OnCommandCannotMatched;
+            set => DefaultMatchers.OnCommandCannotMatched = value;
+        }
+
+        /// <summary>
+        /// <code>bool OnCommandCannotMatched(ICommand parsingCommand,
+        ///     string fragment, bool isShort, string matchingArg)</code>
+        /// returning true means the event has been processed.
+        /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        // ReSharper disable once MemberCanBeMadeStatic.Global
+        public Func<ICommand, string, bool, string, bool>? OnFlagCannotMatched
+        {
+            get => DefaultMatchers.OnFlagCannotMatched;
+            set => DefaultMatchers.OnFlagCannotMatched = value;
+        }
+
+        /// <summary>
+        /// <code>bool OnSuggestingForCommand(object worker,
+        ///     Dictionary&lt;string, ICommand&gt; dataset, string token)</code>
+        /// returning true means the event has been processed.
+        /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        // ReSharper disable once MemberCanBeMadeStatic.Global
+        public Func<object, Dictionary<string, ICommand>, string, bool>? OnSuggestingForCommand
+        {
+            get => DefaultMatchers.OnSuggestingForCommand;
+            set => DefaultMatchers.OnSuggestingForCommand = value;
+        }
+
+        /// <summary>
+        /// <code>bool OnSuggestingForFlag(object worker,
+        ///     Dictionary&lt;string, IFlag&gt; dataset, string token)</code>
+        /// returning true means the event has been processed.
+        /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        // ReSharper disable once MemberCanBeMadeStatic.Global
+        public Func<object, Dictionary<string, IFlag>, string, bool>? OnSuggestingForFlag
+        {
+            get => DefaultMatchers.OnSuggestingForFlag;
+            set => DefaultMatchers.OnSuggestingForFlag = value;
         }
 
 
@@ -991,9 +1059,7 @@ namespace HzNS.Cmdr
             ColorifyEnabler.Enable();
 
             DefaultMatchers.EnableCmdrLogTrace = Util.GetEnvValueBool("CMDR_TRACE");
-            if (DefaultMatchers.EnableCmdrLogTrace)
-                DefaultMatchers.EnableCmdrLogDebug = true;
-            DefaultMatchers.EnableCmdrLogDebug = Util.GetEnvValueBool("CMDR_DEBUG");
+            DefaultMatchers.EnableCmdrLogDebug = Util.GetEnvValueBool("CMDR_DEBUG", DefaultMatchers.EnableCmdrLogTrace);
             OptionsStore.Set("debug", Util.GetEnvValueBool("DEBUG"));
             OptionsStore.Set("trace", Util.GetEnvValueBool("TRACE"));
             OptionsStore.Set("verbose", Util.GetEnvValueBool("VERBOSE"));
