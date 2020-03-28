@@ -31,24 +31,22 @@ namespace HzNS.Cmdr.Tool.Ext
 
         public static bool ToBool(string s, bool defaultValue = false)
         {
-            return s switch
+            return s.ToLower() switch
             {
                 "1" => true,
                 "yes" => true,
                 "y" => true,
-                "Y" => true,
                 "true" => true,
                 "t" => true,
-                "T" => true,
+                "on" => true,
                 "是" => true,
                 "真" => true,
                 "0" => false,
                 "no" => false,
                 "n" => false,
-                "N" => false,
-                "false" => true,
+                "false" => false,
                 "f" => false,
-                "F" => false,
+                "off" => false,
                 "否" => false,
                 "假" => false,
                 _ => defaultValue
