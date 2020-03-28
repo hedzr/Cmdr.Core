@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
@@ -55,6 +56,8 @@ namespace HzNS.Cmdr.Tool.Ext
     }
 
 
+    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public static class StringExtensions
     {
         public static string ToStringEx(this object @this)
@@ -149,6 +152,75 @@ namespace HzNS.Cmdr.Tool.Ext
             }
 
             return t;
+        }
+
+
+        /// <summary>
+        /// Remove double quoting wrapping since I do it in the js
+        ///
+        /// - Use expression body
+        /// - Use a cleaner switch
+        /// - Use Linq
+        /// - Add a check for Letter to allow é
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static string EncodeJavaScriptString(this string s)
+            => string.Concat(s.Select(c =>
+            {
+                return c switch
+                {
+                    '\"' => "\\\"",
+                    '\\' => "\\\\",
+                    '\b' => "\\b",
+                    '\f' => "\\f",
+                    '\n' => "\\n",
+                    '\r' => "\\r",
+                    '\t' => "\\t",
+                    _ => ((c < 32 || c > 127) && !char.IsLetterOrDigit(c) ? $"\\u{(int) c:X04}" : c.ToString())
+                };
+            }));
+
+        public static string JoinBy(this string[] @this, char ch)
+        {
+            var sb = new StringBuilder();
+            sb.AppendJoin(ch, @this);
+            return sb.ToString();
+        }
+
+        public static string QuoteBy(this string @this, char ch, bool escape = false)
+        {
+            return QuoteBy(@this, ch, ch, escape);
+        }
+
+        public static string QuoteBy(this string @this, char chStart, char chEnd, bool escape = false)
+        {
+            var sb = new StringBuilder();
+            sb.Append(chStart);
+            sb.Append(escape ? @this.EncodeJavaScriptString() : @this);
+            sb.Append(chEnd);
+            return sb.ToString();
+        }
+
+        public static string QuoteByBracket(this string @this, bool escape = false)
+        {
+            return QuoteBy(@this, '[', ']', escape);
+        }
+
+        public static string QuoteByCurlyBracket(this string @this, bool escape = false)
+        {
+            return QuoteBy(@this, '{', '}', escape);
+        }
+
+        public static string Quote(this string @this, bool escape = false)
+        {
+            return QuoteBy(@this, '"', '"', escape);
+        }
+
+        public static string QuoteSingle(this string @this, bool escape = false)
+        {
+            return QuoteBy(@this, '\'', '\'', escape);
         }
 
 
