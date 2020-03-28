@@ -222,13 +222,15 @@ namespace HzNS.Cmdr
             }
             catch (CmdrException ex)
             {
-                this.logError(ex,
-                    $"Cmdr Error occurs. args: {args.JoinBy(',').QuoteByBracket()}, position: {position}");
+                // this.logError(ex,
+                //     $"Cmdr Error occurs. args: {args.JoinBy(',').QuoteByBracket()}, position: {position}");
+                this.logError(ex, "Cmdr Error occurs. args: {args}, position: {position}", args, position);
                 return -1;
             }
             catch (System.Exception ex)
             {
-                this.logError(ex, $"Error occurs. args: {args.JoinBy(',').QuoteByBracket()}, position: {position}");
+                // this.logError(ex, $"Error occurs. args: {args.ToStringEx()}, position: {position}");
+                this.logError(ex, "Error occurs. args: {args}, position: {position}", args, position);
                 // throw;
                 return -2;
             }

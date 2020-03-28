@@ -60,6 +60,17 @@ namespace HzNS.Cmdr.Tool.Ext
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public static class StringExtensions
     {
+        public static string ToString(this string[] @this)
+        {
+            var v = "[" + string.Join(",", @this) + "]";
+            return v;
+        }
+        public static string ToString(this IEnumerable @this)
+        {
+            var v = "[" + string.Join(",", @this.Cast<object>()) + "]";
+            return v;
+        }
+
         public static string ToStringEx(this object @this)
         {
             // ReSharper disable once InvertIf
