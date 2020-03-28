@@ -250,6 +250,7 @@ namespace HzNS.Cmdr
                 {
                     _shouldTerminate.Set();
                     CancelFileWatcher();
+                    this.FlushErrors();
                     ColorifyEnabler.Reset();
                 }
 

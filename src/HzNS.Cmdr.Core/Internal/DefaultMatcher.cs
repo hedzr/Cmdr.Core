@@ -545,6 +545,21 @@ namespace HzNS.Cmdr.Internal
             }
         }
 
+        /// <summary>
+        /// <code>bool OnCommandCannotMatched(ICommand parsedCommand, string matchingArg)</code>
+        /// returning true means the event has been processed.
+        /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public static Func<ICommand, string, bool>? OnCommandCannotMatched { get; set; }
+
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public static Func<ICommand, string, bool, string, bool /*processed*/>? OnFlagCannotMatched { get; set; }
+
+        /// <summary>
+        /// <code>bool OnCommandCannotMatched(ICommand parsingCommand,
+        ///     string fragment, bool isShort, string matchingArg)</code>
+        /// returning true means the event has been processed.
+        /// </summary>
         // ReSharper disable once MemberCanBeMadeStatic.Local
         // ReSharper disable once UnusedParameter.Local
         // ReSharper disable once InconsistentNaming
@@ -553,6 +568,8 @@ namespace HzNS.Cmdr.Internal
             ICommand cmd)
             where T : IDefaultMatchers
         {
+            if (OnCommandCannotMatched?.Invoke(cmd, args[position]) == true)
+                return;
             // throw new NotImplementedException();
             errPrint($"- Unknown command(arg): '{args[position]}'. context: '{cmd.backtraceTitles}'.");
             @this.suggestCommands(args, position, arg, cmd);
@@ -683,7 +700,8 @@ namespace HzNS.Cmdr.Internal
         {
             if (EnableCmdrLogInfo)
             {
-                @this.log.ForContext("SKIP_", 1).Information(messageTemplate, property0, property1, property2, property3);
+                @this.log.ForContext("SKIP_", 1)
+                    .Information(messageTemplate, property0, property1, property2, property3);
             }
         }
 

@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
+using HzNS.Cmdr.Internal.Base;
 using HzNS.Cmdr.Tool.Ext;
 
 namespace Simple
@@ -103,10 +104,17 @@ namespace Simple
                     //
 
                     w.EnableCmdrGreedyLongFlag = true;
-
                     // w.EnableDuplicatedCharThrows = true;
-
                     // w.EnableEmptyLongFieldThrows = true;
+
+                    w.RegisterExternalConfigurationsLoader(ExternalConfigLoader);
+                    
+                    w.OnDuplicatedCommandChar = (worker, command, isShort, matchingArg) => false;
+                    w.OnDuplicatedFlagChar = (worker, command, flag, isShort, matchingArg) => false;
+                    w.OnCommandCannotMatched = (parsedCommand, matchingArg) => false;
+                    w.OnFlagCannotMatched = (parsingCommand, fragment, isShort, matchingArg) => false;
+                    w.OnSuggestingForCommand = (worker, dataset, token) => false;
+                    w.OnSuggestingForFlag = (worker, dataset, token) => false;
                 }
 
                 #endregion
@@ -132,11 +140,12 @@ namespace Simple
                 return 0;
             });
 
-        // private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        // {
-        //     Debug.WriteLine((e.ExceptionObject as Exception)?.Message);
-        // }
+        private static void ExternalConfigLoader(IBaseWorker w, IRootCommand root)
+        {
+            // throw new NotImplementedException();
+        }
 
+        
         private static int _a = 9;
         private const int B = 10;
     }

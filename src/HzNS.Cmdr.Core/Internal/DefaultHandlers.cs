@@ -12,14 +12,14 @@ namespace HzNS.Cmdr.Internal
     /// </summary>
     public static class DefaultHandlers
     {
-        public static void OnDuplicatedCommandChar<T>(this T t, bool isShort, string ch, ICommand cmd)
+        public static void DefaultOnDuplicatedCommandChar<T>(this T t, bool isShort, string ch, ICommand cmd)
             where T : IDefaultHandlers
         {
             Console.Error.WriteLineAsync(
                 $"WARN: Duplicated command char FOUND: '{ch}'. Context: \"{cmd.backtraceTitles}\".");
         }
 
-        public static void OnDuplicatedFlagChar<T>(this T t, bool isShort, string ch, ICommand cmd, IFlag flg)
+        public static void DefaultOnDuplicatedFlagChar<T>(this T t, bool isShort, string ch, ICommand cmd, IFlag flg)
             where T : IDefaultHandlers
         {
             Console.Error.WriteLineAsync(

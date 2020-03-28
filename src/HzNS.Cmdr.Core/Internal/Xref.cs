@@ -18,7 +18,8 @@ namespace HzNS.Cmdr.Internal
             if (!string.IsNullOrWhiteSpace(cmd.Short))
                 if (!SubCommandsShortNames.TryAdd(cmd.Short, cmd))
                 {
-                    w.OnDuplicatedCommandChar(true, cmd.Short, cmd);
+                    if (w.OnDuplicatedCommandChar?.Invoke(w, cmd, false, cmd.Short) == false)
+                        w.DefaultOnDuplicatedCommandChar(true, cmd.Short, cmd);
                     if (w.EnableDuplicatedCharThrows)
                         throw new DuplicationCommandCharException(true, cmd.Short, cmd);
                 }
@@ -30,7 +31,8 @@ namespace HzNS.Cmdr.Internal
             {
                 if (!SubCommandsLongNames.TryAdd(cmd.Long, cmd))
                 {
-                    w.OnDuplicatedCommandChar(false, cmd.Long, cmd);
+                    if (w.OnDuplicatedCommandChar?.Invoke(w, cmd, false, cmd.Long) == false)
+                        w.DefaultOnDuplicatedCommandChar(false, cmd.Long, cmd);
                     if (w.EnableDuplicatedCharThrows)
                         throw new DuplicationCommandCharException(false, cmd.Long, cmd);
                 }
@@ -49,7 +51,8 @@ namespace HzNS.Cmdr.Internal
                     if (!string.IsNullOrWhiteSpace(a))
                         if (!SubCommandsAliasNames.TryAdd(a, cmd))
                         {
-                            w.OnDuplicatedCommandChar(false, a, cmd);
+                            if (w.OnDuplicatedCommandChar?.Invoke(w, cmd, false, a) == false)
+                                w.DefaultOnDuplicatedCommandChar(false, a, cmd);
                             if (w.EnableDuplicatedCharThrows)
                                 throw new DuplicationCommandCharException(false, a, cmd);
                         }
@@ -60,7 +63,8 @@ namespace HzNS.Cmdr.Internal
             if (!string.IsNullOrWhiteSpace(flag.Short))
                 if (!FlagsShortNames.TryAdd(flag.Short, flag))
                 {
-                    w.OnDuplicatedFlagChar(true, flag.Short, owner, flag);
+                    if (w.OnDuplicatedFlagChar?.Invoke(w, owner, flag, true, flag.Short) == false)
+                        w.DefaultOnDuplicatedFlagChar(true, flag.Short, owner, flag);
                     if (w.EnableDuplicatedCharThrows)
                         throw new DuplicationFlagCharException(true, flag.Short, flag, owner);
                 }
@@ -72,7 +76,8 @@ namespace HzNS.Cmdr.Internal
             {
                 if (!FlagsLongNames.TryAdd(flag.Long, flag))
                 {
-                    w.OnDuplicatedFlagChar(false, flag.Long, owner, flag);
+                    if (w.OnDuplicatedFlagChar?.Invoke(w, owner, flag, false, flag.Long) == false)
+                        w.DefaultOnDuplicatedFlagChar(false, flag.Long, owner, flag);
                     if (w.EnableDuplicatedCharThrows)
                         throw new DuplicationFlagCharException(false, flag.Long, flag, owner);
                 }
@@ -91,7 +96,8 @@ namespace HzNS.Cmdr.Internal
                     if (!string.IsNullOrWhiteSpace(a))
                         if (!FlagsAliasNames.TryAdd(a, flag))
                         {
-                            w.OnDuplicatedFlagChar(false, a, owner, flag);
+                            if (w.OnDuplicatedFlagChar?.Invoke(w, owner, flag, false, a) == false)
+                                w.DefaultOnDuplicatedFlagChar(false, a, owner, flag);
                             if (w.EnableDuplicatedCharThrows)
                                 throw new DuplicationFlagCharException(false, a, flag, owner);
                         }
