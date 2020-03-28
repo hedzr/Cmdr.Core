@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using HzNS.Cmdr.Internal.Base;
 
 namespace HzNS.Cmdr.Base
 {
@@ -24,6 +26,7 @@ namespace HzNS.Cmdr.Base
 
         ICommand AddCommand(ICommand cmd);
         ICommand AddFlag<T>(IFlag<T> flag, bool required = false);
+        ICommand AddAction(Action<IBaseWorker, IBaseOpt, IEnumerable<string>> action);
 
         bool IsRoot { get; }
 

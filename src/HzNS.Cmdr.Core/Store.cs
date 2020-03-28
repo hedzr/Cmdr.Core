@@ -22,7 +22,7 @@ namespace HzNS.Cmdr
 
         public string[] Prefixes { get; set; } = {"app"};
 
-        private readonly SortedDictionary<string, Slot> _fastMap = new SortedDictionary<string, Slot>();
+        private readonly SortedSlots _fastMap = new SortedSlots();
 
 
         #region Dump()
@@ -101,7 +101,87 @@ namespace HzNS.Cmdr
                 $"type info mismatch, cannot get value from option store. expect: {typeof(T)}, the underlying data type is: {v.GetType()}.");
         }
 
+        public SlotEntries GetAsMap(string key)
+        {
+            var dict = new SlotEntries();
+            var (slot, _) = FindByDottedKey(key);
+            var stack = new List<SlotEntries>();
+            // var mn = dict;
+            var top = new SlotEntries();
+            dict.Add("TOP", top);
+            stack.Add(top);
+            stack.Add(dict);
+
+            if (slot != null)
+                walkForSlot(slot, 0,
+                    nodesWalker: (owner, childKey, childSlot, level, index) =>
+                    {
+                        switch (index)
+                        {
+                            case StatusOrIndex.ENTERING:
+                                var newTop = new SlotEntries();
+                                stack[0].Add(childKey, newTop);
+                                stack.Insert(0, newTop);
+                                break;
+                            case StatusOrIndex.LEAVING:
+                                stack.Remove(stack[0]);
+                                break;
+                            default:
+                                return true;
+                        }
+
+                        return true;
+                    },
+                    valuesWalker: (owner, valueKey, value, level, index) =>
+                    {
+                        stack[0].Add(valueKey, value);
+                        return true;
+                    });
+            return dict;
+        }
+
         #endregion
+
+        #region walkForSlot implementation
+
+        public enum StatusOrIndex
+        {
+            ENTERING = -1,
+            LEAVING = -2,
+        }
+
+        private static void walkForSlot(Slot parent, int level,
+            Func<Slot /*owner*/, string /*childKey*/, Slot /*childSlot*/,
+                int /*level*/, StatusOrIndex /*index*/, bool /*goAhead*/>? nodesWalker = null,
+            Func<Slot /*owner*/, string /*valueKey*/, object? /*value*/,
+                int /*level*/, int /*index*/, bool /*goAhead*/>? valuesWalker = null)
+        {
+            var i = 0;
+            foreach (var (key, value) in parent.Values)
+            {
+                if (valuesWalker?.Invoke(parent, key, value, level, i) == false)
+                    return;
+                i++;
+            }
+
+            i = 0;
+            foreach (var (key, childSlot) in parent.Children)
+            {
+                nodesWalker?.Invoke(parent, key, Slot.Empty, level, StatusOrIndex.ENTERING);
+                if (nodesWalker?.Invoke(parent, key, childSlot, level, (StatusOrIndex) i) == false)
+                    return;
+                walkForSlot(childSlot, level + 1, nodesWalker, valuesWalker);
+                nodesWalker?.Invoke(parent, key, Slot.Empty, level, StatusOrIndex.LEAVING);
+                i++;
+            }
+        }
+
+        #endregion
+
+        public void WalkForSlot(Slot? parent)
+        {
+            walkForSlot(parent ?? Root, 0);
+        }
 
 
         #region Set<T>(), SetByKeys<T>()
@@ -219,7 +299,7 @@ namespace HzNS.Cmdr
             return null;
         }
 
-        private static void setIt(Slot node, string key, IEnumerable<string> remainsParts, 
+        private static void setIt(Slot node, string key, IEnumerable<string> remainsParts,
             JToken token, bool isArray = false, bool appendToArray = false)
         {
             object? old;
@@ -427,7 +507,7 @@ namespace HzNS.Cmdr
                 case bool[] v:
                     foreach (var it in val)
                     {
-                        appendIts(node, key, v,toT<bool>(it), appendToArray);
+                        appendIts(node, key, v, toT<bool>(it), appendToArray);
                     }
 
                     return true;
@@ -566,6 +646,17 @@ namespace HzNS.Cmdr
             return a.Length > 0 ? a[^1] : string.Empty;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="parts"></param>
+        /// <param name="node"></param>
+        /// <returns>
+        /// var (found, slotNode, valueKey):
+        /// when matched slot found:
+        ///  1. valueKey is empty: just a slot. For example: "tags.mode" => true, slotNode, string.Empty | means that: "mode" sub-command of "tag" command
+        ///  2. valueKey is valid string: a value entry in the returned slot. For example: "tags.mode.addr" => true, slotNode, "addr" | means that: "--addr" in "tags mode" sub-command
+        /// </returns>
         private (bool, Slot?, string valueKey) hasKeys(IEnumerable<string> parts, Slot? node)
         {
             var enumerable = parts as string[] ?? parts.ToArray();
@@ -581,7 +672,13 @@ namespace HzNS.Cmdr
                     var key = enumerable[0];
                     var yes = node.Values.ContainsKey(key);
                     if (!yes)
-                        return (false, null, key);
+                    {
+                        yes = node.Children.ContainsKey(key);
+                        if (!yes)
+                            return (false, null, key);
+                        return (true, node, string.Empty);
+                    }
+
                     // if (_fastMap.ContainsKey(path)) ;
                     _fastMap.Add(path, node);
                     return (true, node, key);
@@ -651,19 +748,6 @@ namespace HzNS.Cmdr
         }
 
         #endregion
-    }
-
-    public class Slot
-    {
-        public Slot()
-        {
-            Children = new Dictionary<string, Slot>();
-            Values = new Dictionary<string, object?>();
-        }
-
-        // ReSharper disable once CollectionNeverUpdated.Global
-        public Dictionary<string, Slot> Children { get; }
-        public Dictionary<string, object?> Values { get; }
     }
 
     // public class Entry<T>

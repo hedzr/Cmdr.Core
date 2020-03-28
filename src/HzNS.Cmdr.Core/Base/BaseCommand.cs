@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using HzNS.Cmdr.Internal.Base;
 
 namespace HzNS.Cmdr.Base
 {
@@ -103,6 +104,12 @@ namespace HzNS.Cmdr.Base
                 ToggleableFlags[flag.ToggleGroup].Add(flag);
             }
 
+            return this;
+        }
+
+        public ICommand AddAction(Action<IBaseWorker, IBaseOpt, IEnumerable<string>> action)
+        {
+            Action = action;
             return this;
         }
 
