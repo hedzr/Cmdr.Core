@@ -26,6 +26,12 @@ namespace HzNS.Cmdr.Exception
         }
     }
 
+
+    public class UnknownException : BaseException
+    {
+    }
+    
+    
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     public class CmdrException : BaseException
     {

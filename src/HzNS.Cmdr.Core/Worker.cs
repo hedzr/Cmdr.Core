@@ -42,8 +42,6 @@ namespace HzNS.Cmdr
         public const string LastUnsortedGroup = "z111.Unsorted";
 
 
-        private IRootCommand _root;
-
         public Worker(IRootCommand root)
         {
             _root = root;
@@ -56,9 +54,21 @@ namespace HzNS.Cmdr
         public IRootCommand RootCommand => _root;
 
         public int ParsedCount { get; set; }
+
+        /// <summary>
+        /// After Run() completed, the Parsed will be set to true if no errors occured.
+        /// </summary>
         public bool Parsed { get; set; }
+
         public ICommand? ParsedCommand { get; set; }
         public IFlag? ParsedFlag { get; set; }
+
+        /// <summary>
+        /// The primary config file folder of $APPNAME.yml, .yaml, .json.
+        /// Cmdr.Core will watch its sub-directory `conf.d` and all files in it.
+        ///
+        /// see also: [ConfigFileAutoSubDir], 
+        /// </summary>
         public string PrimaryConfigDir { get; internal set; } = "";
 
 
@@ -88,46 +98,47 @@ namespace HzNS.Cmdr
             set => DefaultMatchers.EnableCmdrLogDebug = value;
         }
 
-        
+
         public bool EnableAutoBoxingWhenExtracting
         {
             get => Cmdr.Instance.EnableAutoBoxingWhenExtracting;
             set => Cmdr.Instance.EnableAutoBoxingWhenExtracting = value;
         }
 
-        
-        public string[] Prefixes
-        {
-            get => Cmdr.Instance.Store.Prefixes;
-            set => Cmdr.Instance.Store.Prefixes = value;
-        }
-        
-        
-        // ReSharper disable once MemberCanBeMadeStatic.Global
-        public Store CmdrOptionStore => Cmdr.Instance.Store;
 
+        public bool DebuggerAttached => Debugger.IsAttached;
+
+
+        /// <summary>
+        /// The shortcut to Cmdr.Instance.Store
+        /// </summary>
+        // ReSharper disable once MemberCanBeMadeStatic.Global
+        public Store OptionsStore => Cmdr.Instance.Store;
+
+
+        public string[] StorePrefixes
+        {
+            get => OptionsStore.Prefixes;
+            set => OptionsStore.Prefixes = value;
+        }
+
+
+        public bool AppVerboseMode => OptionsStore.GetAs("verbose", false);
+        public bool AppQuietMode => OptionsStore.GetAs("quiet", false);
+        public bool AppDebugMode => OptionsStore.GetAs("debug", false);
+        public bool AppTraceMode => OptionsStore.GetAs("trace", false);
 
         public bool EnableDuplicatedCharThrows { get; set; } = false;
         public bool EnableEmptyLongFieldThrows { get; set; } = false;
         public bool EnableUnknownCommandThrows { get; set; } = false;
         public bool EnableUnknownFlagThrows { get; set; } = false;
-        
-        public int TabStop { get; set; } = 45;
 
-        public bool AppVerboseMode => CmdrOptionStore.GetAs("verbose", false);
-        public bool AppQuietMode => CmdrOptionStore.GetAs("quiet", false);
-        public bool AppDebugMode => CmdrOptionStore.GetAs("debug", false);
-        public bool AppTraceMode => CmdrOptionStore.GetAs("trace", false);
+        public int TabStop { get; set; } = 45;
 
         public bool EnableExternalConfigFilesLoading { get; set; } = true;
         public bool NoPopulationAfterFirstExternalConfigLocationLoaded { get; set; } = true;
 
         public string ConfigFileAutoSubDir { get; set; } = "conf.d";
-
-        private readonly string[] configFileSuffixes =
-        {
-            ".yaml", ".yml", ".json",
-        };
 
         // ReSharper disable once ConvertToAutoPropertyWhenPossible
         // ReSharper disable once UnusedMember.Global
@@ -137,42 +148,12 @@ namespace HzNS.Cmdr
             set => _configFileLocations = value;
         }
 
-        private string[] _configFileLocations =
-        {
-            "./ci/etc/$APPNAME/$APPNAME.yml", // for developer
-            "/etc/$APPNAME/$APPNAME.yml", // regular location: /etc/$APPNAME/$APPNAME.yml
-            "/usr/local/etc/$APPNAME/$APPNAME.yml", // regular macOS HomeBrew location
-            "$HOME/.config/$APPNAME/$APPNAME.yml", // per user: $HOME/.config/$APPNAME/$APPNAME.yml
-            "$HOME/.$APPNAME/$APPNAME.yml", // ext location per user
-            "$THIS/$APPNAME.yml", // executable directory
-            "$APPNAME.yml", // current directory
-        };
 
-        // see also RegisterExternalConfigurationsLoader()
-        private readonly List<Action<IBaseWorker, IRootCommand>> _externalConfigurationsLoaders =
-            new List<Action<IBaseWorker, IRootCommand>>();
-
-        public bool DebuggerAttached => Debugger.IsAttached;
-
-
-        internal Worker runOnce()
-        {
-            // NOTE that the logger `log` is not ready yet at this time.
-            ColorifyEnabler.Enable();
-
-            DefaultMatchers.EnableCmdrLogTrace = Util.GetEnvValueBool("CMDR_TRACE");
-            if (DefaultMatchers.EnableCmdrLogTrace)
-                DefaultMatchers.EnableCmdrLogDebug = true;
-            DefaultMatchers.EnableCmdrLogDebug = Util.GetEnvValueBool("CMDR_DEBUG");
-            CmdrOptionStore.Set("debug", Util.GetEnvValueBool("DEBUG"));
-            CmdrOptionStore.Set("trace", Util.GetEnvValueBool("TRACE"));
-            CmdrOptionStore.Set("verbose", Util.GetEnvValueBool("VERBOSE"));
-            CmdrOptionStore.Set("verbose-level", Util.GetEnvValueInt("VERBOSE_LEVEL", 5));
-            CmdrOptionStore.Set("quiet", Util.GetEnvValueBool("QUIET"));
-
-            return this;
-        }
-
+        /// <summary>
+        /// setup your RootCommand at first, before invokeing Run(args)
+        /// </summary>
+        /// <param name="rootCommand"></param>
+        /// <returns></returns>
         public Worker With(IRootCommand rootCommand)
         {
             _root = rootCommand;
@@ -180,23 +161,28 @@ namespace HzNS.Cmdr
             return this;
         }
 
-        // ReSharper disable once UnusedMember.Local
-        private void f4()
-        {
-            log.Information("YES IT IS");
-            // B /= A;
-            throw new System.Exception("test");
-        }
 
-        public void Run(string[] args, Func<int>? postRun = null)
+        /// <summary>
+        /// Parse the command-line args, and invoke the matched command or its sub-command.
+        ///
+        /// For capture the unhandled exception in your routines react any commands, try
+        /// [System.UnhandledExceptionEventHandler]
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="postRun"></param>
+        /// <exception cref="WantHelpScreenException"></exception>
+        /// <returns>exiting codes for OS</returns>
+        public int Run(string[] args, Func<int>? postRun = null)
         {
             // Entry.Log.Information("YES IT IS");
             // log.Information("YES IT IS");
             // f4();
             if (_root == null)
-                return;
+                return 0;
 
-            // ReSharper disable once NotAccessedVariable
+            AppDomain.CurrentDomain.UnhandledException += Cmdr_CurrentDomain_UnhandledException;
+
+            int retCode;
             var position = 0;
             try
             {
@@ -221,25 +207,30 @@ namespace HzNS.Cmdr
             }
             catch (WantHelpScreenException ex)
             {
-                // f4();
+                // f5();
                 // show help screen
                 this.logDebug("showing the help screen ...");
                 Parsed = true;
                 ShowHelpScreen(this, ex.RemainArgs);
+                return 0;
             }
             catch (ShouldBeStopException)
             {
                 // not an error
                 Parsed = true;
+                return 0;
             }
             catch (CmdrException ex)
             {
-                this.logError(ex, "Error occurs");
+                this.logError(ex,
+                    $"Cmdr Error occurs. args: {args.JoinBy(',').QuoteByBracket()}, position: {position}");
+                return -1;
             }
             catch (System.Exception ex)
             {
-                this.logError(ex, $"args: {args}, position: {position}");
-                throw;
+                this.logError(ex, $"Error occurs. args: {args.JoinBy(',').QuoteByBracket()}, position: {position}");
+                // throw;
+                return -2;
             }
             finally
             {
@@ -247,7 +238,7 @@ namespace HzNS.Cmdr
 
                 try
                 {
-                    postRun?.Invoke();
+                    retCode = postRun?.Invoke() ?? -73;
                 }
                 finally
                 {
@@ -255,8 +246,23 @@ namespace HzNS.Cmdr
                     CancelFileWatcher();
                     ColorifyEnabler.Reset();
                 }
+
+                AppDomain.CurrentDomain.UnhandledException -= Cmdr_CurrentDomain_UnhandledException;
             }
+
+            return retCode;
         }
+
+
+        private void Cmdr_CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            this.logInfo("Cmdr: captured.");
+            Debug.Write("Cmdr: ");
+            Debug.WriteLine((e.ExceptionObject as System.Exception)?.Message);
+        }
+
+
+        #region Walk()
 
         public override bool Walk(ICommand? parent = null,
             Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
@@ -264,6 +270,8 @@ namespace HzNS.Cmdr
         {
             return walkFor(parent ?? _root, commandsWatcher, flagsWatcher);
         }
+
+        #endregion
 
 
         #region logger
@@ -668,7 +676,7 @@ namespace HzNS.Cmdr
 
                 if (val is JArray ja)
                 {
-                    CmdrOptionStore.SetByKeys(parts, ja);
+                    OptionsStore.SetByKeys(parts, ja);
                     continue;
                 }
 
@@ -714,7 +722,7 @@ namespace HzNS.Cmdr
                 // }
 
                 var newVal = val.ToObject<object?>();
-                CmdrOptionStore.SetByKeys(parts, newVal);
+                OptionsStore.SetByKeys(parts, newVal);
             }
 
             return false;
@@ -736,15 +744,17 @@ namespace HzNS.Cmdr
                         mergeMappingNode(map, parts, overwriteExists);
                         break;
                     case YamlScalarNode scalarNode:
-                        if (AppVerboseMode) this.logDebug($" [YAML] -> {"  ".Repeat(keyParts1.Length)}{key.Value} = {scalarNode.Value}");
+                        if (AppVerboseMode)
+                            this.logDebug(
+                                $" [YAML] -> {"  ".Repeat(keyParts1.Length)}{key.Value} = {scalarNode.Value}");
 
                         if (overwriteExists)
-                            CmdrOptionStore.SetByKeys(parts, scalarNode.Value);
+                            OptionsStore.SetByKeys(parts, scalarNode.Value);
                         else
                         {
                             var enumerable = parts as string[] ?? parts.ToArray();
-                            if (!CmdrOptionStore.HasKeys(enumerable))
-                                CmdrOptionStore.SetByKeys(enumerable, scalarNode.Value);
+                            if (!OptionsStore.HasKeys(enumerable))
+                                OptionsStore.SetByKeys(enumerable, scalarNode.Value);
                         }
 
                         break;
@@ -838,7 +848,7 @@ namespace HzNS.Cmdr
                 #endregion
 
                 if (v != null)
-                    CmdrOptionStore.SetByKeysInternal(flag.ToKeys(), v);
+                    OptionsStore.SetByKeysInternal(flag.ToKeys(), v);
 
                 return true; // return false to break the walkForFlags' loop.
             });
@@ -885,6 +895,11 @@ namespace HzNS.Cmdr
 
         #endregion
 
+        /// <summary>
+        /// RegisterExternalConfigurationsLoader
+        /// </summary>
+        /// <param name="loaders"></param>
+        /// <returns></returns>
         public Worker RegisterExternalConfigurationsLoader(params Action<IBaseWorker, IRootCommand>[] loaders)
         {
             _externalConfigurationsLoaders.AddRange(loaders);
@@ -929,6 +944,73 @@ namespace HzNS.Cmdr
         }
 
         #endregion
+
+
+        #region f4: a test function to throw an exception
+
+        // ReSharper disable once UnusedMember.Local
+        private void f4()
+        {
+            log.Information("YES IT IS");
+            throw new System.Exception("test");
+        }
+
+        // private void f5()
+        // {
+        //     log.Information("YES IT IS, DIVIDED BY ZERO");
+        //     B /= A;
+        // }
+        //
+        // private int A = 0, B = 9;
+
+        #endregion
+
+
+        #region runOnce
+
+        internal Worker runOnce()
+        {
+            // NOTE that the logger `log` is not ready yet at this time.
+            ColorifyEnabler.Enable();
+
+            DefaultMatchers.EnableCmdrLogTrace = Util.GetEnvValueBool("CMDR_TRACE");
+            if (DefaultMatchers.EnableCmdrLogTrace)
+                DefaultMatchers.EnableCmdrLogDebug = true;
+            DefaultMatchers.EnableCmdrLogDebug = Util.GetEnvValueBool("CMDR_DEBUG");
+            OptionsStore.Set("debug", Util.GetEnvValueBool("DEBUG"));
+            OptionsStore.Set("trace", Util.GetEnvValueBool("TRACE"));
+            OptionsStore.Set("verbose", Util.GetEnvValueBool("VERBOSE"));
+            OptionsStore.Set("verbose-level", Util.GetEnvValueInt("VERBOSE_LEVEL", 5));
+            OptionsStore.Set("quiet", Util.GetEnvValueBool("QUIET"));
+
+            return this;
+        }
+
+        #endregion
+
+
+        private readonly string[] configFileSuffixes =
+        {
+            ".yaml", ".yml", ".json",
+        };
+
+        private string[] _configFileLocations =
+        {
+            "./ci/etc/$APPNAME/$APPNAME.yml", // for developer
+            "/etc/$APPNAME/$APPNAME.yml", // regular location: /etc/$APPNAME/$APPNAME.yml
+            "/usr/local/etc/$APPNAME/$APPNAME.yml", // regular macOS HomeBrew location
+            "$HOME/.config/$APPNAME/$APPNAME.yml", // per user: $HOME/.config/$APPNAME/$APPNAME.yml
+            "$HOME/.$APPNAME/$APPNAME.yml", // ext location per user
+            "$THIS/$APPNAME.yml", // executable directory
+            "$APPNAME.yml", // current directory
+        };
+
+        private IRootCommand _root;
+
+        // see also RegisterExternalConfigurationsLoader()
+        private readonly List<Action<IBaseWorker, IRootCommand>> _externalConfigurationsLoaders =
+            new List<Action<IBaseWorker, IRootCommand>>();
+
 
         // #region helpers for Run() - match
         //

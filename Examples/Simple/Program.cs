@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
-using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Ext;
 
 namespace Simple
@@ -13,12 +13,16 @@ namespace Simple
     class Program
     {
         [SuppressMessage("ReSharper", "RedundantExplicitArrayCreation")]
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
+            // Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
             // Console.WriteLine("Hello World!");
+            _a = 0;
 
             // Cmdr: A CommandLine Arguments Parser
-            Cmdr.NewWorker(SimpleRootCmd.New(
+            return Cmdr.NewWorker(SimpleRootCmd.New(
                         new AppInfo
                         {
                             AppName = "tag-tool",
@@ -32,47 +36,53 @@ namespace Simple
                             root.DescriptionLong = "long description here";
                             root.Examples = "examples here";
 
-                            root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
-                                .AddCommand(new TagsAddCmd())
-                                .AddCommand(new TagsRemoveCmd())
-                                // .AddCommand(new TagsAddCmd { }) // for dup-test
-                                .AddCommand(new TagsListCmd())
-                                .AddCommand(new TagsModifyCmd())
-                                .AddCommand(new TagsModeCmd())
-                                .AddCommand(new TagsToggleCmd())
-                                .AddFlag(new Flag<string>
+                            root.AddCommand(new Command
                                 {
-                                    DefaultValue = "consul.ops.local",
-                                    Long = "addr", Short = "a", Aliases = new[] {"address", "host"},
-                                    Description = "Consul IP/Host and/or Port: HOST[:PORT] (No leading 'http(s)://')",
-                                    PlaceHolder = "HOST[:PORT]",
-                                    Group = "Consul",
+                                    Short = "dz", Long = "dz", Description = "test divide by zero",
+                                    Action = (worker, opt, remainArgs) => { Console.WriteLine($"{B / _a}"); },
                                 })
-                                .AddFlag(new Flag<string>
-                                {
-                                    DefaultValue = "",
-                                    // ReSharper disable once StringLiteralTypo
-                                    Long = "cacert", Short = "", Aliases = new string[] {"ca-cert"},
-                                    Description = "Consul Client CA cert)",
-                                    PlaceHolder = "FILE",
-                                    Group = "Consul",
-                                })
-                                .AddFlag(new Flag<string>
-                                {
-                                    DefaultValue = "",
-                                    Long = "cert", Short = "", Aliases = new string[] { },
-                                    Description = "Consul Client Cert)",
-                                    PlaceHolder = "FILE",
-                                    Group = "Consul",
-                                })
-                                .AddFlag(new Flag<bool>
-                                {
-                                    DefaultValue = false,
-                                    Long = "insecure", Short = "k", Aliases = new string[] { },
-                                    Description = "Ignore TLS host verification",
-                                    Group = "Consul",
-                                })
-                            );
+                                .AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
+                                    .AddCommand(new TagsAddCmd())
+                                    .AddCommand(new TagsRemoveCmd())
+                                    // .AddCommand(new TagsAddCmd { }) // for dup-test
+                                    .AddCommand(new TagsListCmd())
+                                    .AddCommand(new TagsModifyCmd())
+                                    .AddCommand(new TagsModeCmd())
+                                    .AddCommand(new TagsToggleCmd())
+                                    .AddFlag(new Flag<string>
+                                    {
+                                        DefaultValue = "consul.ops.local",
+                                        Long = "addr", Short = "a", Aliases = new[] {"address", "host"},
+                                        Description =
+                                            "Consul IP/Host and/or Port: HOST[:PORT] (No leading 'http(s)://')",
+                                        PlaceHolder = "HOST[:PORT]",
+                                        Group = "Consul",
+                                    })
+                                    .AddFlag(new Flag<string>
+                                    {
+                                        DefaultValue = "",
+                                        // ReSharper disable once StringLiteralTypo
+                                        Long = "cacert", Short = "", Aliases = new string[] {"ca-cert"},
+                                        Description = "Consul Client CA cert)",
+                                        PlaceHolder = "FILE",
+                                        Group = "Consul",
+                                    })
+                                    .AddFlag(new Flag<string>
+                                    {
+                                        DefaultValue = "",
+                                        Long = "cert", Short = "", Aliases = new string[] { },
+                                        Description = "Consul Client Cert)",
+                                        PlaceHolder = "FILE",
+                                        Group = "Consul",
+                                    })
+                                    .AddFlag(new Flag<bool>
+                                    {
+                                        DefaultValue = false,
+                                        Long = "insecure", Short = "k", Aliases = new string[] { },
+                                        Description = "Ignore TLS host verification",
+                                        Group = "Consul",
+                                    })
+                                );
 
                             root.OnSet = (worker, flag, oldValue, newValue) =>
                             {
@@ -101,14 +111,14 @@ namespace Simple
                 .Run(args, () =>
                 {
                     // Wait for the user to quit the program.
-                    
+
                     // Console.WriteLine($"         AssemblyVersion: {VersionUtil.AssemblyVersion}");
                     // Console.WriteLine($"             FileVersion: {VersionUtil.FileVersion}");
                     // Console.WriteLine($"    InformationalVersion: {VersionUtil.InformationalVersion}");
                     // Console.WriteLine($"AssemblyProductAttribute: {VersionUtil.AssemblyProductAttribute}");
                     // Console.WriteLine($"      FileProductVersion: {VersionUtil.FileVersionInfo.ProductVersion}");
                     // Console.WriteLine();
-                    
+
                     // Console.WriteLine("Press 'q' to quit the sample.");
                     // while (Console.Read() != 'q')
                     // {
@@ -122,5 +132,13 @@ namespace Simple
             // Log.CloseAndFlush();
             // Console.ReadKey();
         }
+
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Debug.WriteLine((e.ExceptionObject as Exception)?.Message);
+        }
+
+        private static int _a = 9;
+        private const int B = 10;
     }
 }
