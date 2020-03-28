@@ -51,7 +51,16 @@ cmdr has rich features:
     - `~~tree`: list all commands and sub-commands.
     - `--config <location>`: specify the location of the root config file.
   - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
-    
+    <!--
+  - [ ] Generate Commands:
+    - [ ] `generate shell`: `—bash`/`—zsh`(*todo*)/`--auto`
+    - [ ] `generate manual`:  man 1 ready.
+    - [ ] `generate doc`: markdown ready.
+  - `cmdr` Specials:
+    - [ ] `--no-env-overrides`, and `--strict-mode`
+    - [ ] `--no-color`: print the plain text to console without ANSI colors.
+      -->
+
 - [x] Groupable commands and options/flags.
 
   Sortable group name with `[0-9A-Za-z]+\..+` format, eg:
@@ -63,7 +72,7 @@ cmdr has rich features:
 
 - [x] Overrides by environment variables.
 
-  *priority level:* `defaultValue < config-file < env-var < command-line opts`
+  *priority level:* `defaultValue -> config-file -> env-var -> command-line opts`
 
 - [x] `Option Store` - Unify option value extraction:
 
@@ -72,8 +81,6 @@ cmdr has rich features:
   - [x] `object? Set<T>(key, value)`
   - [x] `object? SetByKeys(IEnumerable<string> keys, value)`
   - [x] `HasKeys`, `HasDottedKeys`, `FindByKeys`, `FindByDottedKeys`, ...
-  - ---
-  - [x] `Cmdr.Instance.Store.OnSetHandler`
 
   <!--
 
@@ -155,7 +162,7 @@ cmdr has rich features:
   - `-I 'file'`, `-I'file'`, and `-I='files'`
   - `-I "file"`, `-I"file"`, and `-I="files"`
 
-- [x] Supports for **PassThrough** by `--`. (*Passing remaining command line arguments after -- (optional)*)
+- [ ] Supports for **PassThrough** by `--`. (*Passing remaining command line arguments after -- (optional)*)
 
 - [x] Predefined external config file locations:
 
@@ -186,8 +193,58 @@ cmdr has rich features:
   - Flag Actions: `OnPreAction/OnAction/OnPostAction/OnSet`
   - 
 
-- 
+- Unhandled Exception
+  `cmdr` handled `AppDomain.CurrentDomain.UnhandledException` for better display. But you can override it always:
+  ```c#
+  static int Main(string[] args) {
+      AppDomain.CurrentDomain.UnhandledException+=(sender,e)=>{};
+      Cmdr.NewWorker(...).Run();
+  }
+  ```
 
+## `Option Store` - Hierarchy Configuration Data Store
+
+#### `Get()`, `GetAs<T>()`
+#### `Set<T>()`, `SetWithoutPrefix<T>()`
+#### `Delete()`
+#### `HasKeys()`, `HasKeysWithoutPrefix()`
+
+```c#
+var exists = Cmdr.Instance.Store.HasKeys("tags.mode.s1.s2");
+var exists = Cmdr.Instance.Store.HasKeys(new string[] { "tags", "mode", "s1", "s2" });
+var exists = Cmdr.Instance.Store.HasKeysWithoutPrefix(new string[] { "app", "tags", "mode", "s1", "s2" });
+Console.WriteLine(Cmdr.Instance.Store.Prefix);
+```
+
+#### `FindBy()`
+
+```c#
+var (slot, valueKey) = Cmdr.Instance.Store.FindBy("tags.mode.s1.s2");
+if (slot != null){
+  if (string.IsNullOrWhiteSpace(valueKey)) {
+    // a child slot node matched
+  } else {
+    // a value entry matched, inside a slot node
+  }
+}
+```
+
+#### `Walk()`
+
+#### `GetAsMap()`
+
+return a `SlotEntries` map so that you can yaml it:
+
+```c#
+  // NOTE: Cmdr.Instance.Store == worker.OptionsStore
+  var map = worker.OptionsStore.GetAsMap("tags.mode");
+  // worker.log.Information("tag.mode => {OptionsMap}", map);
+  {
+      var serializer = new SerializerBuilder().Build();
+      var yaml = serializer.Serialize(map);
+      Console.WriteLine(yaml);
+  }
+```
 
 
 ## LICENSE
