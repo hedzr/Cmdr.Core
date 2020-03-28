@@ -819,6 +819,7 @@ namespace HzNS.Cmdr
                 #region loading values from env vars
 
                 applyValueFromEnv(flag, ref v);
+                
                 // // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
                 // // if (v == null)
                 // {
@@ -857,7 +858,7 @@ namespace HzNS.Cmdr
                 #endregion
 
                 if (v != null)
-                    OptionsStore.SetByKeysInternal(flag.ToKeys(), v);
+                    OptionsStore.SetByKeys(flag.ToKeys(), v);
 
                 return true; // return false to break the walkForFlags' loop.
             });

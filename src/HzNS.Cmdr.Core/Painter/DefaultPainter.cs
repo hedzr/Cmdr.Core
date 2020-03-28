@@ -346,7 +346,7 @@ namespace HzNS.Cmdr.Painter
                 flagsWatcher: (owner, flg, level) =>
                 {
                     var s = Cmdr.Instance.Store;
-                    var (slot, vk) = s.FindByKeys(flg.ToKeys());
+                    var (slot, vk) = s.FindBy(flg.ToKeys());
                     // ReSharper disable once InvertIf
                     if (slot != null && (!hitOnly || flg.HitCount > 0))
                     {

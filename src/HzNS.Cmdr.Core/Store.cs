@@ -22,7 +22,8 @@ namespace HzNS.Cmdr
 
         public string[] Prefixes { get; set; } = {"app"};
 
-        private readonly SortedSlots _fastMap = new SortedSlots();
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public static Action<Slot, string, object?, object?>? OnSetHandler { get; set; }
 
 
         #region Dump()
@@ -73,13 +74,13 @@ namespace HzNS.Cmdr
 
         public object? Get(string key, object? defaultValues = null)
         {
-            var (slot, vk) = FindByDottedKey(key);
+            var (slot, vk) = FindBy(key);
             return slot?.Values[vk] ?? defaultValues;
         }
 
         public T GetAs<T>(string key, params T[] defaultValues)
         {
-            var (slot, vk) = FindByDottedKey(key);
+            var (slot, vk) = FindBy(key);
             var v = slot?.Values[vk];
 #pragma warning disable CS8653
             if (v == null) return defaultValues.Length > 0 ? defaultValues[^1] : default(T);
@@ -101,10 +102,35 @@ namespace HzNS.Cmdr
                 $"type info mismatch, cannot get value from option store. expect: {typeof(T)}, the underlying data type is: {v.GetType()}.");
         }
 
-        public SlotEntries GetAsMap(string key)
+        #endregion
+
+        #region GetAsMap()
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        public SlotEntries GetAsMap(IEnumerable<string> keys)
+        {
+            var (slot, _) = FindBy(keys);
+            return slot != null ? getAsMap(slot) : new SlotEntries();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dottedKey"></param>
+        /// <returns></returns>
+        public SlotEntries GetAsMap(string dottedKey)
+        {
+            var (slot, _) = FindBy(dottedKey);
+            return slot != null ? getAsMap(slot) : new SlotEntries();
+        }
+
+        public SlotEntries getAsMap(Slot? slot)
         {
             var dict = new SlotEntries();
-            var (slot, _) = FindByDottedKey(key);
             var stack = new List<SlotEntries>();
             // var mn = dict;
             var top = new SlotEntries();
@@ -142,13 +168,45 @@ namespace HzNS.Cmdr
 
         #endregion
 
-        #region walkForSlot implementation
+
+        #region Walk()
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="keys"></param>
+        public void Walk(IEnumerable<string> keys)
+        {
+            var (slot, _) = FindBy(keys);
+            if (slot != null) Walk(slot);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dottedKey"></param>
+        public void Walk(string dottedKey)
+        {
+            var (slot, _) = FindBy(dottedKey);
+            if (slot != null) Walk(slot);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="parent"></param>
+        public void Walk(Slot? parent)
+        {
+            walkForSlot(parent ?? Root, 0);
+        }
 
         public enum StatusOrIndex
         {
             ENTERING = -1,
             LEAVING = -2,
         }
+
+        #region walkForSlot implementation
 
         private static void walkForSlot(Slot parent, int level,
             Func<Slot /*owner*/, string /*childKey*/, Slot /*childSlot*/,
@@ -178,10 +236,7 @@ namespace HzNS.Cmdr
 
         #endregion
 
-        public void WalkForSlot(Slot? parent)
-        {
-            walkForSlot(parent ?? Root, 0);
-        }
+        #endregion
 
 
         #region Set<T>(), SetByKeys<T>()
@@ -189,11 +244,11 @@ namespace HzNS.Cmdr
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="dottedKey"></param>
         /// <param name="val"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns>the old value</returns>
-        public object? Set<T>(string key, params T[] val)
+        public object? Set<T>(string dottedKey, params T[] val)
         {
             // if (val == null)
             // {
@@ -201,7 +256,20 @@ namespace HzNS.Cmdr
             //     return;
             // }
 
-            var parts = WrapKeys(key);
+            var parts = WrapKeys(dottedKey);
+            return setValue(parts, Root, val);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="keys"></param>
+        /// <param name="val"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public object? Set<T>(IEnumerable<string> keys, params T[] val)
+        {
+            var parts = WrapKeys(keys);
             return setValue(parts, Root, val);
         }
 
@@ -218,18 +286,18 @@ namespace HzNS.Cmdr
             return setValue(parts, Root, val);
         }
 
-        /// <summary>
-        /// no 
-        /// </summary>
-        /// <param name="keys"></param>
-        /// <param name="val"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        internal object? SetByKeysInternal<T>(IEnumerable<string> keys, T val)
-        {
-            var parts = WrapKeys(keys);
-            return setValue(parts, Root, val);
-        }
+        // /// <summary>
+        // /// no 
+        // /// </summary>
+        // /// <param name="keys"></param>
+        // /// <param name="val"></param>
+        // /// <typeparam name="T"></typeparam>
+        // /// <returns></returns>
+        // internal object? SetByKeysInternal<T>(IEnumerable<string> keys, T val)
+        // {
+        //     var parts = WrapKeys(keys);
+        //     return setValue(parts, Root, val);
+        // }
 
 
         private static object? setValue<T>(IEnumerable<string> parts, Slot? node, params T[] val)
@@ -395,11 +463,6 @@ namespace HzNS.Cmdr
                 }
             }
         }
-
-
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public static Action<Slot, string, object?, object?>? OnSetHandler { get; set; }
-
 
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         private static bool setValueInternal<T>(object? dv, string key,
@@ -610,14 +673,53 @@ namespace HzNS.Cmdr
         #endregion
 
 
-        public void Delete(string key, bool recursive = true)
+        #region Delete
+
+        public void Delete(string dottedKey, bool recursive = true)
         {
-            //
+            delete(WrapKeys(dottedKey), out _, recursive);
         }
+
+        public void Delete(IEnumerable<string> keys, out object? value, bool? recursive = true)
+        {
+            delete(WrapKeys(keys), out value, recursive);
+        }
+
+        public void Delete(string dottedKey, out object? value, bool? recursive = true)
+        {
+            delete(WrapKeys(dottedKey), out value, recursive);
+        }
+
+        public void delete(IEnumerable<string> wrappedKeys, out object? value, bool? recursive = true)
+        {
+            value = null;
+            var (found, slot, valueKey) = hasKeys(wrappedKeys, Root, true);
+            if (!found) return;
+            if (slot!.Values.ContainsKey(valueKey))
+            {
+                slot.Values.Remove(valueKey, out value);
+            }
+            else if (slot!.Children.ContainsKey(valueKey))
+            {
+                slot.Children.Remove(valueKey, out var it);
+                value = it;
+            }
+        }
+
+        #endregion
+
+
+        #region HasKeys(), HasDottedKeys()
 
         public bool HasKeys(IEnumerable<string> keys)
         {
             var (ok, _, _) = hasKeys(WrapKeys(keys), Root);
+            return ok;
+        }
+
+        public bool HasKeys(string dottedKey)
+        {
+            var (ok, _, _) = hasKeys(WrapKeys(dottedKey), Root);
             return ok;
         }
 
@@ -627,18 +729,19 @@ namespace HzNS.Cmdr
             return ok;
         }
 
-        public (Slot?, string valueKey) FindByKeys(IEnumerable<string> keys)
+        public (Slot?, string valueKey) FindBy(IEnumerable<string> keys)
         {
             var (_, s, valueKey) = hasKeys(WrapKeys(keys), Root);
             return (s, valueKey);
         }
 
-        public (Slot?, string valueKey) FindByDottedKey(string dottedKey)
+        public (Slot?, string valueKey) FindBy(string dottedKey)
         {
             var (_, s, valueKey) = hasKeys(WrapKeys(dottedKey), Root);
             return (s, valueKey);
         }
 
+        #region impl
 
         private static string lastDot(string s)
         {
@@ -649,18 +752,22 @@ namespace HzNS.Cmdr
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="parts"></param>
+        /// <param name="parts">wrapped keys</param>
         /// <param name="node"></param>
+        /// <param name="returnNodeParent"></param>
         /// <returns>
         /// var (found, slotNode, valueKey):
         /// when matched slot found:
         ///  1. valueKey is empty: just a slot. For example: "tags.mode" => true, slotNode, string.Empty | means that: "mode" sub-command of "tag" command
         ///  2. valueKey is valid string: a value entry in the returned slot. For example: "tags.mode.addr" => true, slotNode, "addr" | means that: "--addr" in "tags mode" sub-command
         /// </returns>
-        private (bool, Slot?, string valueKey) hasKeys(IEnumerable<string> parts, Slot? node)
+        [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
+        private (bool, Slot?, string valueKey) hasKeys(IEnumerable<string> parts, Slot? node,
+            bool returnNodeParent = false)
         {
             var enumerable = parts as string[] ?? parts.ToArray();
             var path = string.Join('.', enumerable);
+            var parent = node;
 
             if (_fastMap.ContainsKey(path)) return (true, _fastMap[path], lastDot(path));
 
@@ -676,6 +783,8 @@ namespace HzNS.Cmdr
                         yes = node.Children.ContainsKey(key);
                         if (!yes)
                             return (false, null, key);
+                        if (returnNodeParent)
+                            return (true, parent, key);
                         return (true, node, string.Empty);
                     }
 
@@ -715,6 +824,10 @@ namespace HzNS.Cmdr
             return (false, null, string.Empty);
         }
 
+        #endregion
+
+        #endregion
+
 
         #region Singleton Pattern
 
@@ -748,11 +861,7 @@ namespace HzNS.Cmdr
         }
 
         #endregion
-    }
 
-    // public class Entry<T>
-    // {
-    //     public string Key { get; set; }
-    //     public T Value { get; set; }
-    // }
+        private readonly SortedSlots _fastMap = new SortedSlots();
+    }
 }
