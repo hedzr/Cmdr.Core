@@ -236,9 +236,9 @@ namespace Tests.HzNS.Cmdr
                     ToggleGroup = "Mode",
                     Description = "such a bit."
                 })
-                .AddFlag(new Flag<bool>
+                .AddFlag(new Flag<int>
                 {
-                    DefaultValue = false, Long = "retry2", Short = "t2", Aliases = new[] {"retry-times"},
+                    DefaultValue = 0, Long = "retry2", Short = "t2", Aliases = new[] {"retry-times"},
                     ToggleGroup = "Mode",
                     Description = "dify with the `key`."
                 })
@@ -274,9 +274,9 @@ namespace Tests.HzNS.Cmdr
                     Description =
                         "In 'Tag Mode', a tag be treated as `key=value` or `key:value`, and modify with the `key`."
                 })
-                .AddFlag(new Flag<bool>
+                .AddFlag(new Flag<int>
                 {
-                    DefaultValue = false, Long = "retry", Short = "t", Aliases = new[] {"retry-times"},
+                    DefaultValue = 0, Long = "retry", Short = "t", Aliases = new[] {"retry-times"},
                     ToggleGroup = "Mode",
                     Description = "dify with the `key`."
                 })

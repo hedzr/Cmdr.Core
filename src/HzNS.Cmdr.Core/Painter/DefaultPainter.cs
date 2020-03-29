@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Internal.Base;
@@ -250,18 +251,25 @@ namespace HzNS.Cmdr.Painter
 
         #region PrintDumpForDebug
 
+        [SuppressMessage("ReSharper", "InvertIf")]
         public void PrintDumpForDebug(ICommand cmd, IBaseWorker w, int tabStop, bool hitOnly = true,
             bool enabled = false)
         {
             if (!enabled) return;
 
-            oln("Dump the Store:");
-            var store = Cmdr.Instance.Store;
-            store.Dump(o);
+            if (Util.GetEnvValueBool("CMDR_DUMP_NO_STORE") == false)
+            {
+                oln("Dump the Store:");
+                var store = Cmdr.Instance.Store;
+                store.Dump(o);
+            }
 
-            oln("\n\nDump the Flags (Hit only):");
-            dumpValues(w.RootCommand, w, tabStop, hitOnly);
-            oln(string.Empty);
+            if (Util.GetEnvValueBool("CMDR_DUMP_NO_HIT") == false)
+            {
+                oln("\n\nDump the Flags (Hit only):");
+                dumpValues(w.RootCommand, w, tabStop, hitOnly);
+                oln(string.Empty);
+            }
         }
 
         #endregion

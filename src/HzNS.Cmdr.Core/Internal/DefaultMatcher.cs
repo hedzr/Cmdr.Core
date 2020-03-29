@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using Autofac.Core;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Internal.Base;
@@ -68,6 +69,7 @@ namespace HzNS.Cmdr.Internal
                 bool ok;
                 var arg = args[i];
                 if (string.IsNullOrWhiteSpace(arg)) continue;
+                @this.logDebug(string.Empty);
                 @this.logDebug("    -> arg {Index}: {Argument}", i, arg);
                 var hiddenOpt = arg.StartsWith("~~");
                 var isOpt = arg[0] == '-' || arg[0] == '/' || hiddenOpt;
@@ -143,7 +145,6 @@ namespace HzNS.Cmdr.Internal
 
                 var ccc = command;
                 var fragment = longOpt ? arg.Substring(2) : arg.Substring(1);
-                var ate = 0;
                 var siz = fragment.Length;
 
                 int incLen, incPos, pos, len;
@@ -208,16 +209,20 @@ namespace HzNS.Cmdr.Internal
                 // ok = false;
                 foreach (var flg in ccc.Flags)
                 {
-                    ok = flg.Match(ref part, part, pos, longOpt, true, EnableCmdrGreedyLongFlag);
+                    ok = flg.Match(ref part, part, pos, longOpt, true,
+                        EnableCmdrGreedyLongFlag, EnableCmdrGreedyIncrementalMode);
                     if (!ok) continue;
 
                     // a flag matched ok, try extracting its value from commandline arguments
-                    (ate, value, oldValue) =
-                        tryExtractingValue(@this, flg, args, i, fragment, part, pos, !longOpt && incLen < 0);
-                    preAte += ate;
+                    int atePos = 0, ateArgs = 0;
+                    (atePos, ateArgs, value, oldValue) = tryExtractingValue(@this, flg, args, i, fragment, part, pos,
+                        !longOpt && EnableCmdrGreedyLongFlag);
+                    preAte += ateArgs;
+                    pos += atePos;
 
-                    @this.logDebug("    ++ flag matched: {SW:l}{Part:l} = {oldval} -> {value}",
-                        Util.SwitchChar(longOpt), part, oldValue, value);
+                    @this.logDebug("    ++ flag matched: {SW:l}{Part:l} = {oldVal} -> {value}. ate: [{pos},{args}]",
+                        Util.SwitchChar(longOpt), part, oldValue, value,
+                        atePos, ateArgs);
 
                     matchedFlag = flg;
                     if (len > decidedLen)
@@ -263,15 +268,11 @@ namespace HzNS.Cmdr.Internal
                         siz -= part.Length;
                         if (EnableCmdrGreedyLongFlag)
                         {
+                            len = siz;
                             if (EnableCmdrGreedyIncrementalMode)
-                            {
-                                //
-                            }
+                                pos += part.Length;
                             else
-                            {
                                 pos = 0;
-                                len = siz;
-                            }
                         }
                         else
                         {
@@ -284,7 +285,7 @@ namespace HzNS.Cmdr.Internal
                         fragment.Substring(pos, len),
                         EnableCmdrGreedyLongFlag, pos, len, siz);
                     ccc = command;
-                    if (len > 0 && pos < siz - bsw)
+                    if (len > 0 && pos <= siz - bsw)
                         goto forEachFragmentParts;
                 }
 
@@ -313,18 +314,18 @@ namespace HzNS.Cmdr.Internal
 
         // ReSharper disable once SuggestBaseTypeForParameter
         [SuppressMessage("ReSharper", "IdentifierTypo")]
-        internal static (int ate, object? value, object? old) tryExtractingValue<T>(
+        internal static (int atePos, int ateArgs, object? value, object? old) tryExtractingValue<T>(
             this T @this, IFlag flg,
             string[] args, int i, string fragment,
-            string part, int pos, bool forward)
+            string part, int pos, bool lookAhead)
             where T : IDefaultMatchers
         {
-            var ate = 0;
+            int atePos, ateArgs;
             object? val, old = null;
 
             var remains = fragment.Substring(pos + part.Length);
             bool? flipChar = null;
-            if ((!forward && remains.Length > 0) || (forward && remains.Length == 1))
+            if ((!lookAhead && remains.Length > 0) || (lookAhead && remains.Length == 1))
             {
                 flipChar = remains[0] switch
                 {
@@ -340,10 +341,10 @@ namespace HzNS.Cmdr.Internal
             {
                 val = flipChar ?? true;
                 old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
-                return (ate, val, old);
+                return (0, 0, val, old);
             }
 
-            (ate, val) = valFrom(args, i, remains, forward);
+            (atePos, ateArgs, val) = valFrom(args, i, remains, lookAhead && !EnableCmdrGreedyIncrementalMode);
 
             // ReSharper disable once InvertIf
             if (val is string v)
@@ -451,24 +452,25 @@ namespace HzNS.Cmdr.Internal
                 }
             }
 
-            return (ate, val, old);
+            return (atePos, ateArgs, val, old);
         }
 
-        private static (int ate, object? val) valFrom(IReadOnlyList<string> args, int i, string remains, bool forward)
+        private static (int atePos, int ateArgs, object? val) valFrom(IReadOnlyList<string> args, int i,
+            string remains, bool lookAhead)
         {
-            var ate = 1;
+            int ate = 1, pos = 0;
             object? val;
-            if (remains.Length > 0 && !forward)
+            if (remains.Length > 0 && !lookAhead)
             {
                 // const string sep = "=";
-                remains = remains.EatStart("=", ":").Trim('\'', '"');
-                val = remains;
+                pos = remains.Length;
                 ate = 0;
+                val = remains.EatStart("=", ":").Trim('\'', '"');
             }
             else
                 val = args[i + ate];
 
-            return (ate, val);
+            return (pos, ate, val);
         }
 
         private static void setValueRecursive(this object obj, string propertyName, object value,
@@ -703,7 +705,7 @@ namespace HzNS.Cmdr.Internal
                 catch (KeyNotFoundException ex)
                 {
                     throw new CmdrException(
-                        $"Unexpect case: suggesting for '{fragment}' (position {position} and '{args[position]}')", ex);
+                        $"Unexpected case: suggesting for '{fragment}' (position {position} and '{args[position]}')", ex);
                 }
 
                 if (!cmd.IsRoot)
@@ -735,7 +737,7 @@ namespace HzNS.Cmdr.Internal
             {
                 var rate = JaroWinkler.RateSimilarity(token, key);
                 if (rate > 0.73)
-                    errPrint($"  - maybe \"{key}\" ?\n    (Option \"{opt}\" for \"{opt.Owner?.backtraceTitles}\")");
+                    errPrint($"  - maybe \"{key}\" ?\n    (Option \"{opt}\")");
             }
         }
 
@@ -751,7 +753,7 @@ namespace HzNS.Cmdr.Internal
                 var rate = JaroWinkler.RateSimilarity(token, key);
                 // ReSharper disable once InvertIf
                 if (rate > 0.73)
-                    errPrint($"  - Maybe \"{sw}{key}\" ?\n    (Option \"{opt}\" for \"{opt.Owner?.backtraceTitles}\")");
+                    errPrint($"  - Maybe \"{sw}{key}\" ?\n    (Option \"{opt}\")");
             }
         }
 
@@ -774,7 +776,7 @@ namespace HzNS.Cmdr.Internal
             if (!string.IsNullOrWhiteSpace(str))
             {
                 Console.Error.WriteLineAsync($"\nFor the input '{Environment.CommandLine}':\n");
-                Console.Error.WriteLineAsync(_errorWriter.ToString());
+                Console.Error.WriteLineAsync(str);
             }
 
             _errorWriter.Dispose();
@@ -901,6 +903,42 @@ namespace HzNS.Cmdr.Internal
             {
                 @this.log.ForContext("SKIP_", 1)
                     .Debug(messageTemplate, property0, property1, property2, property3, property4);
+            }
+        }
+
+        public static void logDebug<T, T0, T1, T2, T3, T4, T5>(this T @this, string messageTemplate,
+            T0 property0, T1 property1, T2 property2, T3 property3, T4 property4, T5 property5)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.ForContext("SKIP_", 1)
+                    .Debug(messageTemplate, property0, property1, property2, property3, property4, property5);
+            }
+        }
+
+        public static void logDebug<T, T0, T1, T2, T3, T4, T5, T6>(this T @this, string messageTemplate,
+            T0 property0, T1 property1, T2 property2, T3 property3, T4 property4, T5 property5, T6 property6)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.ForContext("SKIP_", 1)
+                    .Debug(messageTemplate, property0, property1, property2, property3, property4, property5,
+                        property6);
+            }
+        }
+
+        public static void logDebug<T, T0, T1, T2, T3, T4, T5, T6, T7>(this T @this, string messageTemplate,
+            T0 property0, T1 property1, T2 property2, T3 property3, T4 property4, T5 property5, T6 property6,
+            T7 property7)
+            where T : IDefaultMatchers
+        {
+            if (EnableCmdrLogTrace)
+            {
+                @this.log.ForContext("SKIP_", 1)
+                    .Debug(messageTemplate, property0, property1, property2, property3, property4, property5, property6,
+                        property7);
             }
         }
 

@@ -24,6 +24,8 @@ namespace Tests.HzNS.Cmdr
             foreach (var ti in new[]
             {
                 new testItem
+                    {args = "tags mode s1 s2 -Dk -t271 -t371 -t=45 --rety 3 -h jit", ok = true, expected = (w, args) => true},
+                new testItem
                     {args = "tags mode s1 s2 -Dk -2mpgtcid test-ok -h jit", ok = true, expected = (w, args) => true},
 
                 // new testItem

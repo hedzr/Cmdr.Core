@@ -100,27 +100,42 @@ namespace HzNS.Cmdr.Base
         }
 
         // ReSharper disable once InconsistentNaming
-        private static bool equals(ref string s, string input, int pos, bool enableCmdrGreedyLongFlag,
-            // ReSharper disable once UnusedParameter.Local
-            bool reverse, params string[] a)
+        private static bool equals(ref string matchingInputFragment, string input, int pos,
+            bool enableCmdrGreedyLongFlag, bool incrementalGreedy, params string[] a)
         {
             foreach (var it in a)
             {
                 if (string.IsNullOrWhiteSpace(it)) continue;
-                if (s == it) return true;
-                
+                if (matchingInputFragment == it) return true;
+
+
                 // ReSharper disable once InvertIf
-                if (pos + it.Length <= input.Length &&
-                    ((enableCmdrGreedyLongFlag && s.Length > it.Length) ||
-                     (!enableCmdrGreedyLongFlag && s.Length < it.Length)))
+                if (pos + it.Length <= input.Length)
                 {
-                    var st = enableCmdrGreedyLongFlag
-                        ? input.Substring(input.Length - it.Length, it.Length)
-                        : input.Substring(pos, it.Length);
+                    var st = string.Empty;
+                    if (enableCmdrGreedyLongFlag)
+                    {
+                        if (incrementalGreedy)
+                        {
+                            if (matchingInputFragment.Length > it.Length)
+                                st = input.Substring(pos, it.Length);
+                        }
+                        else
+                        {
+                            if (matchingInputFragment.Length > it.Length)
+                                st = input.Substring(input.Length - it.Length, it.Length);
+                        }
+                    }
+                    else
+                    {
+                        if (matchingInputFragment.Length < it.Length)
+                            st = input.Substring(pos, it.Length);
+                    }
+
                     // ReSharper disable once InvertIf
                     if (st == it)
                     {
-                        s = st;
+                        matchingInputFragment = st;
                         return true;
                     }
                 }
@@ -130,23 +145,23 @@ namespace HzNS.Cmdr.Base
         }
 
         public bool Match(ref string s, string input, int pos, bool isLong = false, bool aliasAsLong = true,
-            bool enableCmdrGreedyLongFlag = false, bool reverse = false)
+            bool enableCmdrGreedyLongFlag = false, bool incremental = true)
         {
             if (isLong)
             {
                 // ReSharper disable once InvertIf
                 if (aliasAsLong)
                 {
-                    if (equals(ref s, input, pos, enableCmdrGreedyLongFlag, reverse,Aliases))
+                    if (equals(ref s, input, pos, enableCmdrGreedyLongFlag, incremental, Aliases))
                         return true;
                 }
 
-                if (equals(ref s, input, pos, enableCmdrGreedyLongFlag, reverse,Long))
+                if (equals(ref s, input, pos, enableCmdrGreedyLongFlag, incremental, Long))
                     return true;
             }
             else
             {
-                if (equals(ref s, input, pos, enableCmdrGreedyLongFlag, reverse, Short))
+                if (equals(ref s, input, pos, enableCmdrGreedyLongFlag, incremental, Short))
                     return true;
             }
 
