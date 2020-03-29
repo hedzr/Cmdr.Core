@@ -186,6 +186,31 @@ return a `SlotEntries` map so that you can yaml it:
   }
 ```
 
+### CMDR EnvVars
+
+#### `CMDR_DUMP`
+
+enable Store entries dumping at the end of help screen.
+
+#### `CMDR_DEBUG`
+
+= `Worker.EnableCmdrLogDebug`
+
+allows the display output in `defaultOnSet`.
+
+#### `CMDR_TRACE`
+
+= `Worker.EnableCmdrLogTrace`
+
+allows the worker `logDebug()`.
+
+#### `CMDR_VERBOSE`
+
+allows more logging output.
+
+
+
+
 
 ## LICENSE
 

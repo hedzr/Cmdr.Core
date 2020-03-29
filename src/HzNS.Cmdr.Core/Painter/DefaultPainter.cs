@@ -59,12 +59,12 @@ namespace HzNS.Cmdr.Painter
             if (singleLine) return;
 
             if (!string.IsNullOrWhiteSpace(_root?.AppInfo.Copyright))
-                olnPad(_root?.AppInfo.Copyright, ColorDesc, 4);
+                olnIndent(_root?.AppInfo.Copyright, ColorDesc, 4);
 
             if (!string.IsNullOrWhiteSpace(_root?.Description))
             {
                 oln("\nDescription:");
-                olnPad(_root?.Description, ColorDesc, 4);
+                olnIndent(_root?.Description, ColorDesc, 4);
             }
 
             // ReSharper disable once InvertIf
@@ -73,14 +73,14 @@ namespace HzNS.Cmdr.Painter
                 if (!string.IsNullOrWhiteSpace(_root?.DescriptionLong))
                 {
                     oln("");
-                    olnPad(_root?.DescriptionLong, ColorDesc, 4);
+                    olnIndent(_root?.DescriptionLong, ColorDesc, 4);
                 }
 
                 // ReSharper disable once InvertIf
                 if (!string.IsNullOrWhiteSpace(_root?.Examples))
                 {
                     oln("\nExamples:");
-                    olnPad(_root?.Examples, ColorDesc, 4);
+                    olnIndent(_root?.Examples, ColorDesc, 4);
                 }
             }
         }
@@ -357,7 +357,10 @@ namespace HzNS.Cmdr.Painter
                             .Append(flg.ToDottedKey());
                         txt.Append(" ".Repeat(tabStop - txt.Length - 1));
                         o(txt.ToString(), ColorDesc);
-                        oln($"=> [{flg.HitCount}] {v?.ToStringEx(true)}");
+                        o($"=> ");
+                        o($"[{flg.HitCount}] ", ColorDesc);
+                        oln($"{v?.ToStringEx(true)}");
+                        
                     }
 
                     return true;
@@ -369,11 +372,24 @@ namespace HzNS.Cmdr.Painter
 
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
-        private void olnPad(string? text, string color = Colors.txtDefault, int leftPad = 8)
+        private void olnTabbedPrint(string textL, string textR, int tabStop = 8, string colorL = Colors.txtDefault,
+            string colorR = Colors.txtDefault)
         {
-            if (text == null) return;
+            ColorifyEnabler.Colorify.WriteLine(textL, colorL);
+            var ts = tabStop - textL.Length;
+            if (ts <= 0) ts = textL.Length;
+            var spaces = " ".Repeat(ts);
+            ColorifyEnabler.Colorify.Write(spaces);
+            ColorifyEnabler.Colorify.WriteLine(textR, colorR);
+        }
+
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once MemberCanBeMadeStatic.Local
+        private void olnIndent(string? textLines, string color = Colors.txtDefault, int leftPad = 8)
+        {
+            if (textLines == null) return;
             var spaces = " ".Repeat(leftPad);
-            foreach (var line in text.Split('\n'))
+            foreach (var line in textLines.Split('\n'))
             {
                 ColorifyEnabler.Colorify.Write(spaces);
                 ColorifyEnabler.Colorify.WriteLine(line, color);

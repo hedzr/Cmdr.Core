@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Text;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Internal.Base;
@@ -31,6 +30,17 @@ namespace HzNS.Cmdr.Internal
         /// </summary>
         public static bool EnableCmdrGreedyLongFlag { get; set; } = true;
 
+        /// <summary>
+        /// incremental mode for greedy matching algorithm.
+        ///
+        /// In non-incremental mode, '-t271' can't be recognized as '-t=271'. It
+        /// will be treated as a short option named as 't371', and an cannot match
+        /// exception should be thrown.
+        /// In incremental mode, '-t271' can be recognized as '-t=271', or '-t2=71'
+        /// if the short option 't2' is existed.
+        /// </summary>
+        public static bool EnableCmdrGreedyIncrementalMode { get; set; } = true;
+
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public static bool EnableCmdrLogInfo { get; set; } = true;
@@ -51,7 +61,7 @@ namespace HzNS.Cmdr.Internal
             @this.logDebug("  - match for command: {CommandTitle}", command.backtraceTitles);
 
             var matchedPosition = -1;
-            
+
             // ReSharper disable once ForCanBeConvertedToForeach
             for (var i = position; i < args.Length; i++)
             {
@@ -118,7 +128,7 @@ namespace HzNS.Cmdr.Internal
                     else
                     {
                         // treat as remains args normally
-                        
+
                         // @this.logDebug("level {Level} (no sub-cmds): returning {Position}", level, matchedPosition);
                         // onCommandCannotMatched(@this, args, i, arg, command);
                         return matchedPosition;
@@ -141,8 +151,8 @@ namespace HzNS.Cmdr.Internal
                 {
                     pos = 0;
                     len = siz;
-                    incLen = 1; // unuse
-                    incPos = 1; // unuse
+                    incLen = 1; // unused
+                    incPos = 1; // unused
                 }
                 else
                 {
@@ -150,8 +160,16 @@ namespace HzNS.Cmdr.Internal
                     if (EnableCmdrGreedyLongFlag)
                     {
                         len = siz;
-                        incLen = -1;
-                        incPos = 1;
+                        if (EnableCmdrGreedyIncrementalMode)
+                        {
+                            incLen = -1;
+                            incPos = 0;
+                        }
+                        else
+                        {
+                            incLen = -1;
+                            incPos = 1;
+                        }
                     }
                     else
                     {
@@ -245,8 +263,15 @@ namespace HzNS.Cmdr.Internal
                         siz -= part.Length;
                         if (EnableCmdrGreedyLongFlag)
                         {
-                            pos = 0;
-                            len = siz;
+                            if (EnableCmdrGreedyIncrementalMode)
+                            {
+                                //
+                            }
+                            else
+                            {
+                                pos = 0;
+                                len = siz;
+                            }
                         }
                         else
                         {
@@ -650,9 +675,9 @@ namespace HzNS.Cmdr.Internal
             where T : IDefaultMatchers
         {
             var xref = @this.xrefs[cmd];
-            @this.suggestFor(tag, xref.SubCommandsLongNames);
-            @this.suggestFor(tag, xref.SubCommandsAliasNames);
-            @this.suggestFor(tag, xref.SubCommandsShortNames);
+            @this.suggestFor(tag, xref.SubCommandsLongNames, OptionType.Long);
+            @this.suggestFor(tag, xref.SubCommandsAliasNames, OptionType.Aliases);
+            @this.suggestFor(tag, xref.SubCommandsShortNames, OptionType.Short);
         }
 
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]
@@ -667,12 +692,12 @@ namespace HzNS.Cmdr.Internal
                     var xref = @this.xrefs[cmd];
                     if (longOpt)
                     {
-                        @this.suggestFor(fragment, longOpt, xref.FlagsLongNames);
-                        @this.suggestFor(fragment, longOpt, xref.FlagsAliasNames);
+                        @this.suggestFor(fragment, xref.FlagsLongNames, OptionType.Long);
+                        @this.suggestFor(fragment, xref.FlagsAliasNames, OptionType.Aliases);
                     }
                     else
                     {
-                        @this.suggestFor(fragment, longOpt, xref.FlagsShortNames);
+                        @this.suggestFor(fragment, xref.FlagsShortNames, OptionType.Short);
                     }
                 }
                 catch (KeyNotFoundException ex)
@@ -699,34 +724,34 @@ namespace HzNS.Cmdr.Internal
         public static Func<object, Dictionary<string, IFlag>, string, bool>? OnSuggestingForFlag { get; set; }
 
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]
-        private static void suggestFor<T>(this T @this, string token, Dictionary<string, ICommand> dataset)
+        private static void suggestFor<T>(this T @this, string token, Dictionary<string, ICommand> dataset,
+            OptionType ot)
             where T : IDefaultMatchers
         {
             if (OnSuggestingForCommand?.Invoke(@this, dataset, token) == true) return;
 
+            // var sw = Util.SwitchChar(ot != OptionType.Short);
             foreach (var (key, opt) in dataset)
             {
                 var rate = JaroWinkler.RateSimilarity(token, key);
                 if (rate > 0.73)
-                    errPrint($"  - maybe \"{opt.Long}\""); // under \"{opt.Owner?.backtraceTitles}\"");
+                    errPrint($"  - maybe \"{key}\" ?\n    (Option \"{opt}\" for \"{opt.Owner?.backtraceTitles}\")");
             }
         }
 
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]
-        private static void suggestFor<T>(this T @this, string token, bool longOpt, Dictionary<string, IFlag> dataset)
+        private static void suggestFor<T>(this T @this, string token, Dictionary<string, IFlag> dataset, OptionType ot)
             where T : IDefaultMatchers
         {
             if (OnSuggestingForFlag?.Invoke(@this, dataset, token) == true) return;
 
+            var sw = Util.SwitchChar(ot != OptionType.Short);
             foreach (var (key, opt) in dataset)
             {
                 var rate = JaroWinkler.RateSimilarity(token, key);
                 // ReSharper disable once InvertIf
                 if (rate > 0.73)
-                {
-                    var sw = Util.SwitchChar(longOpt);
-                    errPrint($"  - Maybe \"{sw}{opt.Long}\"?"); // (under \"{opt.Owner?.backtraceTitles}\")");
-                }
+                    errPrint($"  - Maybe \"{sw}{key}\" ?\n    (Option \"{opt}\" for \"{opt.Owner?.backtraceTitles}\")");
             }
         }
 
@@ -741,11 +766,18 @@ namespace HzNS.Cmdr.Internal
             _errorWriter.WriteLineAsync(message);
         }
 
-        static StringWriter _errorWriter = new StringWriter();
+        private static readonly StringWriter _errorWriter = new StringWriter();
 
         public static void FlushErrors<T>(this T @this) where T : IDefaultMatchers
         {
-            Console.Error.WriteLineAsync(_errorWriter.ToString());
+            var str = _errorWriter.ToString();
+            if (!string.IsNullOrWhiteSpace(str))
+            {
+                Console.Error.WriteLineAsync($"\nFor the input '{Environment.CommandLine}':\n");
+                Console.Error.WriteLineAsync(_errorWriter.ToString());
+            }
+
+            _errorWriter.Dispose();
         }
 
         #endregion
@@ -962,120 +994,5 @@ namespace HzNS.Cmdr.Internal
         };
 
         #endregion
-    }
-
-    class JaroWinkler
-    {
-        private const double DefaultMismatchScore = 0.0;
-        private const double DefaultMatchScore = 1.0;
-
-        /// <summary>
-        /// Gets the similarity between two strings by using the Jaro-Winkler algorithm.
-        /// A value of 1 means perfect match. A value of zero represents an absolute no match
-        /// </summary>
-        /// <param name="firstWord"></param>
-        /// <param name="secondWord"></param>
-        /// <returns>a value between 0-1 of the similarity</returns>
-        /// 
-        public static double RateSimilarity(string? firstWord, string? secondWord)
-        {
-            if (firstWord == null || secondWord == null) return DefaultMismatchScore;
-
-            // Converting to lower case is not part of the original Jaro-Winkler implementation
-            // But we don't really care about case sensitivity in DIAMOND and wouldn't decrease security names similarity rate just because
-            // of Case sensitivity
-            firstWord = firstWord.ToLower();
-            secondWord = secondWord.ToLower();
-
-            if (firstWord == secondWord)
-                //return (SqlDouble)defaultMatchScore;
-                return DefaultMatchScore;
-
-
-            {
-                // Get half the length of the string rounded up - (this is the distance used for acceptable transpositions)
-                var halfLength = Math.Min(firstWord.Length, secondWord.Length) / 2 + 1;
-
-                // Get common characters
-                var common1 = GetCommonCharacters(firstWord, secondWord, halfLength);
-                var commonMatches = common1?.Length ?? 0;
-
-                // Check for zero in common
-                if (commonMatches == 0)
-                    //return (SqlDouble)defaultMismatchScore;
-                    return DefaultMismatchScore;
-
-                var common2 = GetCommonCharacters(secondWord, firstWord, halfLength);
-
-                // Check for same length common strings returning 0 if is not the same
-                if (commonMatches != common2?.Length)
-                    //return (SqlDouble)defaultMismatchScore;
-                    return DefaultMismatchScore;
-
-                // Get the number of transpositions
-                int transpositions = 0;
-                for (int i = 0; i < commonMatches; i++)
-                {
-                    if (common1 != null && common1[i] != common2[i])
-                        transpositions++;
-                }
-
-                // ReSharper disable once NotAccessedVariable
-                int j = 0;
-                j += 1;
-
-                // Calculate Jaro metric
-                transpositions /= 2;
-                double jaroMetric = commonMatches / (3.0 * firstWord.Length) +
-                                    commonMatches / (3.0 * secondWord.Length) +
-                                    (commonMatches - transpositions) / (3.0 * commonMatches);
-                //return (SqlDouble)jaroMetric;
-                return jaroMetric;
-            }
-
-            //return (SqlDouble)defaultMismatchScore;
-        }
-
-        /// <summary>
-        /// Returns a string buffer of characters from string1 within string2 if they are of a given
-        /// distance seperation from the position in string1.
-        /// </summary>
-        /// <param name="firstWord">string one</param>
-        /// <param name="secondWord">string two</param>
-        /// <param name="separationDistance">separation distance</param>
-        /// <returns>A string buffer of characters from string1 within string2 if they are of a given
-        /// distance seperation from the position in string1</returns>
-        private static StringBuilder? GetCommonCharacters(string firstWord, string secondWord, int separationDistance)
-        {
-            if ((firstWord != null) && (secondWord != null))
-            {
-                var returnCommons = new StringBuilder(20);
-                var copy = new StringBuilder(secondWord);
-                var firstWordLength = firstWord.Length;
-                var secondWordLength = secondWord.Length;
-
-                for (int i = 0; i < firstWordLength; i++)
-                {
-                    char character = firstWord[i];
-                    bool found = false;
-
-                    for (int j = Math.Max(0, i - separationDistance);
-                        !found && j < Math.Min(i + separationDistance, secondWordLength);
-                        j++)
-                    {
-                        if (copy[j] == character)
-                        {
-                            found = true;
-                            returnCommons.Append(character);
-                            copy[j] = '#';
-                        }
-                    }
-                }
-
-                return returnCommons;
-            }
-
-            return null;
-        }
     }
 }
