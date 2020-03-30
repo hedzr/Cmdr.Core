@@ -194,6 +194,10 @@ return a `SlotEntries` map so that you can yaml it:
 
 enable Store entries dumping at the end of help screen.
 
+##### `CMDR_DUMP_NO_STORE`, `CMDR_DUMP_NO_HIT`
+
+To prevent the store dump, or hit options dump.
+
 #### `CMDR_DEBUG`
 
 = `Worker.EnableCmdrLogDebug`
