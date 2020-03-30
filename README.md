@@ -2,7 +2,7 @@
 
 ![Nuget](https://img.shields.io/nuget/v/HzNS.Cmdr.Core)
 
-Useful POSIX command line arguments parser for .Net. Hierarchy configurations Store for app.
+Useful POSIX command line arguments parser for dotNet. Hierarchy configurations Store for app.
 
 **WIP**
 
@@ -24,18 +24,18 @@ $ dotnet add package HzNS.Cmdr.Core --version 1.0.29
 
 ## Features
 
-cmdr has rich features:
+`Cmdr.Core` has rich features:
 
 - [x] **POSIX Compatible** (Unix [*getopt*(3)](http://man7.org/linux/man-pages/man3/getopt.3.html))
 - [x] **[IEEE Standard](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html)** Compartiblities
 - [x] builds multi-level command and sub-commands
 - [x] builds short, long and alias options with kinds of data types
 - [x] defines commands and options via fluent api style
-- [x] full featured `Options Store` for hosted any application configurations
-  - watchable external config file and child directory `conf.d`
-  - watchable option value merging event: while option value modified in external config file and loaded automatically.
+- [x] full featured `Options Store` for hosting any application configurations
+  - watchable external config file and child directory `conf.d`.
+  - watchable option value merging event: while option value modified in external config file, it'll be loaded and merged automatically.
   - watchable option value modifying event: while option value modified (from config file, or programmatically)
-  - connectable with external configuration center
+  - connectable with external configuration-center
 
 ### More
 
@@ -81,7 +81,7 @@ cmdr has rich features:
 
   *priority level:* `defaultValue -> config-file -> env-var -> command-line opts`
 
-- [x] `Option Store` - Unify option value extraction:
+- [x] `Option Store` - Unify option value extraction.
 
 - [x] Walkable
 
@@ -117,7 +117,7 @@ cmdr has rich features:
     },
     ```
     
-  - [x] Watch `conf.d` directory
+  - [x] Watch `conf.d` directory, the name is customizable.
   
   - `RegisterExternalConfigurationsLoader(loader, ...)`
     
@@ -219,6 +219,17 @@ allows more logging output.
 
 ## Getting Start
 
+Basically, the Main program looks lile:
+
+```c#
+static int Main(string[] args) => 
+  Cmdr.NewWorker(RootCommand.New(
+    new AppInfo(),  // your app information, desc, ...
+    buildRootCmd(), // to attach the sub-commands and options to the RootCommand
+    workerOpts,     // to customize the Cmdr Worker
+  )).Run(args, postRun);
+```
+
 Your first app with `Cmdr.Core` could be:
 
 ```c#
@@ -230,7 +241,7 @@ namespace Simple
 
                 #region RootCmd Definitions
 
-                SimpleRootCmd.New(
+                RootCommand.New(
                     new AppInfo
                     {
                         AppName = "tag-tool",
