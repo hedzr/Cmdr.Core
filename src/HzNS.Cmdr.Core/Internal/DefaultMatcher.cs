@@ -226,7 +226,9 @@ namespace HzNS.Cmdr.Internal
                     matchedFlag = flg;
                     if (len > decidedLen)
                     {
+                        // ReSharper disable once RedundantAssignment
                         decidedFlg = flg;
+                        // ReSharper disable once RedundantAssignment
                         decidedLen = part.Length;
                     }
 
