@@ -1,10 +1,8 @@
 # Cmdr.Core
 
-Normal command line argument parser for .Net Core 3.1+. Hierarchy configurations Store for app.
+Useful POSIX command line arguments parser for .Net. Hierarchy configurations Store for app.
 
 **WIP**
-
-~~The first release coming soon.~~
 
 The Pre-release is coming soon.
 
@@ -15,7 +13,11 @@ The Pre-release is coming soon.
 
 ## NuGet
 
-TODO
+```bash
+PM> Install-Package HzNS.Cmdr.Core -Version 1.0.29
+# Or CLI
+$ dotnet add package HzNS.Cmdr.Core --version 1.0.29
+```
 
 
 ## Features
