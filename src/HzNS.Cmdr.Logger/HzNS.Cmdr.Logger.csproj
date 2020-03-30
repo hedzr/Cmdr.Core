@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RootNamespace>HzNS.Cmdr.Logger</RootNamespace>
+        <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
+    </PropertyGroup>
+
+</Project>
