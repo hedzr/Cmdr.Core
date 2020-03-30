@@ -14,6 +14,16 @@ namespace HzNS.Cmdr.Tool.Ext
 {
     public static class StringEx
     {
+        public static string EllipseStart(string s, int max = 30)
+        {
+            if (s.Length > max)
+            {
+                return "..." + s.Substring(s.Length - max);
+            }
+
+            return s;
+        }
+        
         [Pure]
         // [PublicAPI]
         // ReSharper disable once BuiltInTypeReferenceStyle
@@ -25,9 +35,14 @@ namespace HzNS.Cmdr.Tool.Ext
 
         public static bool ToBool(object s, bool defaultValue = false)
         {
-            if (s is string s1)
-                return ToBool(s1, defaultValue);
-            return ToBool(s?.ToString() ?? string.Empty, defaultValue);
+            return s switch
+            {
+                string s1 => ToBool(s1, defaultValue),
+                null => defaultValue,
+#pragma warning disable CS8604
+                _ => ToBool(s.ToString(), defaultValue)
+#pragma warning restore CS8604
+            };
         }
 
         public static bool ToBool(string s, bool defaultValue = false)
@@ -129,6 +144,12 @@ namespace HzNS.Cmdr.Tool.Ext
             return StringEx.ToBool(@this, defaultValue);
         }
 
+
+        public static string EllipseStart(this string @this, int max = 30)
+        {
+            return StringEx.EllipseStart(@this, max);
+        }
+        
         public static string EatStart(this string @this, string part)
         {
             return @this.StartsWith(part) ? @this.Substring(part.Length) : @this;

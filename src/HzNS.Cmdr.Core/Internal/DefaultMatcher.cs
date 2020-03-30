@@ -775,7 +775,13 @@ namespace HzNS.Cmdr.Internal
             var str = _errorWriter.ToString();
             if (!string.IsNullOrWhiteSpace(str))
             {
-                Console.Error.WriteLineAsync($"\nFor the input '{Environment.CommandLine}':\n");
+                var line = Environment.CommandLine;
+                var exe = System.Reflection.Assembly.GetEntryAssembly()?.Location;
+                var exeDir = Path.GetDirectoryName(exe) ?? Path.Join(Environment.CurrentDirectory, "1");
+                if (line.StartsWith(exeDir))
+                    line = "<appdir>" + line.Substring(exeDir.Length);
+
+                Console.Error.WriteLineAsync($"\nFor the input '{line}':\n");
                 Console.Error.WriteLineAsync(str);
             }
 
