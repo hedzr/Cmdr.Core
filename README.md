@@ -232,6 +232,10 @@ static int Main(string[] args) =>
 
 Your first app with `Cmdr.Core` could be:
 
+<details>
+	<summary> Expand to source codes </summary>
+
+
 ```c#
 namespace Simple
 {
@@ -376,6 +380,44 @@ namespace Simple
     }
 }
 ```
+
+</details>
+
+### Logger
+
+The external logger has been removed from `Cmdr.Core`.
+
+But you can always enable one or customize yours. In the `HzNS.Cmdr.Logger.Serilog` package/project, we've give an implements and it's simple to use:
+
+```c#
+    Cmdr.NewWorker(RootCmd.New(
+                new AppInfo {AppName = "mdxTool", AppVersion = "1.0.0"}, (root) =>
+            {
+                root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
+                );
+            }), // <- RootCmd
+            // Options ->
+            (w) =>
+            {
+                w.SetLogger(SerilogBuilder.Build((logger) =>
+                {
+                    logger.EnableCmdrLogInfo = false;
+                    logger.EnableCmdrLogTrace = false;
+                }));
+
+                // w.EnableDuplicatedCharThrows = true;
+            })
+        .Run(args);
+```
+
+## ACKNOWNLEDGES
+
+### [Colorify](https://github.com/deinsoftware/colorify)
+
+I have to copy some codes from Colorify for the dotnetcore devenv.
+
+There's some reason. But I will be pleasure to re-integrate the original or put an issue.
+
 
 
 
