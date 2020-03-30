@@ -3,6 +3,22 @@
     <PropertyGroup>
         <RootNamespace>HzNS.Cmdr.Logger.Serilog</RootNamespace>
         <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+        <Title>Cmdr.Core.Logger.Serilog</Title>
+        <PackageTags>cmdr, logger, logger-wrapper, </PackageTags>
+        <PackageId>HzNS.Cmdr.Logger.Serilog</PackageId>
+        <Authors>Hedzr Yeh</Authors>
+        <Company>obsez team</Company>
+        <Description>Logger wrapper on Serilog, for Cmdr.Core.</Description>
+        <!--        <PackageVersion>1.0.2</PackageVersion>-->
+        <Copyright>Copyright © by Hedzr, 2020.</Copyright>
+        <PackageProjectUrl>https://github.com/hedzr/Cmdr.Core</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/hedzr/Cmdr.Core</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
+        <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
+        <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
     </PropertyGroup>
 
     <ItemGroup>

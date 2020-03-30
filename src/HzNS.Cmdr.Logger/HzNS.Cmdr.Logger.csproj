@@ -3,6 +3,25 @@
     <PropertyGroup>
         <RootNamespace>HzNS.Cmdr.Logger</RootNamespace>
         <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+        <AssemblyVersion>1.0.1</AssemblyVersion>
+        <FileVersion>1.0.1</FileVersion>
+
+        <Title>Cmdr.Core.Logger</Title>
+        <PackageTags>cmdr, logger, logger-abstract-layer, </PackageTags>
+        <PackageId>HzNS.Cmdr.Logger</PackageId>
+        <Authors>Hedzr Yeh</Authors>
+        <Company>obsez team</Company>
+        <Description>Logger abstract layer for Cmdr.Core.</Description>
+        <!--        <PackageVersion>1.0.2</PackageVersion>-->
+        <Copyright>Copyright © by Hedzr, 2020.</Copyright>
+        <PackageProjectUrl>https://github.com/hedzr/Cmdr.Core</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/hedzr/Cmdr.Core</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
+        <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
+        <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
     </PropertyGroup>
 
 </Project>
