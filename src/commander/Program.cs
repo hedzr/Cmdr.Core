@@ -2,6 +2,7 @@
 using commander.Cmd;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
+using HzNS.Cmdr.Logger.Serilog;
 using Serilog;
 
 namespace commander
@@ -18,6 +19,9 @@ namespace commander
     {
         static void Main(string[] args)
         {
+            var log = Log.Logger;
+            log.Information("YES IT IS");
+
             // throw new Exception("sys");
 
             // Cmdr: A CommandLine Arguments Parser
@@ -37,6 +41,11 @@ namespace commander
                         //
                         // w.UseSerilog((configuration) => configuration.WriteTo.Console().CreateLogger())
                         //
+                        w.SetLogger(SerilogBuilder.Build((logger) =>
+                        {
+                            logger.EnableCmdrLogInfo = false;
+                            logger.EnableCmdrLogTrace = false;
+                        }));
 
                         // w.EnableDuplicatedCharThrows = true;
                     })
@@ -59,12 +68,12 @@ namespace commander
         private class Example
         {
             // ReSharper disable once ArrangeTypeMemberModifiers
-            readonly ILogger _log = Log.ForContext<Example>();
+            // readonly ILogger _log = Log.ForContext<Example>();
 
             // ReSharper disable once UnusedMember.Local
             public void Show()
             {
-                _log.Information("Hello!");
+                // _log.Information("Hello!");
             }
         }
     }
