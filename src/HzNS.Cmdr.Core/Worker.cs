@@ -9,19 +9,14 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac;
-using AutofacSerilogIntegration;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Internal;
 using HzNS.Cmdr.Internal.Base;
+using HzNS.Cmdr.Logger;
 using HzNS.Cmdr.Tool;
-using HzNS.Cmdr.Tool.Enrichers;
 using HzNS.Cmdr.Tool.Ext;
 using Newtonsoft.Json.Linq;
-using Serilog;
-using Serilog.Core;
-using Serilog.Events;
 using YamlDotNet.RepresentationModel;
 
 namespace HzNS.Cmdr
@@ -45,9 +40,7 @@ namespace HzNS.Cmdr
         public Worker(IRootCommand root)
         {
             _root = root;
-            log = Log.Logger;
         }
-
 
         // ReSharper disable once ConvertToAutoPropertyWithPrivateSetter
         // ReSharper disable once UnusedMember.Global
@@ -280,7 +273,7 @@ namespace HzNS.Cmdr
             {
                 // f5();
                 // show help screen
-                this.logDebug("showing the help screen ...");
+                log?.logDebug("showing the help screen ...");
                 Parsed = true;
                 ShowHelpScreen(this, ex.RemainArgs);
                 return 0;
@@ -293,9 +286,9 @@ namespace HzNS.Cmdr
             }
             catch (CmdrException ex)
             {
-                // this.logError(ex,
+                // this.log?.logError(ex,
                 //     $"Cmdr Error occurs. args: {args.JoinBy(',').QuoteByBracket()}, position: {position}");
-                this.logError(ex, "Cmdr Error occurs. args: {args}, position: {position}", args, position);
+                log?.logError(ex, "Cmdr Error occurs. args: {args}, position: {position}", args, position);
                 if (ex.InnerException is KeyNotFoundException || ex is CmdrFatalException)
                     throw;
                 return -1;
@@ -303,8 +296,8 @@ namespace HzNS.Cmdr
             // NEW: free any application exceptions to the unhandled capturers:
             // catch (System.Exception ex)
             // {
-            //     // this.logError(ex, $"Error occurs. args: {args.ToStringEx()}, position: {position}");
-            //     this.logError(ex, "Error occurs. args: {args}, position: {position}", args, position);
+            //     // this.log.logError(ex, $"Error occurs. args: {args.ToStringEx()}, position: {position}");
+            //     this.log.logError(ex, "Error occurs. args: {args}, position: {position}", args, position);
             //     // throw;
             //     return -2;
             // }
@@ -336,7 +329,7 @@ namespace HzNS.Cmdr
             return (sender, e) =>
             {
                 Debug.Write("Cmdr: ");
-                w.logInfo("Cmdr: unhandled exception captured. cmd: {Command}, flag: {Flag}, pos: {Position}",
+                w.log?.logInfo("Cmdr: unhandled exception captured. cmd: {Command}, flag: {Flag}, pos: {Position}",
                     w.ParsedCommand, w.ParsedFlag, w.ParsedCount);
                 Debug.WriteLine((e.ExceptionObject as System.Exception)?.Message);
             };
@@ -368,60 +361,15 @@ namespace HzNS.Cmdr
         //
         // public ILogger Log { get; set; }
 
-        public ILogger log { get; private set; }
+        public ILogger? log { get; private set; }
+
+        public void SetLogger(ILogger logger)
+        {
+            log = logger;
+        }
 
         // public ILogger log;
         // public LogWrapper log;
-
-        public Worker UseSerilog(Func<LoggerConfiguration, Logger>? func = null)
-        {
-            if (func == null)
-                log = new LoggerConfiguration()
-                    .MinimumLevel.Debug()
-                    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                    .Enrich.FromLogContext()
-                    .Enrich.WithCaller()
-                    .WriteTo.Console(
-                        outputTemplate:
-                        "[{Timestamp:HH:mm:ss} {Level:u3}] {Message} (at {Caller} in {SourceFileName}:line {SourceFileLineNumber}){NewLine}{Exception}")
-                    .WriteTo.File(Path.Combine("logs", @"access.log"), rollingInterval: RollingInterval.Day)
-                    //.WriteTo.Console()
-                    .CreateLogger();
-            else
-                log = func.Invoke(new LoggerConfiguration());
-
-            var builder = new ContainerBuilder();
-            builder.RegisterLogger(autowireProperties: true);
-
-            // if (propertyFunc == null) throw new ArgumentNullException(nameof(propertyFunc));
-            // var propertyName = ((propertyFunc.Body as UnaryExpression)?.Operand as MemberExpression)?.Member.Name;
-            // var props = this.GetType().GetProperties();
-            // try
-            // {
-            //     foreach (var p in props)
-            //     {
-            //         if (p.SetMethod == null) continue;
-            //         
-            //         object value;
-            //         if (p.Name.Equals(propertyName))
-            //         {
-            //             value = Convert.ChangeType(propertyValue, p.PropertyType);
-            //         }
-            //         else
-            //         {
-            //             Type t = p.PropertyType;
-            //             value = t.IsValueType ? Activator.CreateInstance(t) : (t.Name.ToLower().Equals("string") ? string.Empty : null);
-            //         }
-            //         p.SetValue(this, value);
-            //     }
-            // }
-            // catch (Exception)
-            // {
-            //     throw;
-            // }
-
-            return this;
-        }
 
         #endregion
 
@@ -506,7 +454,7 @@ namespace HzNS.Cmdr
 
             foreach (DictionaryEntry? e in Environment.GetEnvironmentVariables())
             {
-                this.logDebug($"  - ENV[{e?.Key}] = {e?.Value}");
+                log?.logDebug($"  - ENV[{e?.Key}] = {e?.Value}");
             }
         }
 
@@ -543,7 +491,7 @@ namespace HzNS.Cmdr
             if (!File.Exists(filepath)) return false;
 
             using var input = new StreamReader(filepath);
-            this.logDebug($"loading external config file: {filepath}");
+            log?.logDebug($"loading external config file: {filepath}");
 
             switch (Path.GetExtension(filepath))
             {
@@ -598,8 +546,8 @@ namespace HzNS.Cmdr
             var loc = Environment.ExpandEnvironmentVariables(s1).EatEnd(".yml");
             if (loc[0] == '.') loc = Path.Join(Environment.GetEnvironmentVariable("CURR_DIR"), loc);
 
-            // this.logDebug($"loading: {location} | CURR_DIR = {Environment.GetEnvironmentVariable("CURR_DIR")}");
-            // this.logDebug($"         loc = {loc}");
+            // this.log.logDebug($"loading: {location} | CURR_DIR = {Environment.GetEnvironmentVariable("CURR_DIR")}");
+            // this.log.logDebug($"         loc = {loc}");
 
             var ok = configFileSuffixes.Select(suffix => string.Concat(loc, suffix)).Any(filepath =>
                 loadExternalConfigurationsFile(filepath, w, root, false) &&
@@ -652,7 +600,7 @@ namespace HzNS.Cmdr
             catch (OperationCanceledException e)
             {
                 // handle the exception 
-                this.logError(e, "cancel file watcher failed");
+                log?.logError(e, "cancel file watcher failed");
             }
         }
 
@@ -724,7 +672,7 @@ namespace HzNS.Cmdr
 
             // Begin watching.
             watcher.EnableRaisingEvents = true;
-            this.logDebug($"FileWatcher running at {dir}");
+            log?.logDebug($"FileWatcher running at {dir}");
 
             // Wait for the user to quit the program.
             // Console.WriteLine("Press 'q' to quit the sample.");
@@ -733,24 +681,24 @@ namespace HzNS.Cmdr
 
         private void OnChanged(object sender, FileSystemEventArgs e)
         {
-            this.logDebug($"config file renamed: {e}");
+            log?.logDebug($"config file renamed: {e}");
             if (loadExternalConfigurationsFile(e.FullPath, this, _root, false))
             {
-                this.logDebug($"config file loaded and merged: {e.FullPath}");
+                log?.logDebug($"config file loaded and merged: {e.FullPath}");
             }
         }
 
         private void OnDeleted(object sender, FileSystemEventArgs e)
         {
-            this.logDebug($"config file deleted: {e}");
+            log?.logDebug($"config file deleted: {e}");
         }
 
         private void OnRenamed(object sender, RenamedEventArgs e)
         {
-            this.logDebug($"config file renamed: {e}");
+            log?.logDebug($"config file renamed: {e}");
             if (loadExternalConfigurationsFile(e.FullPath, this, _root, false))
             {
-                this.logDebug($"config file loaded and merged: {e.FullPath}");
+                log?.logDebug($"config file loaded and merged: {e.FullPath}");
             }
         }
 
@@ -837,12 +785,12 @@ namespace HzNS.Cmdr
                 switch (val)
                 {
                     case YamlMappingNode map:
-                        if (AppVerboseMode) this.logDebug($" [YAML] -> {"  ".Repeat(keyParts1.Length)}{key.Value}:");
+                        if (AppVerboseMode) log?.logDebug($" [YAML] -> {"  ".Repeat(keyParts1.Length)}{key.Value}:");
                         mergeMappingNode(map, parts, overwriteExists);
                         break;
                     case YamlScalarNode scalarNode:
                         if (AppVerboseMode)
-                            this.logDebug(
+                            log?.logDebug(
                                 $" [YAML] -> {"  ".Repeat(keyParts1.Length)}{key.Value} = {scalarNode.Value}");
 
                         if (overwriteExists)
@@ -874,7 +822,7 @@ namespace HzNS.Cmdr
                 if (!x.ContainsKey(cmd))
                     x.TryAdd(cmd, new Xref());
 
-                if (cmd.Owner != owner) cmd.Owner = owner;
+                if (!ReferenceEquals(owner, cmd.Owner)) cmd.Owner = owner;
                 if (string.IsNullOrWhiteSpace(cmd.Group))
                     cmd.Group = FirstUnsortedGroup;
 
@@ -889,7 +837,7 @@ namespace HzNS.Cmdr
                 if (!x.ContainsKey(owner))
                     x.TryAdd(owner, new Xref());
 
-                if (flag.Owner != owner) flag.Owner = owner;
+                if (!ReferenceEquals(owner, flag.Owner)) flag.Owner = owner;
                 if (string.IsNullOrWhiteSpace(flag.Group) && !string.IsNullOrWhiteSpace(flag.ToggleGroup))
                     flag.Group = flag.ToggleGroup;
                 if (string.IsNullOrWhiteSpace(flag.Group))
@@ -950,7 +898,7 @@ namespace HzNS.Cmdr
 
                 return true; // return false to break the walkForFlags' loop.
             });
-            this.logDebug("_xrefs was built.");
+            log?.logDebug("_xrefs was built.");
         }
 
         // ReSharper disable once SuggestBaseTypeForParameter
@@ -1049,7 +997,7 @@ namespace HzNS.Cmdr
         // ReSharper disable once UnusedMember.Local
         private void f4()
         {
-            log.Information("YES IT IS");
+            log?.logInfo("YES IT IS");
             throw new System.Exception("test");
         }
 

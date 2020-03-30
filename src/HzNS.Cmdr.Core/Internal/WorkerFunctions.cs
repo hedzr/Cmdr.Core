@@ -147,7 +147,7 @@ namespace HzNS.Cmdr.Internal
 
         public void ShowTreeDumpScreenForAllCommands(IBaseWorker w, params string[] remainArgs)
         {
-            w.log.Debug("dump tree");
+            w.log?.logDebug("dump tree");
 
             // var writer = ColorifyEnabler.Colorify; // Console.Out;
             var commandLines = new SortedDictionary<string, List<TwoString>>();
@@ -391,7 +391,7 @@ namespace HzNS.Cmdr.Internal
                 {
                     noBacktrace = true;
                     var oo = owner.Owner;
-                    while (oo != null && oo.Owner != oo)
+                    while (oo != null && !ReferenceEquals(oo, oo.Owner))
                     {
                         w.Walk(oo,
                             (o, c, l) => true,

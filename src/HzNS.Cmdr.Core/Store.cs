@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HzNS.Cmdr.Exception;
-using HzNS.Cmdr.Internal;
 using HzNS.Cmdr.Painter;
 using HzNS.Cmdr.Tool.Ext;
 using HzNS.Cmdr.Tool.ObjectCloner;
@@ -556,7 +555,7 @@ namespace HzNS.Cmdr
             }
 
             Console.WriteLine("1_1");
-            Cmdr.Instance.Logger?.logDebug(
+            Cmdr.Instance.Logger?.log?.logDebug(
                 $"[W][setter on {dv?.GetType()}, dv={dv}, new val={val}]: key = {parts?.ToStringEx()}");
             return false;
         }

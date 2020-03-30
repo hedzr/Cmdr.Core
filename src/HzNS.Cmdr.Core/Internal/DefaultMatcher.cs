@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using Autofac.Core;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
 using HzNS.Cmdr.Internal.Base;
@@ -59,7 +58,7 @@ namespace HzNS.Cmdr.Internal
         public static int match<T>(this T @this, ICommand command, string[] args, int position, int level)
             where T : IDefaultMatchers
         {
-            @this.logDebug("  - match for command: {CommandTitle}", command.backtraceTitles);
+            @this.log?.logDebug("  - match for command: {CommandTitle}", command.backtraceTitles);
 
             var matchedPosition = -1;
 
@@ -69,8 +68,8 @@ namespace HzNS.Cmdr.Internal
                 bool ok;
                 var arg = args[i];
                 if (string.IsNullOrWhiteSpace(arg)) continue;
-                @this.logDebug(string.Empty);
-                @this.logDebug("    -> arg {Index}: {Argument}", i, arg);
+                @this.log?.logDebug(string.Empty);
+                @this.log?.logDebug("    -> arg {Index}: {Argument}", i, arg);
                 var hiddenOpt = arg.StartsWith("~~");
                 var isOpt = arg[0] == '-' || arg[0] == '/' || hiddenOpt;
                 var longOpt = arg.StartsWith("--") || hiddenOpt;
@@ -90,7 +89,7 @@ namespace HzNS.Cmdr.Internal
                             if (!ok) ok = cmd.Match(arg, true);
                             if (!ok) continue;
 
-                            @this.logDebug("    ++ command matched: {CommandTitle}", cmd.backtraceTitles);
+                            @this.log?.logDebug("    ++ command matched: {CommandTitle}", cmd.backtraceTitles);
 
                             @this.ParsedCommand = cmd;
                             @this.ParsedFlag = null;
@@ -118,7 +117,7 @@ namespace HzNS.Cmdr.Internal
 
                         if (matchedPosition < 0)
                         {
-                            @this.logDebug("level {Level} (cmd can't matched): returning {Position}", level,
+                            @this.log?.logDebug("level {Level} (cmd can't matched): returning {Position}", level,
                                 -position - 1);
                             onCommandCannotMatched(@this, args, i, arg, command);
                             return -position - 1;
@@ -131,7 +130,7 @@ namespace HzNS.Cmdr.Internal
                     {
                         // treat as remains args normally
 
-                        // @this.logDebug("level {Level} (no sub-cmds): returning {Position}", level, matchedPosition);
+                        // @this.log?.logDebug("level {Level} (no sub-cmds): returning {Position}", level, matchedPosition);
                         // onCommandCannotMatched(@this, args, i, arg, command);
                         return matchedPosition;
                     }
@@ -194,7 +193,7 @@ namespace HzNS.Cmdr.Internal
                     break;
                 }
 
-                @this.logDebug("    - try finding flag part {part} for `ccc`: {CommandTitle}",
+                @this.log?.logDebug("    - try finding flag part {part} for `ccc`: {CommandTitle}",
                     part, ccc.backtraceTitles);
 
                 backtraceAllParentFlags:
@@ -214,13 +213,13 @@ namespace HzNS.Cmdr.Internal
                     if (!ok) continue;
 
                     // a flag matched ok, try extracting its value from commandline arguments
-                    int atePos = 0, ateArgs = 0;
+                    int atePos, ateArgs;
                     (atePos, ateArgs, value, oldValue) = tryExtractingValue(@this, flg, args, i, fragment, part, pos,
                         !longOpt && EnableCmdrGreedyLongFlag);
                     preAte += ateArgs;
                     pos += atePos;
 
-                    @this.logDebug("    ++ flag matched: {SW:l}{Part:l} = {oldVal} -> {value}. ate: [{pos},{args}]",
+                    @this.log?.logDebug("    ++ flag matched: {SW:l}{Part:l} = {oldVal} -> {value}. ate: [{pos},{args}]",
                         Util.SwitchChar(longOpt), part, oldValue, value,
                         atePos, ateArgs);
 
@@ -236,16 +235,16 @@ namespace HzNS.Cmdr.Internal
 
                 if (matchedFlag == null)
                 {
-                    if (ccc.Owner != null && ccc.Owner != ccc)
+                    if (ccc.Owner != null && !ReferenceEquals(ccc,ccc.Owner))
                     {
                         ccc = ccc.Owner;
-                        @this.logDebug("    - try finding flag part {part} for `ccc`'s parent: {CommandTitle}",
+                        @this.log?.logDebug("    - try finding flag part {part} for `ccc`'s parent: {CommandTitle}",
                             part, ccc.backtraceTitles);
                         goto backtraceAllParentFlags;
                     }
 
-                    @this.logDebug("can't match a flag: {Argument}/part={Part}/fragment={Fragment}.", arg, part,
-                        fragment);
+                    @this.log?.logDebug("can't match a flag: {Argument}/part={Part}/fragment={Fragment}.", 
+                        arg, part, fragment);
                     onFlagCannotMatched(@this, args, i, part, longOpt, command);
                     // decidedLen = 1;
                 }
@@ -281,7 +280,7 @@ namespace HzNS.Cmdr.Internal
                         }
                     }
 
-                    @this.logDebug("    - for next part: {Part}, greedy={greedy}, pos={pos}, len={len}, siz={siz}",
+                    @this.log?.logDebug("    - for next part: {Part}, greedy={greedy}, pos={pos}, len={len}, siz={siz}",
                         fragment.Substring(pos, len),
                         EnableCmdrGreedyLongFlag, pos, len, siz);
                     ccc = command;
@@ -302,7 +301,7 @@ namespace HzNS.Cmdr.Internal
             // ReSharper disable once InvertIf
             if (matchedPosition < 0)
             {
-                @this.logDebug("level {Level}: returning {Position}", level, -position - 1);
+                @this.log?.logDebug("level {Level}: returning {Position}", level, -position - 1);
                 return -position - 1;
             }
 
@@ -443,7 +442,7 @@ namespace HzNS.Cmdr.Internal
                     default:
                         if (dv != null)
                         {
-                            @this.logDebug("unacceptable default value ({dv}) datatype: {type}", dv, dv.GetType());
+                            @this.log?.logDebug("unacceptable default value ({dv}) datatype: {type}", dv, dv.GetType());
                             val = Convert.ChangeType(v, dv.GetType()); // typeof(int)
                             old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
                         }
@@ -528,12 +527,12 @@ namespace HzNS.Cmdr.Internal
             var root = cmd.FindRoot();
             if (root?.PreAction != null && !root.PreAction.Invoke(@this, cmd, remainArgs))
                 throw new ShouldBeStopException();
-            if (root != cmd && cmd.PreAction != null && !cmd.PreAction.Invoke(@this, cmd, remainArgs))
+            if (!ReferenceEquals(root, cmd) && cmd.PreAction != null && !cmd.PreAction.Invoke(@this, cmd, remainArgs))
                 throw new ShouldBeStopException();
 
             try
             {
-                @this.logDebug("---> matched command: {cmd}, remains: {Args}", cmd, string.Join(",", remainArgs));
+                @this.log?.logDebug("---> matched command: {cmd}, remains: {Args}", cmd, string.Join(",", remainArgs));
 
                 if (cmd is IAction action)
                     action.Invoke(@this, remainArgs);
@@ -545,7 +544,7 @@ namespace HzNS.Cmdr.Internal
             }
             finally
             {
-                if (root != cmd) cmd.PostAction?.Invoke(@this, cmd, remainArgs);
+                if (!ReferenceEquals(root, cmd)) cmd.PostAction?.Invoke(@this, cmd, remainArgs);
                 root?.PostAction?.Invoke(@this, cmd, remainArgs);
             }
 
@@ -586,7 +585,7 @@ namespace HzNS.Cmdr.Internal
             {
                 // ReSharper disable once UnusedVariable
                 var sw = Util.SwitchChar(longOpt);
-                @this.logDebug("  ---> flag matched: {SW:l}{Fragment:l}", sw, fragment);
+                @this.log?.logDebug("  ---> flag matched: {SW:l}{Fragment:l}", sw, fragment);
                 // if (flag is BaseFlag<bool> f)
                 {
                     flag.setValueRecursive("HitCount", flag.HitCount + 1);
@@ -786,243 +785,6 @@ namespace HzNS.Cmdr.Internal
             }
 
             _errorWriter.Dispose();
-        }
-
-        #endregion
-
-        #region debug helpers: logInfo
-
-        public static void logInfo<T>(this T @this, string messageTemplate)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogInfo)
-            {
-                @this.log.ForContext("SKIP_", 1)
-                    // logEvent.AddPropertyIfAbsent(new LogEventProperty("SourceFileName",
-                    // new ScalarValue(stack.GetFileName())));
-                    .Information(messageTemplate);
-            }
-        }
-
-        public static void logInfo<T, T0>(this T @this, string messageTemplate,
-            T0 property0)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogInfo)
-            {
-                @this.log.ForContext("SKIP_", 1).Information(messageTemplate, property0);
-            }
-        }
-
-        public static void logInfo<T, T0, T1>(this T @this, string messageTemplate,
-            T0 property0, T1 property1)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogInfo)
-            {
-                @this.log.ForContext("SKIP_", 1).Information(messageTemplate, property0, property1);
-            }
-        }
-
-        public static void logInfo<T, T0, T1, T2>(this T @this, string messageTemplate,
-            T0 property0, T1 property1, T2 property2)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogInfo)
-            {
-                @this.log.ForContext("SKIP_", 1).Information(messageTemplate, property0, property1, property2);
-            }
-        }
-
-        public static void logInfo<T, T0, T1, T2, T3>(this T @this, string messageTemplate,
-            T0 property0, T1 property1, T2 property2, T3 property3)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogInfo)
-            {
-                @this.log.ForContext("SKIP_", 1)
-                    .Information(messageTemplate, property0, property1, property2, property3);
-            }
-        }
-
-        #endregion
-
-        #region debug helpers: logDebug
-
-        public static void logDebug<T>(this T @this, string messageTemplate)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogTrace)
-            {
-                @this.log.ForContext("SKIP_", 1)
-                    // logEvent.AddPropertyIfAbsent(new LogEventProperty("SourceFileName",
-                    // new ScalarValue(stack.GetFileName())));
-                    .Debug(messageTemplate);
-            }
-        }
-
-        public static void logDebug<T, T0>(this T @this, string messageTemplate,
-            T0 property0)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogTrace)
-            {
-                @this.log.ForContext("SKIP_", 1).Debug(messageTemplate, property0);
-            }
-        }
-
-        public static void logDebug<T, T0, T1>(this T @this, string messageTemplate,
-            T0 property0, T1 property1)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogTrace)
-            {
-                @this.log.ForContext("SKIP_", 1).Debug(messageTemplate, property0, property1);
-            }
-        }
-
-        public static void logDebug<T, T0, T1, T2>(this T @this, string messageTemplate,
-            T0 property0, T1 property1, T2 property2)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogTrace)
-            {
-                @this.log.ForContext("SKIP_", 1).Debug(messageTemplate, property0, property1, property2);
-            }
-        }
-
-        public static void logDebug<T, T0, T1, T2, T3>(this T @this, string messageTemplate,
-            T0 property0, T1 property1, T2 property2, T3 property3)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogTrace)
-            {
-                @this.log.ForContext("SKIP_", 1).Debug(messageTemplate, property0, property1, property2, property3);
-            }
-        }
-
-        public static void logDebug<T, T0, T1, T2, T3, T4>(this T @this, string messageTemplate,
-            T0 property0, T1 property1, T2 property2, T3 property3, T4 property4)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogTrace)
-            {
-                @this.log.ForContext("SKIP_", 1)
-                    .Debug(messageTemplate, property0, property1, property2, property3, property4);
-            }
-        }
-
-        public static void logDebug<T, T0, T1, T2, T3, T4, T5>(this T @this, string messageTemplate,
-            T0 property0, T1 property1, T2 property2, T3 property3, T4 property4, T5 property5)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogTrace)
-            {
-                @this.log.ForContext("SKIP_", 1)
-                    .Debug(messageTemplate, property0, property1, property2, property3, property4, property5);
-            }
-        }
-
-        public static void logDebug<T, T0, T1, T2, T3, T4, T5, T6>(this T @this, string messageTemplate,
-            T0 property0, T1 property1, T2 property2, T3 property3, T4 property4, T5 property5, T6 property6)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogTrace)
-            {
-                @this.log.ForContext("SKIP_", 1)
-                    .Debug(messageTemplate, property0, property1, property2, property3, property4, property5,
-                        property6);
-            }
-        }
-
-        public static void logDebug<T, T0, T1, T2, T3, T4, T5, T6, T7>(this T @this, string messageTemplate,
-            T0 property0, T1 property1, T2 property2, T3 property3, T4 property4, T5 property5, T6 property6,
-            T7 property7)
-            where T : IDefaultMatchers
-        {
-            if (EnableCmdrLogTrace)
-            {
-                @this.log.ForContext("SKIP_", 1)
-                    .Debug(messageTemplate, property0, property1, property2, property3, property4, property5, property6,
-                        property7);
-            }
-        }
-
-        #endregion
-
-        #region debug helpers: logWarning
-
-        public static void logWarning<T>(this T @this, System.Exception exception, string messageTemplate)
-            where T : IDefaultMatchers
-        {
-            @this.log.Warning(exception, messageTemplate);
-        }
-
-        public static void logWarning<T, T0>(this T @this, System.Exception exception, string messageTemplate,
-            T0 property0)
-            where T : IDefaultMatchers
-        {
-            @this.log.Warning(exception, messageTemplate, property0);
-        }
-
-        public static void logWarning<T, T0, T1>(this T @this, System.Exception exception, string messageTemplate,
-            T0 property0, T1 property1)
-            where T : IDefaultMatchers
-        {
-            @this.log.Warning(exception, messageTemplate, property0, property1);
-        }
-
-        public static void logWarning<T, T0, T1, T2>(this T @this, System.Exception exception, string messageTemplate,
-            T0 property0, T1 property1, T2 property2)
-            where T : IDefaultMatchers
-        {
-            @this.log.Warning(exception, messageTemplate, property0, property1, property2);
-        }
-
-        public static void logWarning<T, T0, T1, T2, T3>(this T @this, System.Exception exception,
-            string messageTemplate,
-            T0 property0, T1 property1, T2 property2, T3 property3)
-            where T : IDefaultMatchers
-        {
-            @this.log.Warning(exception, messageTemplate, property0, property1, property2, property3);
-        }
-
-        #endregion
-
-        #region debug helpers: logError
-
-        public static void logError<T>(this T @this, System.Exception exception, string messageTemplate)
-            where T : IDefaultMatchers
-        {
-            @this.log.Error(exception, messageTemplate);
-        }
-
-        public static void logError<T, T0>(this T @this, System.Exception exception, string messageTemplate,
-            T0 property0)
-            where T : IDefaultMatchers
-        {
-            @this.log.Error(exception, messageTemplate, property0);
-        }
-
-        public static void logError<T, T0, T1>(this T @this, System.Exception exception, string messageTemplate,
-            T0 property0, T1 property1)
-            where T : IDefaultMatchers
-        {
-            @this.log.Error(exception, messageTemplate, property0, property1);
-        }
-
-        public static void logError<T, T0, T1, T2>(this T @this, System.Exception exception, string messageTemplate,
-            T0 property0, T1 property1, T2 property2)
-            where T : IDefaultMatchers
-        {
-            @this.log.Error(exception, messageTemplate, property0, property1, property2);
-        }
-
-        public static void logError<T, T0, T1, T2, T3>(this T @this, System.Exception exception, string messageTemplate,
-            T0 property0, T1 property1, T2 property2, T3 property3)
-            where T : IDefaultMatchers
-        {
-            @this.log.Error(exception, messageTemplate, property0, property1, property2, property3);
         }
 
         #endregion

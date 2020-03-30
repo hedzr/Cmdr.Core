@@ -130,7 +130,7 @@ namespace Simple
                 // Console.WriteLine($"AssemblyProductAttribute: {VersionUtil.AssemblyProductAttribute}");
                 // Console.WriteLine($"      FileProductVersion: {VersionUtil.FileVersionInfo.ProductVersion}");
                 // Console.WriteLine();
-
+                
                 // Console.WriteLine("Press 'q' to quit the sample.");
                 // while (Console.Read() != 'q')
                 // {

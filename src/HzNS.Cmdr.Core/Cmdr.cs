@@ -1,15 +1,9 @@
 #nullable enable
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
-using HzNS.Cmdr.Internal;
 using HzNS.Cmdr.Internal.Base;
-using HzNS.Cmdr.Tool.Enrichers;
-using Serilog;
-using Serilog.Core;
-using Serilog.Events;
 
 namespace HzNS.Cmdr
 {
@@ -17,32 +11,32 @@ namespace HzNS.Cmdr
     {
         public static Worker NewWorker(IRootCommand root, params Action<Worker>[] opts)
         {
-            var worker = CreateDefaultWorker(root, null, opts);
+            var worker = CreateDefaultWorker(root, opts);
             return worker;
         }
 
         // ReSharper disable once UnusedParameter.Local
         private static Worker CreateDefaultWorker(IRootCommand root,
-            Func<LoggerConfiguration, Logger>? createLoggerFunc = null,
+            // Func<LoggerConfiguration, Logger>? createLoggerFunc = null,
             params Action<Worker>[] opts)
         {
             var worker = new Worker(root);
 
-            if (createLoggerFunc != null)
-                worker.UseSerilog(createLoggerFunc);
-            else
-                worker.UseSerilog(configuration => configuration
-                    .MinimumLevel.Debug()
-                    // .MinimumLevel.Information()
-                    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                    .Enrich.FromLogContext()
-                    .Enrich.WithCaller()
-                    .WriteTo.Console(
-                        outputTemplate:
-                        "[{Timestamp:HH:mm:ss} {Level:u3}] {Message} (at {Caller} in {SourceFileName}:line {SourceFileLineNumber}){NewLine}{Exception}")
-                    // .WriteTo.Console()
-                    .WriteTo.File(Path.Combine("logs", @"access.log"), rollingInterval: RollingInterval.Day)
-                    .CreateLogger());
+            // if (createLoggerFunc != null)
+            //     worker.UseSerilog(createLoggerFunc);
+            // else
+            //     worker.UseSerilog(configuration => configuration
+            //         .MinimumLevel.Debug()
+            //         // .MinimumLevel.Information()
+            //         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            //         .Enrich.FromLogContext()
+            //         .Enrich.WithCaller()
+            //         .WriteTo.Console(
+            //             outputTemplate:
+            //             "[{Timestamp:HH:mm:ss} {Level:u3}] {Message} (at {Caller} in {SourceFileName}:line {SourceFileLineNumber}){NewLine}{Exception}")
+            //         // .WriteTo.Console()
+            //         .WriteTo.File(Path.Combine("logs", @"access.log"), rollingInterval: RollingInterval.Day)
+            //         .CreateLogger());
 
             // Serilog.Debugging.SelfLog.Enable(msg => Debug.WriteLine(msg));
             // Serilog.Debugging.SelfLog.Enable(Console.Error);
@@ -68,7 +62,7 @@ namespace HzNS.Cmdr
             // }
             catch (CmdrException ex)
             {
-                worker.logError(ex, "Cmdr Error occurs");
+                worker.log?.logError(ex, "Cmdr Error occurs");
                 throw; // don't ignore it
             }
 
