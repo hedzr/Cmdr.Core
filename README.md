@@ -1,5 +1,7 @@
 # Cmdr.Core
 
+![Nuget](https://img.shields.io/nuget/v/HzNS.Cmdr.Core)
+
 Useful POSIX command line arguments parser for .Net. Hierarchy configurations Store for app.
 
 **WIP**

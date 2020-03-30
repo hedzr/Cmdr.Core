@@ -16,7 +16,6 @@
 <!--        <PackageVersion>1.0.2</PackageVersion>-->
         <Copyright>Copyright © by Hedzr, 2020.</Copyright>
         <PackageProjectUrl>https://github.com/hedzr/Cmdr.Core</PackageProjectUrl>
-<!--        <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>-->
 <!--        <PackageIconUrl>https://github.com/hedzr/Cmdr.Core</PackageIconUrl>-->
         <RepositoryUrl>https://github.com/hedzr/Cmdr.Core</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
@@ -25,9 +24,8 @@
 			  <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
 			<NrtShowRevision>true</NrtShowRevision>
         <NrtRevisionFormat>{semvertag+chash:7}-ts{c:uymd}{c:uhm}</NrtRevisionFormat>
-<!--        <TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>-->
         <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
-        <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/LICENSE</PackageLicenseUrl>
+        <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
     </PropertyGroup>
 
     <ItemGroup>
