@@ -561,13 +561,14 @@ namespace HzNS.Cmdr.Internal
             while (o?.IsRoot == false)
             {
                 // var ready = true;
+                // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
                 foreach (var f in o.RequiredFlags)
                 {
                     if (f.HitCount < 1)
                         throw new MissedRequiredFlagException(f);
                 }
 
-                o = o?.Owner;
+                o = o.Owner;
             }
         }
 
