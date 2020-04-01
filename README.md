@@ -390,7 +390,7 @@ The external logger has been removed from `Cmdr.Core`.
 But you can always enable one or customize yours. In the `HzNS.Cmdr.Logger.Serilog` package/project, we've give an implements and it's simple to use:
 
 ```c#
-    Cmdr.NewWorker(RootCmd.New(
+    Cmdr.NewWorker(RootCommand.New(
                 new AppInfo {AppName = "mdxTool", AppVersion = "1.0.0"}, (root) =>
             {
                 root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
@@ -399,7 +399,7 @@ But you can always enable one or customize yours. In the `HzNS.Cmdr.Logger.Seril
             // Options ->
             (w) =>
             {
-                w.SetLogger(SerilogBuilder.Build((logger) =>
+                w.SetLogger(HzNS.Cmdr.Logger.Serilog.SerilogBuilder.Build((logger) =>
                 {
                     logger.EnableCmdrLogInfo = false;
                     logger.EnableCmdrLogTrace = false;
