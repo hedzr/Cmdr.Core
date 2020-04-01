@@ -35,7 +35,7 @@ namespace HzNS.Cmdr.Painter
         private IRootCommand? _root;
 
 
-        public void Setup(ICommand cmd, IBaseWorker w, params string[] remainArgs)
+        public void Setup(ICommand cmd, IBaseWorker w, IEnumerable<string> remainArgs)
         {
             // Console.WriteLine("Setup...");
             // _quiteMode = Parse(Cmdr.Instance.Store.Get("quiet").ToString());
@@ -47,7 +47,7 @@ namespace HzNS.Cmdr.Painter
         }
 
 
-        public void PrintHeadLines(ICommand cmd, IBaseWorker w, bool singleLine = false, params string[] remainArgs)
+        public void PrintHeadLines(ICommand cmd, IBaseWorker w, bool singleLine, IEnumerable<string> remainArgs)
         {
             if (_quiteMode) return;
 
@@ -86,7 +86,7 @@ namespace HzNS.Cmdr.Painter
             }
         }
 
-        public void PrintUsages(ICommand cmd, IBaseWorker w, params string[] remainArgs)
+        public void PrintUsages(ICommand cmd, IBaseWorker w, IEnumerable<string> remainArgs)
         {
             if (_quiteMode) return;
 
@@ -106,7 +106,7 @@ namespace HzNS.Cmdr.Painter
             oln($"    {_root?.AppInfo.AppName} {cmds} {tails}");
         }
 
-        public void PrintExamples(ICommand cmd, IBaseWorker w, params string[] remainArgs)
+        public void PrintExamples(ICommand cmd, IBaseWorker w, IEnumerable<string> remainArgs)
         {
             if (_quiteMode) return;
 
@@ -124,7 +124,7 @@ namespace HzNS.Cmdr.Painter
         public void PrintCommandsAndOptions(ICommand cmd,
             SortedDictionary<string, List<TwoString>> commandLines,
             SortedDictionary<int, CmdFlagLines> optionLines, // Format writer,
-            int tabStop, bool treeMode, IBaseWorker w, params string[] remainArgs)
+            int tabStop, bool treeMode, IBaseWorker w, IEnumerable<string> remainArgs)
         {
             if (_quiteMode) return;
 
@@ -233,7 +233,7 @@ namespace HzNS.Cmdr.Painter
         #endregion
 
 
-        public void PrintTailLines(ICommand cmd, IBaseWorker w, params string[] remainArgs)
+        public void PrintTailLines(ICommand cmd, IBaseWorker w, IEnumerable<string> remainArgs)
         {
             if (_quiteMode) return;
 
@@ -242,7 +242,7 @@ namespace HzNS.Cmdr.Painter
             oln("More: '-D'/'--debug', '-v'|'--verbose', '-V'/'--version', '-#'/'--build-info'...", ColorDesc);
         }
 
-        public void PrintEpilogue(ICommand cmd, IBaseWorker w, params string[] remainArgs)
+        public void PrintEpilogue(ICommand cmd, IBaseWorker w, IEnumerable<string> remainArgs)
         {
             if (_quiteMode) return;
             oln("");
@@ -276,7 +276,7 @@ namespace HzNS.Cmdr.Painter
 
         #region PrintBuildInfo
 
-        public void PrintBuildInfo(ICommand cmd, in int tabStop, IBaseWorker w, params string[] remainArgs)
+        public void PrintBuildInfo(ICommand cmd, in int tabStop, IBaseWorker w, IEnumerable<string> remainArgs)
         {
             var root = cmd.FindRoot();
             // ReSharper disable once InvertIf
@@ -303,7 +303,7 @@ namespace HzNS.Cmdr.Painter
 
         #region PrintVersions
 
-        public void PrintVersions(ICommand cmd, in int tabStop, IBaseWorker w, params string[] remainArgs)
+        public void PrintVersions(ICommand cmd, in int tabStop, IBaseWorker w, IEnumerable<string> remainArgs)
         {
             var root = cmd.FindRoot();
             // ReSharper disable once InvertIf
