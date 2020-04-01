@@ -34,12 +34,12 @@ namespace HzNS.Cmdr.Internal
 
         #region ShowVersionsScreen
 
-        public void ShowVersionsScreen(IBaseWorker w, IEnumerable<string> remainArgs)
+        public void ShowVersionsScreen(IBaseWorker w, IList<string> remainArgs)
         {
             var command = w.ParsedCommand ?? w.RootCommand;
             tabStopCalculated = w.TabStop;
 
-            Painter.Setup(command, w, remainArgs);
+            Painter.Setup(command, w, remainArgs); //
             if (w.AppQuietMode)
             {
                 Painter.PrintVersions(command, tabStopCalculated, w, remainArgs);
@@ -64,7 +64,7 @@ namespace HzNS.Cmdr.Internal
 
         #region ShowBuildInfoScreen
 
-        public void ShowBuildInfoScreen(IBaseWorker w, IEnumerable<string> remainArgs)
+        public void ShowBuildInfoScreen(IBaseWorker w, IList<string> remainArgs)
         {
             var command = w.ParsedCommand ?? w.RootCommand;
             tabStopCalculated = w.TabStop;
@@ -94,7 +94,7 @@ namespace HzNS.Cmdr.Internal
 
         #region ShowHelpScreen
 
-        public void ShowHelpScreen(IBaseWorker w, IEnumerable<string> remainArgs)
+        public void ShowHelpScreen(IBaseWorker w, IList<string> remainArgs)
         {
             var commandLines = new SortedDictionary<string, List<TwoString>>();
             var optionLines = new SortedDictionary<int, CmdFlagLines>();
@@ -128,7 +128,7 @@ namespace HzNS.Cmdr.Internal
 
         #region ShowTreeDumpScreenForAllCommands
 
-        public void ShowTreeDumpScreenForAllCommands(IBaseWorker w, IEnumerable<string> remainArgs)
+        public void ShowTreeDumpScreenForAllCommands(IBaseWorker w, IList<string> remainArgs)
         {
             w.log?.logDebug("dump tree");
 
