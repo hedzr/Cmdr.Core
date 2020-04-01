@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
-using HzNS.Cmdr.Internal.Base;
 using HzNS.Cmdr.Tool.Ext;
 
 namespace Simple

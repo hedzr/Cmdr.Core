@@ -1,10 +1,8 @@
 #nullable enable
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using HzNS.Cmdr.Base;
-using HzNS.Cmdr.Internal.Base;
 
-namespace HzNS.Cmdr.Painter
+namespace HzNS.Cmdr.Base
 {
     [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
     public interface IPainter

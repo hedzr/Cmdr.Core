@@ -4,29 +4,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using HzNS.Cmdr.Base;
-using HzNS.Cmdr.Internal.Base;
 using HzNS.Cmdr.Painter;
 using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Ext;
 
 namespace HzNS.Cmdr.Internal
 {
-    public interface IWorkerFunctions
-    {
-        void ShowVersionsScreen(IBaseWorker w, params string[] remainArgs);
-
-        void ShowBuildInfoScreen(IBaseWorker w, params string[] remainArgs);
-
-        void ShowHelpScreen(IBaseWorker w, params string[] remainArgs);
-
-        void ShowTreeDumpScreenForAllCommands(IBaseWorker w, params string[] remainArgs);
-
-        public bool Walk(ICommand? parent = null,
-            Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
-            Func<ICommand, IFlag, int, bool>? flagsWatcher = null);
-    }
-
-
     // 
     [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
@@ -51,7 +34,7 @@ namespace HzNS.Cmdr.Internal
 
         #region ShowVersionsScreen
 
-        public void ShowVersionsScreen(IBaseWorker w, params string[] remainArgs)
+        public void ShowVersionsScreen(IBaseWorker w, IEnumerable<string> remainArgs)
         {
             var command = w.ParsedCommand ?? w.RootCommand;
             tabStopCalculated = w.TabStop;
@@ -81,7 +64,7 @@ namespace HzNS.Cmdr.Internal
 
         #region ShowBuildInfoScreen
 
-        public void ShowBuildInfoScreen(IBaseWorker w, params string[] remainArgs)
+        public void ShowBuildInfoScreen(IBaseWorker w, IEnumerable<string> remainArgs)
         {
             var command = w.ParsedCommand ?? w.RootCommand;
             tabStopCalculated = w.TabStop;
@@ -111,7 +94,7 @@ namespace HzNS.Cmdr.Internal
 
         #region ShowHelpScreen
 
-        public void ShowHelpScreen(IBaseWorker w, params string[] remainArgs)
+        public void ShowHelpScreen(IBaseWorker w, IEnumerable<string> remainArgs)
         {
             var commandLines = new SortedDictionary<string, List<TwoString>>();
             var optionLines = new SortedDictionary<int, CmdFlagLines>();
@@ -145,7 +128,7 @@ namespace HzNS.Cmdr.Internal
 
         #region ShowTreeDumpScreenForAllCommands
 
-        public void ShowTreeDumpScreenForAllCommands(IBaseWorker w, params string[] remainArgs)
+        public void ShowTreeDumpScreenForAllCommands(IBaseWorker w, IEnumerable<string> remainArgs)
         {
             w.log?.logDebug("dump tree");
 

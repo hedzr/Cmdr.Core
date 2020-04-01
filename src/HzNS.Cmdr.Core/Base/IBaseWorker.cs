@@ -1,9 +1,10 @@
 #nullable enable
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using HzNS.Cmdr.Base;
+using HzNS.Cmdr.Internal;
+using HzNS.Cmdr.Internal.Base;
 
-namespace HzNS.Cmdr.Internal.Base
+namespace HzNS.Cmdr.Base
 {
     public interface IBaseWorker : ILoggable, IWorkerFunctions
     {

@@ -1,5 +1,6 @@
 #nullable enable
 using System.Diagnostics.CodeAnalysis;
+using HzNS.Cmdr.Base;
 
 namespace HzNS.Cmdr.Internal.Base
 {

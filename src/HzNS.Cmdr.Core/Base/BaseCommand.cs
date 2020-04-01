@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using HzNS.Cmdr.Internal.Base;
 
 namespace HzNS.Cmdr.Base
 {
