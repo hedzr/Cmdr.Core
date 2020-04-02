@@ -193,7 +193,7 @@ namespace HzNS.Cmdr.Internal
                     break;
                 }
 
-                @this.log?.logDebug("    - try finding flag part {part} for `ccc`: {CommandTitle}",
+                @this.log?.logDebug("    - try finding flag part {part} for `ccc`: {CccCommandTitle}",
                     part, ccc.backtraceTitles);
 
                 backtraceAllParentFlags:
@@ -208,7 +208,7 @@ namespace HzNS.Cmdr.Internal
                 // ok = false;
                 foreach (var flg in ccc.Flags)
                 {
-                    ok = flg.Match(ref part, part, pos, longOpt, true,
+                    ok = flg.Match(ref part, fragment, pos, longOpt, true,
                         EnableCmdrGreedyLongFlag, EnableCmdrGreedyIncrementalMode);
                     if (!ok) continue;
 
@@ -240,7 +240,7 @@ namespace HzNS.Cmdr.Internal
                     if (ccc.Owner != null && !ReferenceEquals(ccc,ccc.Owner))
                     {
                         ccc = ccc.Owner;
-                        @this.log?.logDebug("    - try finding flag part {part} for `ccc`'s parent: {CommandTitle}",
+                        @this.log?.logDebug("    - try finding flag part {part} for `ccc`'s parent: {CccCommandTitle}",
                             part, ccc.backtraceTitles);
                         goto backtraceAllParentFlags;
                     }
@@ -257,7 +257,7 @@ namespace HzNS.Cmdr.Internal
                     matchedPosition = i + 1;
                 }
 
-                if (pos + part.Length + bsw < siz && !longOpt)
+                if (pos + part.Length + bsw <= fragment.Length && !longOpt)
                 {
                     if (matchedFlag == null)
                     {
@@ -269,7 +269,7 @@ namespace HzNS.Cmdr.Internal
                         siz -= part.Length;
                         if (EnableCmdrGreedyLongFlag)
                         {
-                            len = siz;
+                            len = siz;// - part.Length;
                             if (EnableCmdrGreedyIncrementalMode)
                                 pos += part.Length;
                             else
@@ -286,7 +286,7 @@ namespace HzNS.Cmdr.Internal
                         fragment.Substring(pos, len),
                         EnableCmdrGreedyLongFlag, pos, len, siz);
                     ccc = command;
-                    if (len > 0 && pos <= siz - bsw)
+                    if (len > 0 && pos < fragment.Length - bsw)
                         goto forEachFragmentParts;
                 }
 
@@ -444,9 +444,33 @@ namespace HzNS.Cmdr.Internal
                     default:
                         if (dv != null)
                         {
-                            @this.log?.logWarning(null, "unacceptable default value ({dv}) datatype: {type}", dv, dv.GetType());
-                            val = Convert.ChangeType(v, dv.GetType()); // typeof(int)
-                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                            @this.log?.logWarning(null, "unacceptable default value ({dv}) datatype: {type}", dv,
+                                dv.GetType());
+                            try
+                            {
+                                val = Convert.ChangeType(v, dv.GetType()); // typeof(int)
+                                old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                            }
+                            catch (FormatException ex)
+                            {
+                                @this.log?.logWarning(ex,
+                                    "    changeType failed (FormatException) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
+                                    v, dv.GetType(), atePos, ateArgs);
+                                val = dv;
+                                old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                                atePos = ateArgs = 0;
+                                // throw;
+                            }
+                            catch (InvalidCastException ex)
+                            {
+                                @this.log?.logWarning(ex,
+                                    "    changeType failed (InvalidCastException) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
+                                    v, dv.GetType(), atePos, ateArgs);
+                                val = dv;
+                                old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                                atePos = ateArgs = 0;
+                                // throw;
+                            }
                         }
 
                         break;
