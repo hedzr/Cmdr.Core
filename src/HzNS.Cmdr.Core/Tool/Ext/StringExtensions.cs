@@ -332,7 +332,7 @@ namespace HzNS.Cmdr.Tool.Ext
         /// <returns></returns>
         public static string StripFirstKnobble(this string s, params char[] sep)
         {
-            foreach (var ch in sep.Length > 0 ? sep : DefaultKnobbleChars)
+            foreach (var ch in sep.Length > 0 ? sep : _defaultKnobbleChars)
             {
                 var pos = s.IndexOf(ch);
                 if (pos >= 0) s = s.Substring(pos + 1);
@@ -341,7 +341,7 @@ namespace HzNS.Cmdr.Tool.Ext
             return s;
         }
 
-        private static readonly char[] DefaultKnobbleChars = new[] {'.'};
+        private static readonly char[] _defaultKnobbleChars = {'.'};
 
 
         [Pure]
