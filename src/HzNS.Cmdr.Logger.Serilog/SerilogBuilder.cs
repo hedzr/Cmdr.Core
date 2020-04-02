@@ -147,10 +147,10 @@ namespace HzNS.Cmdr.Logger.Serilog
         public void logDebug<T0>(string messageTemplate, T0 p0) => this.slogDebug(messageTemplate, p0);
 
         public void logDebug<T0, T1>(string messageTemplate, T0 p0, T1 p1) =>
-            this.slogDebug(messageTemplate, p0, p0, p1);
+            this.slogDebug(messageTemplate, p0, p1);
 
         public void logDebug<T0, T1, T2>(string messageTemplate, T0 p0, T1 p1, T2 p2) =>
-            this.slogDebug(messageTemplate, p0, p0, p1, p2);
+            this.slogDebug(messageTemplate, p0, p1, p2);
 
         public void logDebug<T0, T1, T2, T3>(string messageTemplate, T0 p0, T1 p1, T2 p2, T3 p3) =>
             this.slogDebug(messageTemplate, p0, p1, p2, p3);
@@ -181,10 +181,10 @@ namespace HzNS.Cmdr.Logger.Serilog
         public void logWarning<T0>(System.Exception exception, string messageTemplate, T0 p0) => this.slogWarning(exception, messageTemplate, p0);
 
         public void logWarning<T0, T1>(System.Exception exception, string messageTemplate, T0 p0, T1 p1) =>
-            this.slogWarning(exception, messageTemplate, p0, p0, p1);
+            this.slogWarning(exception, messageTemplate, p0, p1);
 
         public void logWarning<T0, T1, T2>(System.Exception exception, string messageTemplate, T0 p0, T1 p1, T2 p2) =>
-            this.slogWarning(exception, messageTemplate, p0, p0, p1, p2);
+            this.slogWarning(exception, messageTemplate, p0, p1, p2);
 
         public void logWarning<T0, T1, T2, T3>(System.Exception exception, string messageTemplate, T0 p0, T1 p1, T2 p2, T3 p3) =>
             this.slogWarning(exception, messageTemplate, p0, p1, p2, p3);
@@ -215,10 +215,10 @@ namespace HzNS.Cmdr.Logger.Serilog
         public void logError<T0>(System.Exception exception, string messageTemplate, T0 p0) => this.slogError(exception, messageTemplate, p0);
 
         public void logError<T0, T1>(System.Exception exception, string messageTemplate, T0 p0, T1 p1) =>
-            this.slogError(exception, messageTemplate, p0, p0, p1);
+            this.slogError(exception, messageTemplate, p0, p1);
 
         public void logError<T0, T1, T2>(System.Exception exception, string messageTemplate, T0 p0, T1 p1, T2 p2) =>
-            this.slogError(exception, messageTemplate, p0, p0, p1, p2);
+            this.slogError(exception, messageTemplate, p0, p1, p2);
 
         public void logError<T0, T1, T2, T3>(System.Exception exception, string messageTemplate, T0 p0, T1 p1, T2 p2, T3 p3) =>
             this.slogError(exception, messageTemplate, p0, p1, p2, p3);
