@@ -8,7 +8,7 @@ using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Colorify;
 using HzNS.Cmdr.Tool.Ext;
 
-namespace HzNS.Cmdr.Painter
+namespace HzNS.Cmdr.Internal.Painter
 {
     public class DefaultPainter : IPainter
     {
@@ -322,19 +322,40 @@ namespace HzNS.Cmdr.Painter
                 }
                 else
                 {
-                    oln($"             App Version: {root.AppInfo.AppVersion}");
-                    oln($"                App Name: {root.AppInfo.AppName}");
-                    oln($"         Build Timestamp: {root.AppInfo.BuildTimestamp}");
-                    // oln($"                Built by: {root.AppInfo.Builder}");
-                    oln($"        Linker Timestamp: {root.AppInfo.LinkerTimestampUtc}");
-                    oln($"AssemblyProductAttribute: {VersionUtil.AssemblyProductAttribute}");
-                    oln("");
-                    oln($"            Cmdr Version: {VersionUtil.CmdrAssemblyInformationalVersion}");
-                    oln($"       Cmdr File Version: {VersionUtil.CmdrAssemblyFileVersion}");
-                    oln($"     Cmdr Assembly Title: {VersionUtil.CmdrAssemblyTitle}");
-                    oln($"       Cmdr Git CommitId: {VersionUtil.CmdrGitCommitId}");
-                    oln($"    Cmdr Git Commit Date: {VersionUtil.CmdrGitCommitDate}");
-                    oln($"     Cmdr Root Namespace: {VersionUtil.CmdrRootNamespace}");
+                    var list = new List<Tuple<string, object>>
+                    {
+                        new Tuple<string, object>("App Version:", root.AppInfo.AppVersion),
+                        new Tuple<string, object>("App Name:", root.AppInfo.AppName),
+                        new Tuple<string, object>("Build Timestamp:", root.AppInfo.BuildTimestamp),
+                        // new Tuple<string, object>("Built by:", root.AppInfo.Builder),
+                        new Tuple<string, object>("Linker Timestamp:", root.AppInfo.LinkerTimestampUtc),
+                        new Tuple<string, object>("Assembly Product Attribute:", VersionUtil.AssemblyProductAttribute),
+                        new Tuple<string, object>("", ""),
+                        new Tuple<string, object>("Cmdr Version:", VersionUtil.CmdrAssemblyInformationalVersion),
+                        new Tuple<string, object>("Cmdr File Version:", VersionUtil.CmdrAssemblyFileVersion),
+                        new Tuple<string, object>("Cmdr Assembly Title:", VersionUtil.CmdrAssemblyTitle),
+                        new Tuple<string, object>("Cmdr Git CommitId:", VersionUtil.CmdrGitCommitId),
+                        new Tuple<string, object>("Cmdr Git Commit Date:", VersionUtil.CmdrGitCommitDate),
+                        new Tuple<string, object>("Cmdr Root Namespace:", VersionUtil.CmdrRootNamespace)
+                    };
+                    foreach (var (l, r) in list)
+                    {
+                        olnTabbedPrint(l, r?.ToString() ?? string.Empty, 32, rightAlign: true);
+                    }
+
+                    // oln($"             App Version: {root.AppInfo.AppVersion}");
+                    // oln($"                App Name: {root.AppInfo.AppName}");
+                    // oln($"         Build Timestamp: {root.AppInfo.BuildTimestamp}");
+                    // // oln($"                Built by: {root.AppInfo.Builder}");
+                    // oln($"        Linker Timestamp: {root.AppInfo.LinkerTimestampUtc}");
+                    // oln($"AssemblyProductAttribute: {VersionUtil.AssemblyProductAttribute}");
+                    // oln("");
+                    // oln($"            Cmdr Version: {VersionUtil.CmdrAssemblyInformationalVersion}");
+                    // oln($"       Cmdr File Version: {VersionUtil.CmdrAssemblyFileVersion}");
+                    // oln($"     Cmdr Assembly Title: {VersionUtil.CmdrAssemblyTitle}");
+                    // oln($"       Cmdr Git CommitId: {VersionUtil.CmdrGitCommitId}");
+                    // oln($"    Cmdr Git Commit Date: {VersionUtil.CmdrGitCommitDate}");
+                    // oln($"     Cmdr Root Namespace: {VersionUtil.CmdrRootNamespace}");
                 }
 
                 // oln(string.Empty);
@@ -380,13 +401,25 @@ namespace HzNS.Cmdr.Painter
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         private void olnTabbedPrint(string textL, string textR, int tabStop = 8, string colorL = Colors.txtDefault,
-            string colorR = Colors.txtDefault)
+            string colorR = Colors.txtDefault, bool rightAlign = false)
         {
-            ColorifyEnabler.Colorify.WriteLine(textL, colorL);
             var ts = tabStop - textL.Length;
             if (ts <= 0) ts = textL.Length;
-            var spaces = " ".Repeat(ts);
-            ColorifyEnabler.Colorify.Write(spaces);
+            
+            if (rightAlign)
+            {
+                var spaces = " ".Repeat(ts - 1);
+                ColorifyEnabler.Colorify.Write(spaces);
+                ColorifyEnabler.Colorify.Write(textL, colorL);
+                ColorifyEnabler.Colorify.Write(" ");
+            }
+            else
+            {
+                var spaces = " ".Repeat(ts);
+                ColorifyEnabler.Colorify.Write(textL, colorL);
+                ColorifyEnabler.Colorify.Write(spaces);
+            }
+
             ColorifyEnabler.Colorify.WriteLine(textR, colorR);
         }
 

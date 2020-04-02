@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using HzNS.Cmdr.Base;
-using HzNS.Cmdr.Painter;
+using HzNS.Cmdr.Internal.Painter;
 using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Ext;
 

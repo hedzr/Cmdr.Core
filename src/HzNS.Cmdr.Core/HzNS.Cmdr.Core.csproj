@@ -61,7 +61,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Store" />
+      <Folder Include="Internal\Store" />
     </ItemGroup>
 
 </Project>

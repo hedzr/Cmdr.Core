@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HzNS.Cmdr.Exception;
-using HzNS.Cmdr.Painter;
+using HzNS.Cmdr.Internal.Painter;
 using HzNS.Cmdr.Tool.Ext;
 using HzNS.Cmdr.Tool.ObjectCloner;
 using Newtonsoft.Json.Linq;
