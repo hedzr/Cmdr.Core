@@ -73,10 +73,10 @@ namespace HzNS.Cmdr.Tool.ObjectCloner
 #pragma warning disable CS8600
             object originalBoxed = original;
 #pragma warning restore CS8600
-#pragma warning disable CS8653
+#pragma warning disable CS8603,CS8653
             if (originalBoxed == null)
                 return default(T); // return (T)(object)null;
-#pragma warning restore CS8653
+#pragma warning restore CS8603,CS8653
             return (T) DeepCloneInternal.GetDeepCloner(originalBoxed.GetType())(originalBoxed,
                 new Dictionary<object, object>());
         }

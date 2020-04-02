@@ -26,13 +26,13 @@ namespace HzNS.Cmdr.Tool
                 throw new ArgumentException("The type must be serializable.", nameof(source));
             }
 
-#pragma warning disable CS8653
+#pragma warning disable CS8603,CS8653
             // Don't serialize a null object, simply return the default for that object
             if (ReferenceEquals(source, null))
             {
                 return default(T);
             }
-#pragma warning restore CS8653
+#pragma warning restore CS8603,CS8653
 
             IFormatter formatter = new BinaryFormatter();
             Stream stream = new MemoryStream();
