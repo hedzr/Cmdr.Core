@@ -24,6 +24,9 @@ PM> Install-Package HzNS.Cmdr.Core -Version 1.0.29
 $ dotnet add package HzNS.Cmdr.Core --version 1.0.29
 ```
 
+Please replace `1.0.29` with the newest version, see the nuget badge icon.
+
+
 
 ## Features
 
