@@ -41,15 +41,13 @@ jobs:
       - run: |
           cd src
           dotnet build --configuration Release
-
-  publish:
-    description: publish
-    executor: win/default
-    steps:
       - run: |
-          cd src
-          dotnet nuget push HzNS.Cmdr.Logger.Serilog\bin\Release\*.nupkg -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push HzNS.Cmdr.Core\bin\Release\*.nupkg -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
+          echo "publishing..."
+          pwd
+          ls -la src\HzNS.Cmdr.Core\bin\Release\
+          ls -la src\HzNS.Cmdr.Logger.Serilog\bin\Release\
+          dotnet nuget push src\HzNS.Cmdr.Logger.Serilog\bin\Release\*.nupkg -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src\HzNS.Cmdr.Core\bin\Release\*.nupkg -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
 
 
 workflows:
@@ -59,9 +57,6 @@ workflows:
       - build:
           requires:
             - test
-      - publish:
-          requires:
-            - build
 
 
 
