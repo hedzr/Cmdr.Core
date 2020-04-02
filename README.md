@@ -1,6 +1,9 @@
 # Cmdr.Core
 
 [![Nuget](https://img.shields.io/nuget/v/HzNS.Cmdr.Core)](https://www.nuget.org/packages/HzNS.Cmdr.Core/)
+[![CircleCI](https://circleci.com/gh/hedzr/Cmdr.Core/tree/circleci-project-setup.svg?style=shield)](https://circleci.com/gh/hedzr/Cmdr.Core/tree/circleci-project-setup)
+
+
 
 Useful POSIX command line arguments parser for dotNet. Hierarchy configurations Store for app.
 
