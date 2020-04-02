@@ -9,8 +9,8 @@ jobs:
     executor:
       name: win/default
     steps:
+      - working_directory: src/
       - checkout
-      - run: cd src
       - restore_cache:
           keys:
             - dotnet-packages-v1-{{ checksum "HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj" }}
