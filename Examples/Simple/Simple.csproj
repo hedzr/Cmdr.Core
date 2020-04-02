@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\HzNS.Cmdr.Core\HzNS.Cmdr.Core.csproj" />
-        <PackageReference Include="YamlDotNet.NetCore" Version="1.0.0" PrivateAssets="all" />
+        <ProjectReference Include="..\..\src\HzNS.Cmdr.Logger.Serilog\HzNS.Cmdr.Logger.Serilog.csproj" />
     </ItemGroup>
 
 </Project>

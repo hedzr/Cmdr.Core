@@ -98,9 +98,11 @@ namespace Simple
 
                 (w) =>
                 {
-                    //
-                    // w.UseSerilog((configuration) => configuration.WriteTo.Console().CreateLogger())
-                    //
+                    w.SetLogger(HzNS.Cmdr.Logger.Serilog.SerilogBuilder.Build((logger) =>
+                    {
+                        logger.EnableCmdrLogInfo = true;
+                        logger.EnableCmdrLogTrace = true;
+                    }));
 
                     w.EnableCmdrGreedyLongFlag = true;
                     // w.EnableDuplicatedCharThrows = true;
