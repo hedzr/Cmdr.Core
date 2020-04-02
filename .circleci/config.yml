@@ -13,16 +13,17 @@ jobs:
       - run:
           name: "Print Working Directory"
           command: pwd
+          # from C:\Users\circleci\project
       - restore_cache:
           keys:
-            - dotnet-packages-v1-{{ checksum "HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj" }}
+            - dotnet-packages-v1-{{ checksum "src/HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj" }}
       - run:
           name: "Install project dependencies"
           command: cd src && dotnet.exe restore
       - save_cache:
           paths:
             - C:\Users\circleci\.nuget\packages
-          key: dotnet-packages-v1-{{ checksum "HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj" }}
+          key: dotnet-packages-v1-{{ checksum "src/HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj" }}
       - run:
           name: "Run Application Tests"
           command: cd src && dotnet.exe test -v n --results-directory:test_coverage --collect:"Code Coverage" -p HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj
