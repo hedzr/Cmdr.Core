@@ -44,11 +44,12 @@ jobs:
       - run: |
           echo "publishing..."
           pwd
-          dotnet nuget push "src\HzNS.Cmdr.Logger.Serilog\bin\Release\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet.exe --version
+          dotnet.exe nuget push "src\HzNS.Cmdr.Logger.Serilog\bin\Release\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
       - run: |
           echo "publishing..."
           pwd
-          dotnet nuget push "src\HzNS.Cmdr.Core\bin\Release\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet.exe nuget push "src\HzNS.Cmdr.Core\bin\Release\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
 
 
 workflows:
