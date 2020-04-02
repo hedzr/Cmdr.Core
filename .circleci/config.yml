@@ -44,8 +44,10 @@ jobs:
       - run: |
           echo "publishing..."
           pwd
+          $ErrorActionPreference = 'SilentlyContinue'
           dotnet.exe --version
           dotnet.exe nuget push "src\HzNS.Cmdr.Logger.Serilog\bin\Release\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
+      # dornet nuget push bug: error: File does not exist, *.snupkg
       - run: |
           echo "publishing..."
           pwd
