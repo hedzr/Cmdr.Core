@@ -555,7 +555,7 @@ namespace HzNS.Cmdr
             }
 
             Console.WriteLine("1_1");
-            Cmdr.Instance.Logger?.log?.logDebug(
+            Cmdr.Instance.Worker?.log?.logDebug(
                 $"[W][setter on {dv?.GetType()}, dv={dv}, new val={val}]: key = {parts?.ToStringEx()}");
             return false;
         }

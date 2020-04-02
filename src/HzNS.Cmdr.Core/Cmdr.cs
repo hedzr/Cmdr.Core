@@ -3,7 +3,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using HzNS.Cmdr.Base;
 using HzNS.Cmdr.Exception;
-using HzNS.Cmdr.Internal.Base;
 
 namespace HzNS.Cmdr
 {
@@ -48,7 +47,7 @@ namespace HzNS.Cmdr
             try
             {
                 Instance.Worker = worker;
-                Instance.Logger = worker;
+                // Instance.Logger = worker;
                 // worker.logDebug("EnableDuplicatedCharThrows: {EnableDuplicatedCharThrows}",
                 //     worker.EnableDuplicatedCharThrows);
                 if (root != null)
@@ -74,7 +73,7 @@ namespace HzNS.Cmdr
         public IBaseWorker? Worker { get; internal set; }
         // ReSharper disable once MemberCanBePrivate.Global
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public IDefaultMatchers? Logger { get; internal set; }
+        // public IDefaultMatchers? Logger { get; internal set; }
         
         public Store Store { get; } = Store.Instance;
 
