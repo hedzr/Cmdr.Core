@@ -9,21 +9,23 @@ jobs:
     executor:
       name: win/default
     steps:
-      - working_directory: src/
       - checkout
+      - run:
+          name: "Print Working Directory"
+          command: pwd
       - restore_cache:
           keys:
             - dotnet-packages-v1-{{ checksum "HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj" }}
       - run:
           name: "Install project dependencies"
-          command: dotnet.exe restore
+          command: cd src && dotnet.exe restore
       - save_cache:
           paths:
             - C:\Users\circleci\.nuget\packages
           key: dotnet-packages-v1-{{ checksum "HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj" }}
       - run:
           name: "Run Application Tests"
-          command: dotnet.exe test -v n --results-directory:test_coverage --collect:"Code Coverage" -p HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj
+          command: cd src && dotnet.exe test -v n --results-directory:test_coverage --collect:"Code Coverage" -p HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj
       - run:
           name: "Print Working Directory"
           command: pwd
