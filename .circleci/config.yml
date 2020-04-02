@@ -41,10 +41,8 @@ jobs:
       - run: |
           cd src
           dotnet build --configuration Release
-          cd HzNS.Cmdr.Core/
-          dotnet nuget push bin/Release/*.nupkg -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json
-          cd ..\HzNS.Cmdr.Logger.Serilog
-          dotnet nuget push bin/Release/*.nupkg -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json
+          dotnet nuget push HzNS.Cmdr.Logger.Serilog\bin\Release\*.nupkg -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json
+          dotnet nuget push HzNS.Cmdr.Core\bin\Release\*.nupkg -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json
 
 
 
