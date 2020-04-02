@@ -21,13 +21,13 @@ namespace HzNS.Cmdr.Logger.Serilog.Enrichers
         {
             var skip = 3;
 
-            // var postSkip = 0;
-            // if (logEvent.Properties.ContainsKey("SKIP_"))
-            // postSkip = int.Parse(logEvent.Properties["SKIP_"].ToString());
+            var postSkip = 0;
+            if (logEvent.Properties.ContainsKey("SKIP_"))
+                postSkip = int.Parse(logEvent.Properties["SKIP_"].ToString());
 
             while (true)
             {
-                var stack = new StackFrame(skip, true);
+                var stack = new StackFrame(skip + postSkip, true);
                 if (!stack.HasMethod())
                 {
                     logEvent.AddPropertyIfAbsent(new LogEventProperty("Caller", new ScalarValue("<unknown method>")));
@@ -38,6 +38,7 @@ namespace HzNS.Cmdr.Logger.Serilog.Enrichers
                 if (method != null
                     && method.DeclaringType != null
                     && method.DeclaringType.Assembly != typeof(global::Serilog.Log).Assembly
+                    && method.DeclaringType.Assembly.FullName?.StartsWith("HzNS.Cmdr.Logger") == false
                     && IsValid(method.Name))
                 {
                     var caller =

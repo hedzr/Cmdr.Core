@@ -142,6 +142,8 @@ namespace HzNS.Cmdr.Logger.Serilog
         #endregion
 
 
+        private const int skipLevels = 2;
+            
         #region debug helpers: logDebug
 
         public static void slogDebug<T>(this T @this, string messageTemplate)
@@ -149,7 +151,7 @@ namespace HzNS.Cmdr.Logger.Serilog
         {
             if (@this.EnableCmdrLogTrace)
             {
-                @this.log.ForContext("SKIP_", 1)
+                @this.log.ForContext("SKIP_", skipLevels)
                     // logEvent.AddPropertyIfAbsent(new LogEventProperty("SourceFileName",
                     // new ScalarValue(stack.GetFileName())));
                     .Debug(messageTemplate);
@@ -162,7 +164,7 @@ namespace HzNS.Cmdr.Logger.Serilog
         {
             if (@this.EnableCmdrLogTrace)
             {
-                @this.log.ForContext("SKIP_", 1)
+                @this.log.ForContext("SKIP_", skipLevels)
                     .Debug(messageTemplate, property0);
             }
         }
@@ -173,7 +175,7 @@ namespace HzNS.Cmdr.Logger.Serilog
         {
             if (@this.EnableCmdrLogTrace)
             {
-                @this.log.ForContext("SKIP_", 1)
+                @this.log.ForContext("SKIP_", skipLevels)
                     .Debug(messageTemplate, property0, property1);
             }
         }
@@ -184,7 +186,7 @@ namespace HzNS.Cmdr.Logger.Serilog
         {
             if (@this.EnableCmdrLogTrace)
             {
-                @this.log.ForContext("SKIP_", 1)
+                @this.log.ForContext("SKIP_", skipLevels)
                     .Debug(messageTemplate, property0, property1, property2);
             }
         }
@@ -195,7 +197,7 @@ namespace HzNS.Cmdr.Logger.Serilog
         {
             if (@this.EnableCmdrLogTrace)
             {
-                @this.log.ForContext("SKIP_", 1)
+                @this.log.ForContext("SKIP_", skipLevels)
                     .Debug(messageTemplate, property0, property1, property2, property3);
             }
         }
@@ -206,7 +208,7 @@ namespace HzNS.Cmdr.Logger.Serilog
         {
             if (@this.EnableCmdrLogTrace)
             {
-                @this.log.ForContext("SKIP_", 1)
+                @this.log.ForContext("SKIP_", skipLevels)
                     .Debug(messageTemplate, property0, property1, property2, property3, property4);
             }
         }
@@ -217,7 +219,7 @@ namespace HzNS.Cmdr.Logger.Serilog
         {
             if (@this.EnableCmdrLogTrace)
             {
-                @this.log.ForContext("SKIP_", 1)
+                @this.log.ForContext("SKIP_", skipLevels)
                     .Debug(messageTemplate, property0, property1, property2, property3, property4, property5);
             }
         }
@@ -228,7 +230,7 @@ namespace HzNS.Cmdr.Logger.Serilog
         {
             if (@this.EnableCmdrLogTrace)
             {
-                @this.log.ForContext("SKIP_", 1)
+                @this.log.ForContext("SKIP_", skipLevels)
                     .Debug(messageTemplate, property0, property1, property2, property3, property4, property5,
                         property6);
             }
@@ -241,7 +243,7 @@ namespace HzNS.Cmdr.Logger.Serilog
         {
             if (@this.EnableCmdrLogTrace)
             {
-                @this.log.ForContext("SKIP_", 1)
+                @this.log.ForContext("SKIP_", skipLevels)
                     .Debug(messageTemplate, property0, property1, property2, property3, property4, property5, property6,
                         property7);
             }
@@ -254,7 +256,7 @@ namespace HzNS.Cmdr.Logger.Serilog
         {
             if (@this.EnableCmdrLogTrace)
             {
-                @this.log.ForContext("SKIP_", 1)
+                @this.log.ForContext("SKIP_", skipLevels)
                     .Debug(messageTemplate, property0, property1, property2, property3, property4, property5, property6,
                         property7, property8);
             }
@@ -267,7 +269,7 @@ namespace HzNS.Cmdr.Logger.Serilog
         {
             if (@this.EnableCmdrLogTrace)
             {
-                @this.log.ForContext("SKIP_", 1)
+                @this.log.ForContext("SKIP_", skipLevels)
                     .Debug(messageTemplate, property0, property1, property2, property3, property4, property5, property6,
                         property7, property8, property9);
             }
