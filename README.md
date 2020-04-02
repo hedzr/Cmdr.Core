@@ -1,6 +1,6 @@
 # Cmdr.Core
 
-[![Nuget](https://img.shields.io/nuget/v/HzNS.Cmdr.Core)](https://www.nuget.org/packages/HzNS.Cmdr.Core/)
+[![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/HzNS.Cmdr.Core)](https://www.nuget.org/packages/HzNS.Cmdr.Core/)
 [![CircleCI](https://circleci.com/gh/hedzr/Cmdr.Core/tree/circleci-project-setup.svg?style=shield)](https://circleci.com/gh/hedzr/Cmdr.Core/tree/circleci-project-setup)
 
 
@@ -26,6 +26,7 @@ $ dotnet add package HzNS.Cmdr.Core --version 1.0.29
 
 Please replace `1.0.29` with the newest version, see the nuget badge icon.
 
+A version like `1.0.85-g0c26c61d7f` has a extra building information from CI, you can cut off it while adding it to your project.
 
 
 ## Features
