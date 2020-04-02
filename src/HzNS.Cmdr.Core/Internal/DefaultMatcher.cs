@@ -444,7 +444,7 @@ namespace HzNS.Cmdr.Internal
                     default:
                         if (dv != null)
                         {
-                            @this.log?.logDebug("unacceptable default value ({dv}) datatype: {type}", dv, dv.GetType());
+                            @this.log?.logWarning(null, "unacceptable default value ({dv}) datatype: {type}", dv, dv.GetType());
                             val = Convert.ChangeType(v, dv.GetType()); // typeof(int)
                             old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
                         }
@@ -588,7 +588,7 @@ namespace HzNS.Cmdr.Internal
             {
                 // ReSharper disable once UnusedVariable
                 var sw = Util.SwitchChar(longOpt);
-                @this.log?.logDebug("  ---> flag matched: {SW:l}{Fragment:l}", sw, fragment);
+                @this.log?.logDebug("  ---> flag matched: {Fragment}", sw + fragment);
                 // if (flag is BaseFlag<bool> f)
                 {
                     flag.setValueRecursive("HitCount", flag.HitCount + 1);
