@@ -50,7 +50,7 @@ namespace HzNS.Cmdr
                 a.Add(key);
                 var path = string.Join(".", a.ToArray());
                 print($"  {path,-45}", DefaultPainter.ColorDesc);
-                print($"{val?.ToStringEx()}", DefaultPainter.ColorNormal);
+                print($"{val?.ToStringEx(true)}", DefaultPainter.ColorNormal);
                 print($" ({val?.GetType()})\n", DefaultPainter.ColorDesc);
             }
         }
