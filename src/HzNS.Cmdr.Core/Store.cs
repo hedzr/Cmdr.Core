@@ -82,9 +82,9 @@ namespace HzNS.Cmdr
         {
             var (slot, vk) = FindBy(key);
             var v = slot?.Values[vk];
-#pragma warning disable CS8653
+#pragma warning disable CS8603,CS8653
             if (v == null) return defaultValues.Length > 0 ? defaultValues[^1] : default(T);
-#pragma warning restore CS8653
+#pragma warning restore CS8603,CS8653
 
             if (typeof(T) == v.GetType())
                 return (T) v;
@@ -593,7 +593,7 @@ namespace HzNS.Cmdr
                     throw new CmdrException($"converting {it} to {typeof(T)} failed.", ex);
                 }
 
-                if (t is T ts) tv = ts;
+                if (t is T ts) return ts;
             }
 
             return tv;

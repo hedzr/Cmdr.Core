@@ -1,0 +1,73 @@
+version: 2.1
+
+orbs:
+  win: circleci/windows@2.2.0
+
+jobs:
+  test:
+    description: Setup and run application tests
+    executor:
+      name: win/default
+    steps:
+      - checkout
+      - run:
+          name: "Print Working Directory"
+          command: pwd
+          # from C:\Users\circleci\project
+      - restore_cache:
+          keys:
+            - dotnet-packages-v1-{{ checksum "src/HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj" }}
+      - run:
+          name: "Install project dependencies"
+          command: cd src; dotnet.exe restore
+      - save_cache:
+          paths:
+            - C:\Users\circleci\.nuget\packages
+          key: dotnet-packages-v1-{{ checksum "src/HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj" }}
+      - run:
+          name: "Run Application Tests"
+          command: dotnet.exe test -v n --results-directory:test_coverage --collect:"Code Coverage" src/HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj
+      - run:
+          name: "Print Working Directory"
+          command: pwd
+      - store_artifacts:
+          path: C:\Users\circleci\project\test_coverage
+
+  build:
+    description: Build application with Release configuration
+    executor: win/default
+    steps:
+      - checkout
+      - run: |
+          cd src
+          dotnet build --configuration Release
+      - run: |
+          echo "publishing..."
+          pwd
+          $ErrorActionPreference = 'SilentlyContinue'
+          dotnet.exe --version
+          dotnet.exe nuget push "src\HzNS.Cmdr.Logger.Serilog\bin\Release\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
+          echo "passed"
+      # dornet nuget push bug: error: File does not exist, *.snupkg
+      # https://github.com/NuGet/Home/issues/8148
+      # ...
+      - run: |
+          echo "publishing..."
+          pwd
+          $ErrorActionPreference = 'SilentlyContinue'
+          dotnet.exe nuget push "src\HzNS.Cmdr.Core\bin\Release\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
+          echo "passed"
+
+
+workflows:
+  test_and_build:
+    jobs:
+      - test
+      - build:
+          requires:
+            - test
+
+
+
+
+

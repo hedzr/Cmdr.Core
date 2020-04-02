@@ -6,9 +6,10 @@
     },
     "publicReleaseRefSpec": [
         "^refs/heads/master$", // we release out of master
-        "^refs/tags/v\\d+\\.\\d+.\\d+",
-        "^refs/heads/devel$",
-        "^refs/heads/v\\d+\\.\\d+.\\d+$" // we also release vX.Y branches
+        "^refs/tags/v\\d+\\.\\d+"
+        // "^refs/tags/v\\d+\\.\\d+.\\d+",
+        // "^refs/heads/devel$",
+        // "^refs/heads/v\\d+\\.\\d+.\\d+$" // we also release vX.Y branches
     ],
     "nugetPackageVersion": {
         "semVer": 2
