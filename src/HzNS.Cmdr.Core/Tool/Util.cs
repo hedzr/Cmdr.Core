@@ -58,9 +58,9 @@ namespace HzNS.Cmdr.Tool
         public static T GetEnvValue<T>(string key, params T[] defaultValues)
         {
             var v = Environment.GetEnvironmentVariable(key);
-#pragma warning disable CS8653
+#pragma warning disable CS8603,CS8653
             if (string.IsNullOrWhiteSpace(v)) return defaultValues.Length > 0 ? defaultValues[^1] : default(T);
-#pragma warning restore CS8653
+#pragma warning restore CS8603,CS8653
 
             if (typeof(T) == typeof(string))
                 return (T) (object) v;
