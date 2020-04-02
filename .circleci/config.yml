@@ -7,7 +7,7 @@ jobs:
   test:
     description: Setup and run application tests
     executor:
-      name: windows/default
+      name: win/default
     steps:
       - checkout
       - restore_cache:
