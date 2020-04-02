@@ -2,6 +2,8 @@ bin/
 obj/
 /packages/
 
+build.sh
+
 *.dmp
 *.out
 *.log

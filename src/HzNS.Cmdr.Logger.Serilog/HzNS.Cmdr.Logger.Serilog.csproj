@@ -19,6 +19,7 @@
         <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
         <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
         <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
+        <PackageVersion>1.0.6</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>

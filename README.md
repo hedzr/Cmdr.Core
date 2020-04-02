@@ -389,20 +389,28 @@ The external logger has been removed from `Cmdr.Core`.
 
 But you can always enable one or customize yours. In the `HzNS.Cmdr.Logger.Serilog` package/project, we've give an implements and it's simple to use:
 
+1. Add `HzNS.Cmdr.Logger.Serilog` at first:
+
+```bash
+dotnet add package HzNS.Cmdr.Logger.Serilog --version 1.0.6
+```
+
+2. Modify the program entry:
+
 ```c#
     Cmdr.NewWorker(RootCommand.New(
                 new AppInfo {AppName = "mdxTool", AppVersion = "1.0.0"}, (root) =>
             {
-                root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
-                );
+                root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"});
             }), // <- RootCmd
             // Options ->
             (w) =>
             {
                 w.SetLogger(HzNS.Cmdr.Logger.Serilog.SerilogBuilder.Build((logger) =>
                 {
-                    logger.EnableCmdrLogInfo = false;
-                    logger.EnableCmdrLogTrace = false;
+                    // These following flags will be loaded from envvars such as '$CMDR_TRACE', ...
+                    // logger.EnableCmdrLogInfo = false;
+                    // logger.EnableCmdrLogTrace = false;
                 }));
 
                 // w.EnableDuplicatedCharThrows = true;
