@@ -26,7 +26,7 @@ jobs:
           key: dotnet-packages-v1-{{ checksum "src/HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj" }}
       - run:
           name: "Run Application Tests"
-          command: cd src; dotnet.exe test -v n --results-directory:test_coverage --collect:"Code Coverage" -p HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj
+          command: dotnet.exe test -v n --results-directory:test_coverage --collect:"Code Coverage" src/HzNS.Cmdr.Core/HzNS.Cmdr.Core.csproj
       - run:
           name: "Print Working Directory"
           command: pwd
