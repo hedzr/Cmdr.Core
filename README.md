@@ -10,7 +10,7 @@ Useful POSIX command line arguments parser for dotNet. Hierarchy configurations 
 
 **WIP**
 
-The Pre-release is coming soon.
+The Pre-release has been out and the final first coming soon.
 
 - dotNet Core 3.0+
 - dotNet Standard 2.1+
@@ -27,7 +27,7 @@ $ dotnet add package HzNS.Cmdr.Core --version 1.0.29
 
 Please replace `1.0.29` with the newest version, see the nuget badge icon.
 
-A version like `1.0.85-g0c26c61d7f` has a extra building information from CI, you can cut off it while adding it to your project.
+A version like `1.0.85-g0c26c61d7f` has a extra building information from CI, you can cut off the extra part while adding it to your project.
 
 
 ## Features
