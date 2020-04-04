@@ -20,8 +20,6 @@
         <RepositoryUrl>https://github.com/hedzr/Cmdr.Core</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageReleaseNotes>command-line argument POSIX style parser</PackageReleaseNotes>
-			  <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
-			  <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
 			<NrtShowRevision>true</NrtShowRevision>
 <!--        <NrtRevisionFormat>{semvertag+chash:7}.{c:uymd}{c:uhm}</NrtRevisionFormat>-->
         <NrtRevisionFormat>{semvertag+chash:7}</NrtRevisionFormat>
@@ -29,6 +27,15 @@
         <NrtShowRevision>true</NrtShowRevision>
         <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
         <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DebugSymbols>true</DebugSymbols>
+      <EmbedAllSources>true</EmbedAllSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+      <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
+      <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
     </PropertyGroup>
 
     <ItemGroup>
