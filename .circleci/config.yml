@@ -46,6 +46,7 @@ jobs:
           pwd
           $ErrorActionPreference = 'SilentlyContinue'
           dotnet.exe --version
+          dotnet pack "src\HzNS.Cmdr.Logger.Serilog\HzNS.Cmdr.Logger.Serilog.csproj" --include-symbols -p:SymbolPackageFormat=snupkg
           dotnet.exe nuget push "src\HzNS.Cmdr.Logger.Serilog\bin\Release\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
           echo "passed"
       # dornet nuget push bug: error: File does not exist, *.snupkg
@@ -55,6 +56,7 @@ jobs:
           echo "publishing..."
           pwd
           $ErrorActionPreference = 'SilentlyContinue'
+          dotnet pack "src\HzNS.Cmdr.Core\HzNS.Cmdr.Core.csproj" --include-symbols -p:SymbolPackageFormat=snupkg
           dotnet.exe nuget push "src\HzNS.Cmdr.Core\bin\Release\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
           echo "passed"
 
@@ -66,6 +68,12 @@ workflows:
       - build:
           requires:
             - test
+          filters:
+            branches:
+              # ignore: /.*/
+              only: master
+            tags:
+              only: /^v\d+\.\d+\.\d+$/
 
 
 
