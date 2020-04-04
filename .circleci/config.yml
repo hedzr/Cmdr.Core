@@ -40,13 +40,13 @@ jobs:
       - checkout
       - run: |
           cd src
-          dotnet build --configuration Release
+          dotnet build --configuration Debug
       - run: |
           echo "publishing..."
           pwd
           $ErrorActionPreference = 'SilentlyContinue'
           dotnet.exe --version
-          dotnet pack "src\HzNS.Cmdr.Logger.Serilog\HzNS.Cmdr.Logger.Serilog.csproj"  --configuration Release -v normal --include-source --include-symbols -p:SymbolPackageFormat=snupkg
+          dotnet pack "src\HzNS.Cmdr.Logger.Serilog\HzNS.Cmdr.Logger.Serilog.csproj"  --configuration Debug -v normal --include-source --include-symbols -p:SymbolPackageFormat=snupkg
           echo "symbols and sources"
           dotnet.exe nuget push "src\HzNS.Cmdr.Logger.Serilog\bin\Release\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
           echo "passed"
@@ -57,7 +57,7 @@ jobs:
           echo "publishing..."
           pwd
           $ErrorActionPreference = 'SilentlyContinue'
-          dotnet pack "src\HzNS.Cmdr.Core\HzNS.Cmdr.Core.csproj"  --configuration Release -v normal --include-source --include-symbols -p:SymbolPackageFormat=snupkg
+          dotnet pack "src\HzNS.Cmdr.Core\HzNS.Cmdr.Core.csproj"  --configuration Debug -v normal --include-source --include-symbols -p:SymbolPackageFormat=snupkg
           echo "symbols and sources"
           dotnet.exe nuget push "src\HzNS.Cmdr.Core\bin\Release\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
           echo "passed"
