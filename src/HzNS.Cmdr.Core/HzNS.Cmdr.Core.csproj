@@ -3,7 +3,7 @@
     <PropertyGroup>
         <RootNamespace>HzNS.Cmdr</RootNamespace>
         <Nullable>enable</Nullable>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+<!--        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>-->
 <!--        <AssemblyVersion>1.0.1</AssemblyVersion>-->
 <!--        <FileVersion>1.0.1</FileVersion>-->
         
