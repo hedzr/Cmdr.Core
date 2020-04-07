@@ -71,7 +71,7 @@ namespace HzNS.Cmdr.Internal
                 @this.log?.logDebug(string.Empty);
                 @this.log?.logDebug("    -> arg {Index}: {Argument}", i, arg);
                 var hiddenOpt = arg.StartsWith("~~");
-                var isOpt = arg[0] == '-' || arg[0] == '/' || hiddenOpt;
+                var isOpt = arg[0] == '-' /*|| arg[0] == '/'*/ || hiddenOpt;
                 var longOpt = arg.StartsWith("--") || hiddenOpt;
                 var preAte = 0;
 

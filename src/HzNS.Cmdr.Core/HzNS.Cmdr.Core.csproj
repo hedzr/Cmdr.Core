@@ -3,7 +3,7 @@
     <PropertyGroup>
         <RootNamespace>HzNS.Cmdr</RootNamespace>
         <Nullable>enable</Nullable>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+<!--        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>-->
 <!--        <AssemblyVersion>1.0.1</AssemblyVersion>-->
 <!--        <FileVersion>1.0.1</FileVersion>-->
         
@@ -20,24 +20,52 @@
         <RepositoryUrl>https://github.com/hedzr/Cmdr.Core</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageReleaseNotes>command-line argument POSIX style parser</PackageReleaseNotes>
-			<NrtShowRevision>true</NrtShowRevision>
-<!--        <NrtRevisionFormat>{semvertag+chash:7}.{c:uymd}{c:uhm}</NrtRevisionFormat>-->
+        <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
+        <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <NrtShowRevision>true</NrtShowRevision>
+        <!--        <NrtRevisionFormat>{semvertag+chash:7}.{c:uymd}{c:uhm}</NrtRevisionFormat>-->
         <NrtRevisionFormat>{semvertag+chash:7}</NrtRevisionFormat>
         <NrtResolveSimpleAttributes>true</NrtResolveSimpleAttributes>
         <NrtShowRevision>true</NrtShowRevision>
-        <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
-        <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <DebugSymbols>true</DebugSymbols>
-      <EmbedAllSources>true</EmbedAllSources>
+    <PropertyGroup>
+        <DebugSymbols>true</DebugSymbols>
+        <EmbedAllSources>true</EmbedAllSources>
+
+        <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
+        <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
+
+        <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+        <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+        <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-      <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
-      <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
+
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+    </ItemGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DebugSymbols>true</DebugSymbols>
+        <EmbedAllSources>true</EmbedAllSources>
+
+        <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
+        <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    </PropertyGroup>
+    
     <ItemGroup>
         <ProjectReference Include="..\HzNS.Cmdr.Logger\HzNS.Cmdr.Logger.csproj" />
         <AssemblyAttribute Include="HzNS.Cmdr.Builder.BuildDateAttribute">
