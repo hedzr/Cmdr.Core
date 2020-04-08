@@ -79,8 +79,28 @@ namespace Simple
                                     Description = "Ignore TLS host verification",
                                     Group = "Consul",
                                 })
-                            );
+                            )
+                            .AddCommand(new Command
+                            {
+                                Short = "zm", Long = "zm", Description = "test mazy",
+                                Action = (worker, opt, remainArgs) => { Console.WriteLine($"{B / _a}"); },
+                            });
 
+                        
+                        root.AddCommand(new Command
+                            {
+                                Short = "s",
+                                Long = "server",
+                                Description = "Communicating Protocol Server",
+                            }
+                            .AddCommand(new ServerStartCmd())
+                            .AddCommand(new ServerStopCmd())
+                            .AddCommand(new ServerStatusCmd())
+                            .AddCommand(new ServerReloadCmd())
+                            .AddCommand(new ServerRestartCmd())
+                        );
+                        
+                        
                         root.OnSet = (worker, flag, oldValue, newValue) =>
                         {
                             if (Cmdr.Instance.Store.GetAs<bool>("quiet")) return;
