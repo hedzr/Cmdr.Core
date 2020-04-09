@@ -33,7 +33,7 @@ namespace HzNS.Cmdr
             dumpTo(print, Root);
         }
 
-        public void dumpTo(Action<string, string> print, Slot? node, int level = 0, params string[] parts)
+        private void dumpTo(Action<string, string> print, Slot? node, int level = 0, params string[] parts)
         {
             if (node == null) return;
 
@@ -128,7 +128,7 @@ namespace HzNS.Cmdr
             return slot != null ? getAsMap(slot) : new SlotEntries();
         }
 
-        public SlotEntries getAsMap(Slot? slot)
+        private SlotEntries getAsMap(Slot? slot)
         {
             var dict = new SlotEntries();
             var stack = new List<SlotEntries>();
@@ -672,7 +672,7 @@ namespace HzNS.Cmdr
             delete(WrapKeys(dottedKey), out value, recursive);
         }
 
-        public void delete(IEnumerable<string> wrappedKeys, out object? value, bool? recursive = true)
+        private void delete(IEnumerable<string> wrappedKeys, out object? value, bool? recursive = true)
         {
             value = null;
             var (found, slot, valueKey) = hasKeys(wrappedKeys, Root, true);

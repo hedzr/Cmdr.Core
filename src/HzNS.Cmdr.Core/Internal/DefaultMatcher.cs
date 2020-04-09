@@ -283,9 +283,10 @@ namespace HzNS.Cmdr.Internal
                         }
                     }
 
-                    @this.log?.logDebug("    - for next part: {Part}, greedy={greedy}, pos={pos}, len={len}, siz={siz}",
-                        fragment.Substring(pos, len),
-                        EnableCmdrGreedyLongFlag, pos, len, siz);
+                    @this.log?.logDebug(
+                        "    - for next part: {Part}({Fragment}), greedy={greedy}, pos={pos}, len={len}, siz={siz}",
+                        pos + len < fragment.Length ? fragment.Substring(pos, len) : fragment,
+                        fragment, EnableCmdrGreedyLongFlag, pos, len, siz);
                     ccc = command;
                     if (len > 0 && pos < fragment.Length - bsw)
                         goto forEachFragmentParts;
@@ -352,129 +353,165 @@ namespace HzNS.Cmdr.Internal
             if (val is string v)
             {
                 string[] sv;
-                switch (dv)
+                try
                 {
-                    case string _:
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
-                        break;
-                    case string[] _:
-                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), sv);
-                        val = sv;
-                        break;
+                    switch (dv)
+                    {
+                        case string _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                            break;
+                        case string[] _:
+                            sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), sv);
+                            val = sv;
+                            break;
 
-                    case int[] _:
-                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                        var aiv = sv.Select(int.Parse);
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), aiv);
-                        val = aiv;
-                        break;
-                    case uint[] _:
-                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                        var uaiv = sv.Select(uint.Parse);
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), uaiv);
-                        val = uaiv;
+                        case int[] _:
+                            sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            var aiv = sv.Select(int.Parse);
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), aiv);
+                            val = aiv;
+                            break;
+                        case uint[] _:
+                            sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            var uaiv = sv.Select(uint.Parse);
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), uaiv);
+                            val = uaiv;
 
-                        break;
-                    case long[] _:
-                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                        var alv = sv.Select(long.Parse);
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), alv);
-                        val = alv;
-                        break;
-                    case ulong[] _:
-                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                        // ReSharper disable once IdentifierTypo
-                        var ualv = sv.Select(ulong.Parse);
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), ualv);
-                        val = ualv;
-                        break;
-                    case short[] _:
-                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                        var asv = sv.Select(short.Parse);
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), asv);
-                        val = asv;
-                        break;
-                    case ushort[] _:
-                        sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                        // ReSharper disable once IdentifierTypo
-                        var uasv = sv.Select(ushort.Parse);
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), uasv);
-                        val = uasv;
-                        break;
+                            break;
+                        case long[] _:
+                            sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            var alv = sv.Select(long.Parse);
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), alv);
+                            val = alv;
+                            break;
+                        case ulong[] _:
+                            sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            // ReSharper disable once IdentifierTypo
+                            var ualv = sv.Select(ulong.Parse);
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), ualv);
+                            val = ualv;
+                            break;
+                        case short[] _:
+                            sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            var asv = sv.Select(short.Parse);
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), asv);
+                            val = asv;
+                            break;
+                        case ushort[] _:
+                            sv = v.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            // ReSharper disable once IdentifierTypo
+                            var uasv = sv.Select(ushort.Parse);
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), uasv);
+                            val = uasv;
+                            break;
 
-                    // more built-in types
+                        case byte[] _:
+                            break; // TODO: base64?
+                        case sbyte[] _:
+                            break; // TODO: base64?
 
-                    case char _:
-                        if (!string.IsNullOrEmpty(v))
-                        {
-                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), v[0]);
-                            val = v[0];
-                        }
+                        // more built-in types
 
-                        break;
-
-                    case float _:
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), float.Parse(v));
-                        // val=float.Parse(v);
-                        break;
-                    case double _:
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), double.Parse(v));
-                        break;
-                    case decimal _:
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), decimal.Parse(v));
-                        break;
-
-                    // time
-
-                    case TimeSpan _:
-                        var tsVal = flg.UseMomentTimeFormat
-                            ? new TimeSpan().FromMoment(v)
-                            : TimeSpanEx.Parse(v);
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), tsVal);
-                        break;
-                    case DateTime _:
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTimeEx.Parse(v));
-                        break;
-                    case DateTimeOffset _:
-                        old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTimeOffsetEx.Parse(v));
-                        break;
-
-                    // fallback converter
-
-                    default:
-                        if (dv != null)
-                        {
-                            @this.log?.logWarning(null, "unacceptable default value ({dv}) datatype: {type}", dv,
-                                dv.GetType());
-                            try
+                        case char _:
+                            if (!string.IsNullOrEmpty(v))
                             {
-                                val = Convert.ChangeType(v, dv.GetType()); // typeof(int)
-                                old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                                old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), v[0]);
+                                val = v[0];
                             }
-                            catch (FormatException ex)
-                            {
-                                @this.log?.logWarning(ex,
-                                    "    changeType failed (FormatException) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
-                                    v, dv.GetType(), atePos, ateArgs);
-                                val = dv;
-                                old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
-                                atePos = ateArgs = 0;
-                                // throw;
-                            }
-                            catch (InvalidCastException ex)
-                            {
-                                @this.log?.logWarning(ex,
-                                    "    changeType failed (InvalidCastException) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
-                                    v, dv.GetType(), atePos, ateArgs);
-                                val = dv;
-                                old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
-                                atePos = ateArgs = 0;
-                                // throw;
-                            }
-                        }
 
-                        break;
+                            break;
+                        case byte _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), byte.Parse(v));
+                            break;
+                        case sbyte _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), sbyte.Parse(v));
+                            break;
+                        case short _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), short.Parse(v));
+                            break;
+                        case ushort _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), ushort.Parse(v));
+                            break;
+                        case int _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), int.Parse(v));
+                            break;
+                        case uint _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), uint.Parse(v));
+                            break;
+                        case long _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), long.Parse(v));
+                            break;
+                        case ulong _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), ulong.Parse(v));
+                            break;
+                        case float _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), float.Parse(v));
+                            // val=float.Parse(v);
+                            break;
+                        case double _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), double.Parse(v));
+                            break;
+                        case decimal _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), decimal.Parse(v));
+                            break;
+
+                        // time
+
+                        case TimeSpan _:
+                            var tsVal = flg.UseMomentTimeFormat
+                                ? new TimeSpan().FromMoment(v)
+                                : TimeSpanEx.Parse(v);
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), tsVal);
+                            break;
+                        case DateTime _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTimeEx.Parse(v));
+                            break;
+                        case DateTimeOffset _:
+                            old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), DateTimeOffsetEx.Parse(v));
+                            break;
+
+                        // fallback converter
+
+                        default:
+                            if (dv != null)
+                            {
+                                @this.log?.logWarning(null,
+                                    "unacceptable default value ({dv}) datatype: {type}. (extracting {part} at {i}, fragment={fragment})",
+                                    dv, dv.GetType(), part, i, fragment);
+                                try
+                                {
+                                    val = Convert.ChangeType(v, dv.GetType()); // typeof(int)
+                                    old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                                }
+                                catch (FormatException ex)
+                                {
+                                    @this.log?.logWarning(ex,
+                                        "    changeType failed (FormatException) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
+                                        v, dv.GetType(), atePos, ateArgs);
+                                    val = dv;
+                                    old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                                    atePos = ateArgs = 0;
+                                    // throw;
+                                }
+                                catch (InvalidCastException ex)
+                                {
+                                    @this.log?.logWarning(ex,
+                                        "    changeType failed (InvalidCastException) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
+                                        v, dv.GetType(), atePos, ateArgs);
+                                    val = dv;
+                                    old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                                    atePos = ateArgs = 0;
+                                    // throw;
+                                }
+                            }
+
+                            break;
+                    }
+                }
+                catch (FormatException ex)
+                {
+                    throw new CmdrException($"Format PRB: part='{part}'/'{fragment}, pos={pos}'", ex);
                 }
             }
 
@@ -549,13 +586,13 @@ namespace HzNS.Cmdr.Internal
                 c.HitTitle = arg;
             }
 
-            var remainArgs = args.Where((it, idx) => idx >= position).ToArray();
+            var remainArgs = @this.RemainsArgs;
 
             var root = cmd.FindRoot();
             if (root?.PreAction != null && !root.PreAction.Invoke(@this, cmd, remainArgs))
-                throw new ShouldBeStopException();
+                throw new ShouldBeStopException {Position = position};
             if (!ReferenceEquals(root, cmd) && cmd.PreAction != null && !cmd.PreAction.Invoke(@this, cmd, remainArgs))
-                throw new ShouldBeStopException();
+                throw new ShouldBeStopException {Position = position};
 
             try
             {
@@ -607,7 +644,7 @@ namespace HzNS.Cmdr.Internal
             var remainArgs = args.Where((it, idx) => idx >= position).ToArray();
 
             if (flag.PreAction != null && !flag.PreAction.Invoke(@this, flag, remainArgs))
-                throw new ShouldBeStopException();
+                throw new ShouldBeStopException {Position = position};
 
             try
             {

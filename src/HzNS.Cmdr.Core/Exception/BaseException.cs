@@ -30,8 +30,8 @@ namespace HzNS.Cmdr.Exception
     public class UnknownException : BaseException
     {
     }
-    
-    
+
+
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     public class CmdrException : BaseException
     {
@@ -70,6 +70,7 @@ namespace HzNS.Cmdr.Exception
 
     public class ShouldBeStopException : CmdrException
     {
+        public int Position { get; set; }
     }
 
     public class CmdrFatalException : CmdrException

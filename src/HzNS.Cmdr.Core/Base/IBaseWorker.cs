@@ -14,6 +14,7 @@ namespace HzNS.Cmdr.Base
 
         ICommand? ParsedCommand { get; set; }
         IFlag? ParsedFlag { get; set; }
+        string[] RemainsArgs { get; set; }
 
         bool EnableDuplicatedCharThrows { get; set; }
         bool EnableEmptyLongFieldThrows { get; set; }
