@@ -86,21 +86,10 @@ namespace Simple
                                 Action = (worker, opt, remainArgs) => { Console.WriteLine($"{B / _a}"); },
                             });
 
-                        
-                        root.AddCommand(new Command
-                            {
-                                Short = "s",
-                                Long = "server",
-                                Description = "Communicating Protocol Server",
-                            }
-                            .AddCommand(new ServerStartCmd())
-                            .AddCommand(new ServerStopCmd())
-                            .AddCommand(new ServerStatusCmd())
-                            .AddCommand(new ServerReloadCmd())
-                            .AddCommand(new ServerRestartCmd())
-                        );
-                        
-                        
+
+                        root.AddCommand(new ServerCmd());
+
+
                         root.OnSet = (worker, flag, oldValue, newValue) =>
                         {
                             if (Cmdr.Instance.Store.GetAs<bool>("quiet")) return;
@@ -120,8 +109,8 @@ namespace Simple
                 {
                     w.SetLogger(HzNS.Cmdr.Logger.Serilog.SerilogBuilder.Build((logger) =>
                     {
-                        logger.EnableCmdrLogInfo = true;
-                        logger.EnableCmdrLogTrace = true;
+                        // logger.EnableCmdrLogInfo = true;
+                        // logger.EnableCmdrLogTrace = true;
                     }));
 
                     w.EnableCmdrGreedyLongFlag = true;
@@ -129,7 +118,7 @@ namespace Simple
                     // w.EnableEmptyLongFieldThrows = true;
 
                     w.RegisterExternalConfigurationsLoader(ExternalConfigLoader);
-                    
+
                     w.OnDuplicatedCommandChar = (worker, command, isShort, matchingArg) => false;
                     w.OnDuplicatedFlagChar = (worker, command, flag, isShort, matchingArg) => false;
                     w.OnCommandCannotMatched = (parsedCommand, matchingArg) => false;
@@ -151,7 +140,7 @@ namespace Simple
                 // Console.WriteLine($"AssemblyProductAttribute: {VersionUtil.AssemblyProductAttribute}");
                 // Console.WriteLine($"      FileProductVersion: {VersionUtil.FileVersionInfo.ProductVersion}");
                 // Console.WriteLine();
-                
+
                 // Console.WriteLine("Press 'q' to quit the sample.");
                 // while (Console.Read() != 'q')
                 // {
@@ -166,7 +155,7 @@ namespace Simple
             // throw new NotImplementedException();
         }
 
-        
+
         private static int _a = 9;
         private const int B = 10;
     }

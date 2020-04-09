@@ -63,7 +63,8 @@ namespace HzNS.Cmdr.Internal.Painter
 
             if (!string.IsNullOrWhiteSpace(_root?.Description))
             {
-                oln("\nDescription:");
+                // oln("\nDescription:");
+                oln("");
                 olnIndent(_root?.Description, ColorDesc, 4);
             }
 
@@ -79,7 +80,8 @@ namespace HzNS.Cmdr.Internal.Painter
                 // ReSharper disable once InvertIf
                 if (!string.IsNullOrWhiteSpace(_root?.Examples))
                 {
-                    oln("\nExamples:");
+                    oln("");
+                    oln("Examples:");
                     olnIndent(_root?.Examples, ColorDesc, 4);
                 }
             }
@@ -109,11 +111,23 @@ namespace HzNS.Cmdr.Internal.Painter
         {
             if (_quiteMode) return;
 
+            if (!string.IsNullOrWhiteSpace(cmd.DescriptionLong))
+            {
+                oln("\nDescription:");
+                olnIndent(cmd.DescriptionLong, ColorDesc, 4);
+            }
+            else if (!string.IsNullOrWhiteSpace(cmd.Description))
+            {
+                oln("\nDescription:");
+                olnIndent(cmd.Description, ColorDesc, 4);
+            }
+
             // ReSharper disable once InvertIf
             if (!string.IsNullOrWhiteSpace(cmd.Examples))
             {
+                oln("");
                 oln("Examples:");
-                oln(cmd.Examples, ColorDesc);
+                olnIndent(cmd.Examples, ColorDesc, 4);
             }
         }
 
@@ -238,7 +252,7 @@ namespace HzNS.Cmdr.Internal.Painter
 
             oln("", ColorDesc);
             oln("Type '-h'/'-?' or '--help' to get command help screen.", ColorDesc);
-            oln("More: '-D'/'--debug', '-v'|'--verbose', '-V'/'--version', '-#'/'--build-info'...", ColorDesc);
+            oln("More: '-D'/'--debug', '-v'/'--verbose', '-V'/'--version', '-#'/'--build-info'...", ColorDesc);
         }
 
         public void PrintEpilogue(ICommand cmd, IBaseWorker w, IList<string> remainArgs)
@@ -309,7 +323,7 @@ namespace HzNS.Cmdr.Internal.Painter
             if (root != null)
             {
                 oln(string.Empty);
-                
+
                 if (_quiteMode)
                 {
                     oln($"{root.AppInfo.AppVersion}");
@@ -388,7 +402,6 @@ namespace HzNS.Cmdr.Internal.Painter
                         o($"=> ");
                         o($"[{flg.HitCount}] ", ColorDesc);
                         oln($"{v?.ToStringEx(true)}");
-                        
                     }
 
                     return true;
@@ -405,7 +418,7 @@ namespace HzNS.Cmdr.Internal.Painter
         {
             var ts = tabStop - textL.Length;
             if (ts <= 0) ts = textL.Length;
-            
+
             if (rightAlign)
             {
                 var spaces = " ".Repeat(ts - 1);

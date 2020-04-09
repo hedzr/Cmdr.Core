@@ -119,7 +119,7 @@ namespace HzNS.Cmdr.Internal
             Painter.PrintCommandsAndOptions(command, commandLines, optionLines,
                 tabStopCalculated, false, w, remainArgs);
 
-            // Painter.PrintTailLines(command, w, remainArgs);
+            Painter.PrintTailLines(command, w, remainArgs);
             Painter.PrintEpilogue(command, w, remainArgs);
             // writer.WriteLine("");
         }
@@ -157,7 +157,7 @@ namespace HzNS.Cmdr.Internal
 
                     if (sb.Length >= tabStopCalculated) tabStopCalculated = sb.Length + 1;
                     commandLines[cmd.Group].Add(new TwoString
-                    { Part1 = sb.ToString(), Part2 = sb2.ToString() });
+                        {Part1 = sb.ToString(), Part2 = sb2.ToString()});
 
                     return true;
                 },
@@ -208,7 +208,7 @@ namespace HzNS.Cmdr.Internal
 
                     if (sb.Length >= tabStopCalculated) tabStopCalculated = sb.Length + 1;
                     commandLines[cmd.Group].Add(new TwoString
-                    { Level = level, Part1 = sb.ToString(), Part2 = sb2.ToString() });
+                        {Level = level, Part1 = sb.ToString(), Part2 = sb2.ToString()});
 
                     return true;
                 },
@@ -228,13 +228,13 @@ namespace HzNS.Cmdr.Internal
                     var lvl = UpperBoundLevel - owner.FindLevel();
                     if (!optionLines.ContainsKey(lvl))
                         optionLines.TryAdd(lvl,
-                            new CmdFlagLines { cmd = owner, lines = new SortedDictionary<string, List<TwoString>>() });
+                            new CmdFlagLines {cmd = owner, lines = new SortedDictionary<string, List<TwoString>>()});
                     if (!optionLines[lvl].lines.ContainsKey(flag.Group))
                         optionLines[lvl].lines.TryAdd(flag.Group, new List<TwoString>());
 
                     if (sb.Length >= tabStopCalculated) tabStopCalculated = sb.Length + 1;
                     optionLines[lvl].lines[flag.Group].Add(new TwoString
-                    { Level = level, Flag = flag, Part1 = sb.ToString(), Part2 = sb2.ToString() });
+                        {Level = level, Flag = flag, Part1 = sb.ToString(), Part2 = sb2.ToString()});
 
                     // if (!optionLines.ContainsKey(level))
                     //     optionLines.TryAdd(level, new CmdFlags{cmd=owner,lines= new SortedDictionary<string, List<TwoString>>(),}};
@@ -306,7 +306,7 @@ namespace HzNS.Cmdr.Internal
 
                 if (sb.Length >= tabStopCalculated) tabStopCalculated = sb.Length + 1;
                 commandLines[cmd.Group].Add(new TwoString
-                { Level = level, Part1 = sb.ToString(), Part2 = sb2.ToString() });
+                    {Level = level, Part1 = sb.ToString(), Part2 = sb2.ToString()});
 
                 return true;
             };
@@ -361,13 +361,13 @@ namespace HzNS.Cmdr.Internal
                 var lvl = UpperBoundLevel - owner.FindLevel();
                 if (!optionLines.ContainsKey(lvl))
                     optionLines.TryAdd(lvl,
-                        new CmdFlagLines { cmd = owner, lines = new SortedDictionary<string, List<TwoString>>() });
+                        new CmdFlagLines {cmd = owner, lines = new SortedDictionary<string, List<TwoString>>()});
                 if (!optionLines[lvl].lines.ContainsKey(flag.Group))
                     optionLines[lvl].lines.TryAdd(flag.Group, new List<TwoString>());
 
                 if (sb.Length >= tabStop) tabStop = sb.Length + 1;
                 optionLines[lvl].lines[flag.Group].Add(new TwoString
-                { Level = level, Flag = flag, Part1 = sb.ToString(), Part2 = sb2.ToString() });
+                    {Level = level, Flag = flag, Part1 = sb.ToString(), Part2 = sb2.ToString()});
 
                 // ReSharper disable once InvertIf
                 if (!noBacktrace)

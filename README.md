@@ -2,9 +2,9 @@
 
 <!-- 
 [![CircleCI](https://circleci.com/gh/hedzr/Cmdr.Core/tree/circleci-project-setup.svg?style=shield)](https://circleci.com/gh/hedzr/Cmdr.Core/tree/circleci-project-setup) -->
-[![CircleCI](https://circleci.com/gh/hedzr/Cmdr.Core/tree/master.svg?style=shield)](https://app.circleci.com/pipelines/github/hedzr/Cmdr.Core)
+[![CircleCI](https://circleci.com/gh/hedzr/Cmdr.Core/tree/master.svg?style=shield)](https://app.circleci.com/pipelines/github/hedzr/Cmdr.Core) <!--
 Stable: [![Nuget (with prereleases)](https://img.shields.io/nuget/v/HzNS.Cmdr.Core)](https://www.nuget.org/packages/HzNS.Cmdr.Core/)
-Pre:    [![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/HzNS.Cmdr.Core)](https://www.nuget.org/packages/HzNS.Cmdr.Core/) 
+Pre:   --> [![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/HzNS.Cmdr.Core)](https://www.nuget.org/packages/HzNS.Cmdr.Core/) 
 
 
 

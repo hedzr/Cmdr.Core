@@ -282,7 +282,7 @@ namespace Simple
                 })
                 .AddFlag(new Flag<string>
                 {
-                    DefaultValue = "api.github.com", Long = "addr", Short = "", Aliases = new[] {"address"},
+                    DefaultValue = "api.github.com", Long = "api-addr", Short = "", Aliases = new[] {"api-address"},
                     PlaceHolder = "HOST[:PORT]",
                     ToggleGroup = "Server",
                     Description = "network address of the remote server."

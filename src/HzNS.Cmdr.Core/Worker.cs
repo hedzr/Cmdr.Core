@@ -55,6 +55,7 @@ namespace HzNS.Cmdr
 
         public ICommand? ParsedCommand { get; set; }
         public IFlag? ParsedFlag { get; set; }
+        public string[] RemainsArgs { get; set; } = { };
 
 
         /// <summary>
@@ -257,12 +258,15 @@ namespace HzNS.Cmdr
                     // -1-position
                     // m 0: -1 => 0 (x+1)
                     // m 1: -2 => 1
-                    var pos = -(1 + position);
-                    if (!this.onCommandMatched(args, pos > 0 ? pos + 1 : pos, "", ParsedCommand ?? _root))
+                    var pos1 = -(1 + position);
+                    var pos = pos1 > 0 ? pos1 + 1 : pos1;
+                    RemainsArgs = args.Where((it, idx) => idx >= pos).ToArray();
+                    if (!this.onCommandMatched(args, pos, "", ParsedCommand ?? _root))
                         throw new WantHelpScreenException();
                 }
                 else
                 {
+                    RemainsArgs = args.Where((it, idx) => idx >= position).ToArray();
                     if (!this.onCommandMatched(args, position, args[position - 1], ParsedCommand ?? _root))
                         throw new WantHelpScreenException();
                 }
@@ -274,13 +278,15 @@ namespace HzNS.Cmdr
                 // f5();
                 // show help screen
                 log?.logDebug("showing the help screen ...");
+                RemainsArgs = ex.RemainArgs;
                 Parsed = true;
                 ShowHelpScreen(this, ex.RemainArgs);
                 return 0;
             }
-            catch (ShouldBeStopException)
+            catch (ShouldBeStopException ex)
             {
                 // not an error
+                RemainsArgs = args.Where((it, idx) => idx >= ex.Position).ToArray();
                 Parsed = true;
                 return 0;
             }

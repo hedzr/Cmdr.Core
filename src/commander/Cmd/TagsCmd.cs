@@ -9,7 +9,7 @@ using YamlDotNet.Serialization;
 
 namespace commander.Cmd
 {
-   public class TagsAddCmd : BaseCommand
+    public class TagsAddCmd : BaseCommand
     {
         public TagsAddCmd() : base("a", "add", new[] {"create", "new"}, "add tags to a service", "", "")
         {
@@ -283,7 +283,7 @@ namespace commander.Cmd
                 })
                 .AddFlag(new Flag<string>
                 {
-                    DefaultValue = "api.github.com", Long = "addr", Short = "", Aliases = new[] {"address"},
+                    DefaultValue = "api.github.com", Long = "api-addr", Short = "", Aliases = new[] {"api-address"},
                     PlaceHolder = "HOST[:PORT]",
                     ToggleGroup = "Server",
                     Description = "network address of the remote server."
