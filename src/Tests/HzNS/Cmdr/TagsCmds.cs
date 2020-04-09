@@ -8,7 +8,7 @@ using YamlDotNet.Serialization;
 // ReSharper disable MemberCanBePrivate.Global
 namespace Tests.HzNS.Cmdr
 {
-   public class TagsAddCmd : BaseCommand
+    public class TagsAddCmd : BaseCommand
     {
         public TagsAddCmd() : base("a", "add", new[] {"create", "new"}, "add tags to a service", "", "")
         {
@@ -229,13 +229,13 @@ namespace Tests.HzNS.Cmdr
                 {
                     DefaultValue = false, Long = "clear2", Short = "c2", Group = "Operate",
                     Description = "clear all tags."
-                }, true)
+                })
                 .AddFlag(new Flag<bool>
                 {
                     DefaultValue = false, Long = "such2", Short = "s2", Aliases = new[] {"such-a"},
                     ToggleGroup = "Mode",
                     Description = "such a bit."
-                })
+                }, true)
                 .AddFlag(new Flag<int>
                 {
                     DefaultValue = 0, Long = "retry2", Short = "t2", Aliases = new[] {"retry-times"},
@@ -282,7 +282,7 @@ namespace Tests.HzNS.Cmdr
                 })
                 .AddFlag(new Flag<string>
                 {
-                    DefaultValue = "api.github.com", Long = "addr", Short = "", Aliases = new[] {"address"},
+                    DefaultValue = "api.github.com", Long = "api-addr", Short = "", Aliases = new[] {"api-address"},
                     PlaceHolder = "HOST[:PORT]",
                     ToggleGroup = "Server",
                     Description = "network address of the remote server."
