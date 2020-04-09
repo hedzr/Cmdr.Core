@@ -574,7 +574,7 @@ namespace HzNS.Cmdr
             else
                 appendIts(node, key, v, toT<T>(val), appendToArray);
         }
-        
+
         private static T toT<T>(object? it)
         {
 #pragma warning disable CS8602, CS8653
@@ -596,7 +596,9 @@ namespace HzNS.Cmdr
                 if (t is T ts) return ts;
             }
 
+#pragma warning disable CS8603, CS8653
             return tv;
+#pragma warning restore CS8603, CS8653
         }
 
         private static (bool ok, T) toTSafe<T>(object? it)

@@ -21,9 +21,9 @@ namespace HzNS.Cmdr.Tool.Ext
         {
             if (null == convertibleValue)
             {
-#pragma warning disable CS8653
+#pragma warning disable CS8603, CS8653
                 return default; // default(T)
-#pragma warning restore CS8653
+#pragma warning restore CS8603, CS8653
             }
 
             if (!typeof(T).IsGenericType)
