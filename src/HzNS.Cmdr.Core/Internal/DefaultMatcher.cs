@@ -97,7 +97,7 @@ namespace HzNS.Cmdr.Internal
                             positionCopy = i + 1;
                             if (cmd.SubCommands.Count > 0)
                             {
-                                if (i == arg.Length - 1) throw new WantHelpScreenException();
+                                if (i >= args.Length) throw new WantHelpScreenException();
 
                                 var pos1 = match(@this, cmd, args, i + 1, level + 1);
                                 if (pos1 < 0)
@@ -219,7 +219,8 @@ namespace HzNS.Cmdr.Internal
                     preAte += ateArgs;
                     pos += atePos;
 
-                    @this.log?.logDebug("    ++ flag matched: {SW:l}{Part:l} = {oldVal} -> {value}. ate: [{pos},{args}]",
+                    @this.log?.logDebug(
+                        "    ++ flag matched: {SW:l}{Part:l} = {oldVal} -> {value}. ate: [{pos},{args}]",
                         Util.SwitchChar(longOpt), part, oldValue, value,
                         atePos, ateArgs);
 
@@ -237,7 +238,7 @@ namespace HzNS.Cmdr.Internal
 
                 if (matchedFlag == null)
                 {
-                    if (ccc.Owner != null && !ReferenceEquals(ccc,ccc.Owner))
+                    if (ccc.Owner != null && !ReferenceEquals(ccc, ccc.Owner))
                     {
                         ccc = ccc.Owner;
                         @this.log?.logDebug("    - try finding flag part {part} for `ccc`'s parent: {CccCommandTitle}",
@@ -245,7 +246,7 @@ namespace HzNS.Cmdr.Internal
                         goto backtraceAllParentFlags;
                     }
 
-                    @this.log?.logDebug("can't match a flag: {Argument}/part={Part}/fragment={Fragment}.", 
+                    @this.log?.logDebug("can't match a flag: {Argument}/part={Part}/fragment={Fragment}.",
                         arg, part, fragment);
                     onFlagCannotMatched(@this, args, i, part, longOpt, command);
                     // decidedLen = 1;
@@ -269,7 +270,7 @@ namespace HzNS.Cmdr.Internal
                         siz -= part.Length;
                         if (EnableCmdrGreedyLongFlag)
                         {
-                            len = siz;// - part.Length;
+                            len = siz; // - part.Length;
                             if (EnableCmdrGreedyIncrementalMode)
                                 pos += part.Length;
                             else
@@ -731,7 +732,8 @@ namespace HzNS.Cmdr.Internal
                 catch (KeyNotFoundException ex)
                 {
                     throw new CmdrException(
-                        $"Unexpected case: suggesting for '{fragment}' (position {position} and '{args[position]}')", ex);
+                        $"Unexpected case: suggesting for '{fragment}' (position {position} and '{args[position]}')",
+                        ex);
                 }
 
                 if (!cmd.IsRoot)
