@@ -45,6 +45,11 @@ namespace HzNS.Cmdr
         // ReSharper disable once ConvertToAutoPropertyWithPrivateSetter
         // ReSharper disable once UnusedMember.Global
         public IRootCommand RootCommand => _root;
+        
+        public IFlag? FindFlag(string dottedKey, IBaseOpt? @from = null)
+        {
+            return RootCommand.FindFlag(dottedKey, @from);
+        }
 
         public int ParsedCount { get; set; }
 

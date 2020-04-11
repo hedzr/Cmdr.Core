@@ -130,7 +130,7 @@ namespace HzNS.Cmdr.Base
                 flagsWatcher: (owner, flag, level) =>
                 {
                     // if (!flag.Match(UriPartial, true, false)) return true;
-                    if (string.Concat(flag.Owner?.backtraceTitles, ".", flag.Long) != dottedKey) return true;
+                    if (flag.ToDottedKey() != dottedKey) return true;
                     fr = flag;
                     return false; // stop walkFor population.
                 });
