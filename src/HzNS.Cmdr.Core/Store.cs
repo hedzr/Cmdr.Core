@@ -485,6 +485,10 @@ namespace HzNS.Cmdr
                     node.Values[key] = val;
                     return true;
 
+                case char _:
+                    node.Values[key] = val;
+                    return true;
+
                 case string _:
                     node.Values[key] = val;
                     return true;
@@ -524,6 +528,14 @@ namespace HzNS.Cmdr
                 #region scalar array
 
                 case string[] v:
+                    appendTArray(node, key, v, appendToArray, val);
+                    return true;
+
+                case char[] v:
+                    appendTArray(node, key, v, appendToArray, val);
+                    return true;
+
+                case byte[] v:
                     appendTArray(node, key, v, appendToArray, val);
                     return true;
 
