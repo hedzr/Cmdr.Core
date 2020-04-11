@@ -36,19 +36,21 @@ jobs:
   build:
     description: Build application with Release configuration
     executor: win/default
+    environment:
+      CONFIG: Debug
     steps:
       - checkout
       - run: |
           cd src
-          dotnet build --configuration Release
+          dotnet build --configuration $CONFIG
       - run: |
           echo "publishing..."
           pwd
           $ErrorActionPreference = 'SilentlyContinue'
           dotnet.exe --version
-          dotnet pack "src\HzNS.Cmdr.Logger.Serilog\HzNS.Cmdr.Logger.Serilog.csproj"  --configuration Release -v normal --include-source --include-symbols -p:SymbolPackageFormat=snupkg
+          dotnet pack "src\HzNS.Cmdr.Logger.Serilog\HzNS.Cmdr.Logger.Serilog.csproj"  --configuration $CONFIG -v normal --include-source --include-symbols -p:SymbolPackageFormat=snupkg
           echo "symbols and sources"
-          dotnet.exe nuget push "src\HzNS.Cmdr.Logger.Serilog\bin\Release\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet.exe nuget push "src\HzNS.Cmdr.Logger.Serilog\bin\$CONFIG\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
           echo "passed"
       # dornet nuget push bug: error: File does not exist, *.snupkg
       # https://github.com/NuGet/Home/issues/8148
@@ -57,9 +59,9 @@ jobs:
           echo "publishing..."
           pwd
           $ErrorActionPreference = 'SilentlyContinue'
-          dotnet pack "src\HzNS.Cmdr.Core\HzNS.Cmdr.Core.csproj"  --configuration Release -v normal --include-source --include-symbols -p:SymbolPackageFormat=snupkg
+          dotnet pack "src\HzNS.Cmdr.Core\HzNS.Cmdr.Core.csproj"  --configuration $CONFIG -v normal --include-source --include-symbols -p:SymbolPackageFormat=snupkg
           echo "symbols and sources"
-          dotnet.exe nuget push "src\HzNS.Cmdr.Core\bin\Release\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet.exe nuget push "src\HzNS.Cmdr.Core\bin\$CONFIG\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
           echo "passed"
 
 

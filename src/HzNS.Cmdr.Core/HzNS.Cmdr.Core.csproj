@@ -19,7 +19,11 @@
 <!--        <PackageIconUrl>https://github.com/hedzr/Cmdr.Core</PackageIconUrl>-->
         <RepositoryUrl>https://github.com/hedzr/Cmdr.Core</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageReleaseNotes>Command-line argument POSIX style parser, 1st final release coming soon.</PackageReleaseNotes>
+        <PackageReleaseNotes>Command-line argument POSIX style parser.
+            The test cases are passed.
+            The 1st final release (v1.1) coming soon.
+            
+        </PackageReleaseNotes>
         <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
         <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
     </PropertyGroup>

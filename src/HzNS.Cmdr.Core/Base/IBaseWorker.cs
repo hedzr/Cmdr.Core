@@ -34,5 +34,7 @@ namespace HzNS.Cmdr.Base
         Dictionary<ICommand, Xref> xrefs { get; }
 
         IRootCommand RootCommand { get; }
+
+        IFlag? FindFlag(string dottedKey, IBaseOpt? from = null);
     }
 }
