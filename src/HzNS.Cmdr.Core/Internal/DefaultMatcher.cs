@@ -342,8 +342,20 @@ namespace HzNS.Cmdr.Internal
 
             if (dv is bool)
             {
-                val = flipChar ?? true;
+                var b = flipChar ?? true;
+
+                // ReSharper disable once InvertIf
+                if (b && flg.Owner != null && flg.Owner.ToggleableFlags.ContainsKey(flg.ToggleGroup))
+                {
+                    foreach (var f in flg.Owner.ToggleableFlags[flg.ToggleGroup])
+                    {
+                        Cmdr.Instance.Store.Set(f.ToDottedKey(), false);
+                    }
+                }
+                
+                val = b;
                 old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+
                 return (0, 0, val, old);
             }
 
