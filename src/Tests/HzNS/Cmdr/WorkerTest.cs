@@ -28,6 +28,29 @@ namespace Tests.HzNS.Cmdr
             {
                 new testItem
                 {
+                    args = "tags mode s1 s2 -Dk -2mpgcid test-ok -h jit runt boche", ok = true, expected = (w, args) =>
+                    {
+                        Assert.Equal(3, w.RemainsArgs.Length);
+                        Assert.Equal("jit", w.RemainsArgs[0]);
+                        Assert.Equal("boche", w.RemainsArgs[2]);
+                        Assert.Equal("tags mode sub1 sub2", w.ParsedCommand?.backtraceTitles);
+                        Assert.Equal("test-ok", ss.GetAs<string>("tags.mode.id"));
+                        //Assert.Equal(31, ss.GetAs<int>("tags.mode.sub1.retry"));
+
+                        Assert.False(ss.GetAs<bool>("tags.mode.both"));
+                        Assert.False(ss.GetAs<bool>("tags.mode.meta"));
+                        Assert.False(ss.GetAs<bool>("tags.mode.plain"));
+                        Assert.True(ss.GetAs<bool>("tags.mode.string"));
+
+                        Assert.True(ss.GetAs<bool>("tags.mode.sub1.clear"));
+                        Assert.True(ss.GetAs<bool>("tags.insecure"));
+                        Assert.True(ss.GetAs<bool>("debug"));
+                        return true;
+                    }
+                },
+
+                new testItem
+                {
                     args = "tags mode s1 s2 -Dk -t271 -t371 -k- -t=45 --retry 31 -h jit", ok = true, expected =
                         (w, args) =>
                         {
@@ -41,17 +64,6 @@ namespace Tests.HzNS.Cmdr
                             return true;
                         }
                 },
-                new testItem
-                    {args = "tags mode s1 s2 -Dk -2mpgcid test-ok -h jit", ok = true, expected = (w, args) => true},
-
-                // new testItem
-                // {
-                //     args = "tags mode s1 s2 --address consul.local -h", ok = true, expected = (w, args) =>
-                //     {
-                //         // ReSharper disable once ConvertToLambdaExpression
-                //         return w.ParsedCommand?.IsEqual("s2") ?? false;
-                //     }
-                // },
 
                 new testItem {args = "--help", ok = true, expected = (w, args) => true},
                 new testItem {args = "-h", ok = true, expected = (w, args) => true},
@@ -142,20 +154,84 @@ namespace Tests.HzNS.Cmdr
                 #endregion
 
                 new testItem {args = "tags mode s1 s2 -h", ok = true, expected = (w, args) => true},
-                new testItem {args = "tags mode s1 s2 -D -k -s2 -h", ok = true, expected = (w, args) => true},
-                new testItem {args = "tags mode s1 s2 -Dks2 -h", ok = true, expected = (w, args) => true},
                 new testItem
-                    {args = "tags mode s1 s2 -Dk -2mpgcid test-ok -h jit", ok = true, expected = (w, args) => true},
+                {
+                    args = "tags mode s1 s2 -D -k -s2 -h", ok = true, expected = (w, args) =>
+                    {
+                        Assert.True(ss.GetAs<bool>("tags.insecure"));
+                        Assert.True(ss.GetAs<bool>("debug"));
+                        Assert.True(ss.GetAs<bool>("tags.mode.sub1.sub2.such2"));
+                        return true;
+                    }
+                },
+                new testItem
+                {
+                    args = "tags mode s1 s2 -Dks2 -h", ok = true, expected = (w, args) =>
+                    {
+                        Assert.True(ss.GetAs<bool>("tags.insecure"));
+                        Assert.True(ss.GetAs<bool>("debug"));
+                        Assert.True(ss.GetAs<bool>("tags.mode.sub1.sub2.such2"));
+                        return true;
+                    }
+                },
+                new testItem
+                {
+                    args = "tags mode s1 s2 -Dk -2mpgcid test-ok -h jit", ok = true, expected = (w, args) =>
+                    {
+                        Assert.True(ss.GetAs<bool>("tags.insecure"));
+                        Assert.True(ss.GetAs<bool>("debug"));
+
+                        Assert.Equal("test-ok", ss.GetAs<string>("tags.mode.id"));
+
+                        Assert.False(ss.GetAs<bool>("tags.mode.both"));
+                        Assert.False(ss.GetAs<bool>("tags.mode.meta"));
+                        Assert.False(ss.GetAs<bool>("tags.mode.plain"));
+                        Assert.True(ss.GetAs<bool>("tags.mode.string"));
+
+                        Assert.True(ss.GetAs<bool>("tags.mode.sub1.clear"));
+
+                        return true;
+                    }
+                },
+
                 new testItem
                 {
                     args = "tags mode s1 s2 -Dk -2mpgcid test-ok -2- -h voip jit", ok = true,
-                    expected = (w, args) => true
+                    expected = (w, args) =>
+                    {
+                        Assert.Equal("test-ok", ss.GetAs<string>("tags.mode.id"));
+
+                        Assert.False(ss.GetAs<bool>("tags.mode.both"));
+                        Assert.False(ss.GetAs<bool>("tags.mode.meta"));
+                        Assert.False(ss.GetAs<bool>("tags.mode.plain"));
+                        Assert.True(ss.GetAs<bool>("tags.mode.string"));
+
+                        Assert.True(ss.GetAs<bool>("tags.mode.sub1.clear"));
+                        return true;
+                    }
                 },
                 new testItem
                 {
                     args =
-                        "tags mode s1 s2 -Dk -2mpgcid test-ok -2-  -vvv --addr cash.io.local --add 8,9,k -c2- --add 34 -h voip jit",
-                    ok = true, expected = (w, args) => true
+                        "tags mode s1 s2 -Dk -2mpgcid test-ok -2-  -vvv --host cash.io.local --add 8,9,k -c2- --add 34 -h voip jit",
+                    ok = true, expected = (w, args) =>
+                    {
+                        Assert.Equal("test-ok", ss.GetAs<string>("tags.mode.id"));
+                        Assert.Equal("cash.io.local", ss.GetAs<string>("tags.addr"));
+                        Assert.Equal(new[] {"8", "9", "k", "34"},
+                            ss.GetAs<string[]>("tags.mode.add"));
+
+                        Assert.False(ss.GetAs<bool>("tags.mode.both"));
+                        Assert.False(ss.GetAs<bool>("tags.mode.meta"));
+                        Assert.False(ss.GetAs<bool>("tags.mode.plain"));
+                        Assert.True(ss.GetAs<bool>("tags.mode.string"));
+
+                        Assert.True(ss.GetAs<bool>("tags.mode.sub1.clear"));
+
+                        Assert.True(ss.GetAs<bool>("verbose"));
+                        Assert.Equal(3, w.FindFlag("verbose")?.HitCount);
+                        return true;
+                    }
                 },
                 new testItem
                 {
@@ -191,7 +267,7 @@ namespace Tests.HzNS.Cmdr
                          * 
                          */
                         Output.WriteLine($"add: {ss.GetAs<string[]>("tags.mode.add").ToStringEx()}");
-                        Assert.Equal(new[] {"r", "8", "9", "k", "34", "r", "8", "9", "k", "ress"},
+                        Assert.Equal(new[] {"8", "9", "k", "34", "r", "8", "9", "k", "ress"},
                             ss.GetAs<string[]>("tags.mode.add"));
                         // ReSharper disable once ConvertToLambdaExpression
                         return w.ParsedCommand?.IsEqual("s2") ?? false;
