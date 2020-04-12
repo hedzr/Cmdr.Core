@@ -22,7 +22,7 @@ namespace HzNS.Cmdr.Base
 
         // ReSharper disable once InconsistentNaming
         string backtraceTitles { get; }
-        string HitTitle { get; }
+        // string HitTitle { get; }
 
         ICommand AddCommand(ICommand cmd);
         ICommand AddFlag<T>(IFlag<T> flag, bool required = false);

@@ -76,7 +76,7 @@ namespace HzNS.Cmdr.Base
         public Dictionary<string, List<IFlag>> ToggleableFlags { get; internal set; } =
             new Dictionary<string, List<IFlag>>();
 
-        public string HitTitle { get; set; } = "";
+        // public string HitTitle { get; set; } = "";
 
         public ICommand AddCommand(ICommand cmd)
         {
