@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -486,31 +487,41 @@ namespace HzNS.Cmdr.Internal
                         // fallback converter
 
                         default:
-                            if (dv != null)
+                            var t1 = flg.GetType();
+                            var typ = dv?.GetType() ?? t1.GenericTypeArguments[0];
+                            @this.log?.logWarning(null,
+                                "unacceptable default value ({dv}) datatype: {type}. (extracting {part} at {i}, fragment={fragment})",
+                                dv, typ, part, i, fragment);
+
+                            try
                             {
-                                @this.log?.logWarning(null,
-                                    "unacceptable default value ({dv}) datatype: {type}. (extracting {part} at {i}, fragment={fragment})",
-                                    dv, dv.GetType(), part, i, fragment);
+                                val = Convert.ChangeType(v, typ); // typeof(int)
+                                old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                            }
+                            catch (FormatException ex)
+                            {
+                                @this.log?.logWarning(ex,
+                                    "    changeType failed (FormatException) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
+                                    v, typ, atePos, ateArgs);
+                                val = dv;
+                                old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                                atePos = ateArgs = 0;
+                                // throw;
+                            }
+                            catch (InvalidCastException ex)
+                            {
                                 try
                                 {
-                                    val = Convert.ChangeType(v, dv.GetType()); // typeof(int)
+                                    var converter = TypeDescriptor.GetConverter(typ);
+                                    val = converter.ConvertFrom(v);
                                     old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
                                 }
-                                catch (FormatException ex)
+                                catch (System.Exception ex2)
                                 {
+
                                     @this.log?.logWarning(ex,
-                                        "    changeType failed (FormatException) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
-                                        v, dv.GetType(), atePos, ateArgs);
-                                    val = dv;
-                                    old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
-                                    atePos = ateArgs = 0;
-                                    // throw;
-                                }
-                                catch (InvalidCastException ex)
-                                {
-                                    @this.log?.logWarning(ex,
-                                        "    changeType failed (InvalidCastException) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
-                                        v, dv.GetType(), atePos, ateArgs);
+                                        "    changeType failed (InvalidCastException & {ex}) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
+                                        ex2, v, typ, atePos, ateArgs);
                                     val = dv;
                                     old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
                                     atePos = ateArgs = 0;

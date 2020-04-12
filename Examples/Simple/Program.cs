@@ -35,6 +35,18 @@ namespace Simple
 
                         root.AddCommand(new Command
                             {
+                                Short = "t", Long = "test", Description = "test command",
+                            }
+                            .AddFlag(new Flag<Uri> {Long = "uri", Description = "URI"})
+                            .AddFlag(new Flag<TimeSpan>
+                            {
+                                Long = "time-span", Short = "ts", Description = "TimeSpan",
+                                UseMomentTimeFormat = true,
+                            })
+                        );
+
+                        root.AddCommand(new Command
+                            {
                                 Short = "dz", Long = "dz", Description = "test divide by zero",
                                 Action = (worker, opt, remainArgs) => { Console.WriteLine($"{B / _a}"); },
                             })
