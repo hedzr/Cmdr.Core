@@ -5,7 +5,7 @@
 
 
 
-Useful POSIX command line arguments parser for dotNet. Hierarchy configurations Store for app.
+Useful POSIX command line arguments parser for dotNet. Hierarchical configurations Store for app.
 
 **WIP**
 
@@ -54,13 +54,11 @@ Please replace `1.0.29` with the newest version (stable or pre-release), see the
   - [x] Multiple option groups each containing a set of options
   - [x] Supports the compat short options `-aux` == `-a -u -x`, `-vvv` == `-v -v -v` (HitCount=3)
   - [x] Supports namespaces for (nested) option groups
-    _see also: option store and hierarchy data_
+    _see also: option store and hierarchical data_
 
 - [x] Supports for `-D+`, `-D-` to enable/disable a bool option.
 
 - [x] Automatic help screen generation (*Generates and prints well-formatted help message*)
-
-- [x] Sortable commands and options/flags. Or sorted by alphabetic order.
 
 - [x] Predefined commands and flags:
 
@@ -73,9 +71,15 @@ Please replace `1.0.29` with the newest version (stable or pre-release), see the
     - `version` command available.
   - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
 
-- [x] Groupable commands and options/flags.
+- [x] Sortable commands and options/flags: sorted by alphabetic order or not.
 
-  Sortable group name with `[0-9A-Za-z]+\..+` format, eg:
+- [x] Sortable commands group and options/flags group as your wish ().
+
+- [x] Groupable commands and options/flags.
+  
+  Group Title may have a non-displayable prefix for sorting, separated by '.'.
+  
+  Sortable group name can be `[0-9A-Za-z]+\..+` format typically, or any string tailed '.', eg:
 
   - `1001.c++`, `1100.golang`, `1200.java`, …;
   - `abcd.c++`, `b999.golang`, `zzzz.java`, …;
@@ -91,7 +95,7 @@ Please replace `1.0.29` with the newest version (stable or pre-release), see the
 - [x] Walkable
 
   - Customizable `Painter` interface to loop *each* command and flag.
-  - Walks on all commands with `Walk(walker)`.
+  - Walks on all commands with `Walk(from, commandWalker, flagWalker)`.
 
 - [x] Supports `-I/usr/include -I=/usr/include` `-I /usr/include -I:/usr` option argument specifications
   Automatically allows those formats (applied to long option too):
@@ -122,19 +126,24 @@ Please replace `1.0.29` with the newest version (stable or pre-release), see the
     },
     ```
     
-  - [x] Watch `conf.d` directory, the name is customizable.
+  - [x] Watch `conf.d` directory, the name is customizable (worker.).
   
   - `RegisterExternalConfigurationsLoader(loader, ...)`
     
 
 - [x] Handlers
 
-  - Global Handlers: `RootCommand.OnPre/Post/Action()/OnSet()` will be triggered before/after the concrete `Command.OnPre/Post/Action()/OnSet()`
-  - Command Actions: `OnPreAction/OnAction/OnPostAction/OnSet`
-  - Flag Actions: `OnPreAction/OnAction/OnPostAction/OnSet`
+  - Global Handlers: `RootCommand.OnPre/Post/Action(), OnSet()` will be triggered before/after the concrete `Command.OnPre/Post/Action()/OnSet()`
+  - Command Actions: `Command.OnPreAction/OnAction/OnPostAction(), OnSet`
+  - Flag Actions: `Flag.OnPreAction/OnAction/OnPostAction(), OnSet`
   - Parsing Events:
     - `bool OnDuplicatedCommandChar(worker, cmd, isShort, matchingString)`
     - `bool OnDuplicatedFlagChar(worker, cmd, flag, isShort, matchingString)`
+    - `bool OnCommandCannotMatched(ICommand parsedCommand, string matchingArg)`
+    - `bool OnCommandCannotMatched(ICommand parsingCommand, string fragment, bool isShort, string matchingArg)`
+    - `bool OnSuggestingForCommand(object worker, Dictionary&lt;string, ICommand&gt; dataset, string token)`
+    - `bool OnSuggestingForFlag(object worker, Dictionary&lt;string, IFlag&gt; dataset, string token)`
+    - 
     - ...
   - More...
 
@@ -150,8 +159,14 @@ Please replace `1.0.29` with the newest version (stable or pre-release), see the
 - Smart suggestions for wrong command and flags
 
   based on [Jaro-Winkler distance](https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance).
+  ![](https://user-images.githubusercontent.com/12786150/79058363-a1895e00-7c9f-11ea-94b2-249ee920eaf9.png)
 
-## `Option Store` - Hierarchy Configuration Data Store
+
+
+
+
+
+## `Option Store` - Hierarchical Configurations Store
 
 #### `Get()`, `GetAs<T>()`
 #### `Set<T>()`, `SetWithoutPrefix<T>()`
@@ -232,7 +247,8 @@ static int Main(string[] args) =>
     new AppInfo(),  // your app information, desc, ...
     buildRootCmd(), // to attach the sub-commands and options to the RootCommand
     workerOpts,     // to customize the Cmdr Worker
-  )).Run(args, postRun);
+  ))
+  .Run(args, postRun);
 ```
 
 Your first app with `Cmdr.Core` could be:
@@ -268,7 +284,7 @@ namespace Simple
 
                         root.AddCommand(new Command
                             {
-                                Short = "dz", Long = "dz", Description = "test divide by zero",
+                                Long = "dz", Short = "dz", Description = "test divide by zero",
                                 Action = (worker, opt, remainArgs) => { Console.WriteLine($"{B / _a}"); },
                             })
                             .AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
@@ -283,15 +299,13 @@ namespace Simple
                                 {
                                     DefaultValue = "consul.ops.local",
                                     Long = "addr", Short = "a", Aliases = new[] {"address", "host"},
-                                    Description =
-                                        "Consul IP/Host and/or Port: HOST[:PORT] (No leading 'http(s)://')",
+                                    Description = "Consul IP/Host and/or Port: HOST[:PORT] (No leading 'http(s)://')",
                                     PlaceHolder = "HOST[:PORT]",
                                     Group = "Consul",
                                 })
                                 .AddFlag(new Flag<string>
                                 {
                                     DefaultValue = "",
-                                    // ReSharper disable once StringLiteralTypo
                                     Long = "cacert", Short = "", Aliases = new string[] {"ca-cert"},
                                     Description = "Consul Client CA cert)",
                                     PlaceHolder = "FILE",
@@ -316,11 +330,10 @@ namespace Simple
 
                         root.OnSet = (worker, flag, oldValue, newValue) =>
                         {
-                            if (Cmdr.Instance.Store.GetAs<bool>("quiet")) return;
+                            if (worker.OptionStore.GetAs<bool>("quiet")) return;
                             if (Cmdr.Instance.Store.GetAs<bool>("verbose") &&
                                 flag.Root?.FindFlag("verbose")?.HitCount > 1)
-                                Console.WriteLine(
-                                    $"--> [{Cmdr.Instance.Store.GetAs<bool>("quiet")}][root.onSet] {flag} set: {oldValue?.ToStringEx()} -> {newValue?.ToStringEx()}");
+                                Console.WriteLine($"--> [{Cmdr.Instance.Store.GetAs<bool>("quiet")}][root.onSet] {flag} set: {oldValue?.ToStringEx()} -> {newValue?.ToStringEx()}");
                         };
                     }
                 ), // <- RootCmd Definitions
@@ -335,7 +348,7 @@ namespace Simple
                     // w.UseSerilog((configuration) => configuration.WriteTo.Console().CreateLogger())
                     //
 
-                    w.EnableCmdrGreedyLongFlag = true;
+                    // w.EnableCmdrGreedyLongFlag = true;
                     // w.EnableDuplicatedCharThrows = true;
                     // w.EnableEmptyLongFieldThrows = true;
 
@@ -392,7 +405,7 @@ namespace Simple
 
 The external logger has been removed from `Cmdr.Core`.
 
-But you can always enable one or customize yours. In the `HzNS.Cmdr.Logger.Serilog` package/project, we've give an implements and it's simple to use:
+But you can always enable one or customize yours. In the `HzNS.Cmdr.Logger.Serilog` package/project, we've given an implements and it's simple to use:
 
 1. Add `HzNS.Cmdr.Logger.Serilog` at first:
 
@@ -403,8 +416,7 @@ dotnet add package HzNS.Cmdr.Logger.Serilog --version 1.0.6
 2. Modify the program entry:
 
 ```c#
-    Cmdr.NewWorker(RootCommand.New(
-                new AppInfo {AppName = "mdxTool", AppVersion = "1.0.0"}, (root) =>
+    Cmdr.NewWorker(RootCommand.New(new AppInfo {AppName = "mdxTool", AppVersion = "1.0.0"}, (root) =>
             {
                 root.AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"});
             }), // <- RootCmd
@@ -429,7 +441,7 @@ dotnet add package HzNS.Cmdr.Logger.Serilog --version 1.0.6
 
 I have to copy some codes from Colorify for the dotnetcore devenv.
 
-There's some reason. But I will be pleasure to re-integrate the original or put an issue.
+There's some reason. But I will be pleasure to re-integrate the original or put an issue later.
 
 
 
