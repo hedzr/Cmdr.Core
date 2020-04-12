@@ -20,8 +20,10 @@
         <RepositoryUrl>https://github.com/hedzr/Cmdr.Core</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageReleaseNotes>Command-line argument POSIX style parser.
-        The test cases are passed.
-        The 1st final release (v1.1) coming soon.
+        Just for preview.
+        The first final release (v1.1) coming soon.
+
+        - The test cases are passed.
         
         > NOTE: full symbols and sources debug info in pre-release version (v1.x.x-g#hash), if u can't step into with the normal release. 
         </PackageReleaseNotes>
