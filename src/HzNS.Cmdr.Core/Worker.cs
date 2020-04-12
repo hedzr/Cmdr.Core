@@ -61,16 +61,7 @@ namespace HzNS.Cmdr
         public ICommand? ParsedCommand { get; set; }
         public IFlag? ParsedFlag { get; set; }
         public string[] RemainsArgs { get; set; } = { };
-
-
-        /// <summary>
-        /// The primary config file folder of $APPNAME.yml, .yaml, .json.
-        /// Cmdr.Core will watch its sub-directory `conf.d` and all files in it.
-        ///
-        /// see also: [ConfigFileAutoSubDir], 
-        /// </summary>
-        public string PrimaryConfigDir { get; internal set; } = "";
-
+        
 
         /// <summary>
         /// greedy mode: prefer to longest Long option.
@@ -110,12 +101,30 @@ namespace HzNS.Cmdr
 
 
         /// <summary>
-        /// The shortcut to Cmdr.Instance.Store
+        /// The shortcut to Cmdr.Instance.Store, a hierarchical configurations holder.
         /// </summary>
         // ReSharper disable once MemberCanBeMadeStatic.Global
         public Store OptionsStore => Cmdr.Instance.Store;
 
 
+        /// <summary>
+        /// Store Prefixes can be used for the external config
+        /// file, or serializing all options as string.
+        /// <br/>
+        /// In a yaml file, the prefix `app.ms` start a section
+        /// which leads all your flags/options:
+        /// <code>
+        /// app:
+        ///   ms:
+        ///     verbose: false
+        ///     debug: false
+        ///     server:
+        ///       port: 1571
+        ///       start:
+        ///         foreground: false
+        /// </code>
+        /// 
+        /// </summary>
         public string[] StorePrefixes
         {
             get => OptionsStore.Prefixes;
@@ -128,18 +137,50 @@ namespace HzNS.Cmdr
         public bool AppDebugMode => OptionsStore.GetAs("debug", false);
         public bool AppTraceMode => OptionsStore.GetAs("trace", false);
 
+        
         public bool EnableDuplicatedCharThrows { get; set; } = false;
         public bool EnableEmptyLongFieldThrows { get; set; } = false;
         public bool EnableUnknownCommandThrows { get; set; } = false;
         public bool EnableUnknownFlagThrows { get; set; } = false;
 
+        /// <summary>
+        /// Default tab stop position in help screen.
+        /// </summary>
         public int TabStop { get; set; } = 45;
 
+        /// <summary>
+        /// As is
+        /// </summary>
         public bool EnableExternalConfigFilesLoading { get; set; } = true;
+        /// <summary>
+        /// After the primary config file found and loaded, cmdr will try loading
+        /// from `conf.d`/[ConfigFileAutoSubDir] sub-directory.
+        /// <br/>
+        /// And [NoPopulationAfterFirstExternalConfigLocationLoaded] will break this action. 
+        /// </summary>
         public bool NoPopulationAfterFirstExternalConfigLocationLoaded { get; set; } = true;
+        
+        /// <summary>
+        /// The primary config file folder of $APPNAME.yml, .yaml, .json.
+        /// Cmdr.Core will watch its sub-directory `conf.d` and all files in it.
+        ///
+        /// see also: [ConfigFileAutoSubDir], 
+        /// </summary>
+        public string PrimaryConfigDir { get; internal set; } = "";
 
+        /// <summary>
+        /// Customizable sub-directory name for configurations, following the [PrimaryConfigDir]
+        /// </summary>
         public string ConfigFileAutoSubDir { get; set; } = "conf.d";
 
+        /// <summary>
+        /// Cmdr will search the app primary config file at these locations.
+        /// <br/>
+        /// Once a valid config file (*.yml,*.yaml,*.json) found, the [PrimaryConfigDir]
+        /// will be set.
+        /// <br/>
+        /// Cmdr would try loading any config files under its [ConfigFileAutoSubDir].
+        /// </summary>
         // ReSharper disable once ConvertToAutoPropertyWhenPossible
         // ReSharper disable once UnusedMember.Global
         public string[] ConfigFileLocations
@@ -148,6 +189,7 @@ namespace HzNS.Cmdr
             set => _configFileLocations = value;
         }
 
+        
         /// <summary>
         /// <code>bool OnDuplicatedCommandChar(IBaseWorker worker, ICommand command,
         ///     bool isShort, string matchingArg)</code>
@@ -281,6 +323,7 @@ namespace HzNS.Cmdr
             catch (WantHelpScreenException ex)
             {
                 // f5();
+                
                 // show help screen
                 log?.logDebug("showing the help screen ...");
                 RemainsArgs = ex.RemainArgs;
@@ -572,7 +615,7 @@ namespace HzNS.Cmdr
             return ok;
         }
 
-        #region FilWatcher
+        #region FileWatcher
 
         private void watchThem(string dir)
         {
@@ -692,8 +735,8 @@ namespace HzNS.Cmdr
 
         private void OnChanged(object sender, FileSystemEventArgs e)
         {
-            log?.logDebug($"config file renamed: {e}");
-            if (loadExternalConfigurationsFile(e.FullPath, this, _root, false))
+            log?.logDebug($"config file changed: {e}");
+            if (loadExternalConfigurationsFile(e.FullPath, this, _root, true))
             {
                 log?.logDebug($"config file loaded and merged: {e.FullPath}");
             }
@@ -707,7 +750,7 @@ namespace HzNS.Cmdr
         private void OnRenamed(object sender, RenamedEventArgs e)
         {
             log?.logDebug($"config file renamed: {e}");
-            if (loadExternalConfigurationsFile(e.FullPath, this, _root, false))
+            if (loadExternalConfigurationsFile(e.FullPath, this, _root, true))
             {
                 log?.logDebug($"config file loaded and merged: {e.FullPath}");
             }
