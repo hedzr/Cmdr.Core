@@ -20,12 +20,18 @@
         <RepositoryUrl>https://github.com/hedzr/Cmdr.Core</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageReleaseNotes>Command-line argument POSIX style parser.
-        Just for preview.
-        The first final release (v1.1) coming soon.
 
-        - The test cases are passed.
-        
-        > NOTE: full symbols and sources debug info in pre-release version (v1.x.x-g#hash), if u can't step into with the normal release. 
+    Just for preview.
+    The first final release (v1.1) coming soon.
+
+    - The test cases are passed.
+    
+    &gt; NOTE: full symbols and sources debug info in pre-release version (v1.x.x-g#hash), if u can't step into with the normal release.
+
+    See also:
+    - project site: https://github.com/hedzr/Cmdr.Core
+    - release note: https://github.com/hedzr/Cmdr.Core/blob/master/RELDOCS.md
+
         </PackageReleaseNotes>
         <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
         <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
@@ -59,7 +65,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
