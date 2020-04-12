@@ -254,7 +254,7 @@ namespace HzNS.Cmdr.Internal
                 else
                 {
                     @this.ParsedFlag = matchedFlag;
-                    onFlagMatched(@this, args, i + 1, part, longOpt, matchedFlag, oldValue, value);
+                    onFlagMatched(@this, args, i + 1, fragment, part, longOpt, matchedFlag, oldValue, value);
                     matchedPosition = i + 1;
                 }
 
@@ -593,7 +593,7 @@ namespace HzNS.Cmdr.Internal
         {
             checkRequiredFlagsReady(@this, cmd);
 
-            if (cmd is BaseCommand c)
+            if (cmd is BaseOpt c)
             {
                 c.HitTitle = arg;
             }
@@ -649,7 +649,8 @@ namespace HzNS.Cmdr.Internal
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-        private static void onFlagMatched<T>(this T @this, IEnumerable<string> args, int position, string fragment,
+        private static void onFlagMatched<T>(this T @this, 
+            IEnumerable<string> args, int position, string fragment, string part,
             in bool longOpt, IFlag flag, object? oldValue, object? value)
             where T : IDefaultMatchers
         {
@@ -662,11 +663,11 @@ namespace HzNS.Cmdr.Internal
             {
                 // ReSharper disable once UnusedVariable
                 var sw = Util.SwitchChar(longOpt);
-                @this.log?.logDebug("  ---> flag matched: {Fragment}", sw + fragment);
+                @this.log?.logDebug("  ---> flag matched: {Part}/{Fragment}", sw+part, sw + fragment);
                 // if (flag is BaseFlag<bool> f)
                 {
                     flag.setValueRecursive("HitCount", flag.HitCount + 1);
-                    flag.setValueRecursive("HitTitle", fragment);
+                    flag.setValueRecursive("HitTitle", part);
                 }
 
                 if (value?.GetType().IsArray == true)
