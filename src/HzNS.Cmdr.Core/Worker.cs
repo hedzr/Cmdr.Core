@@ -143,6 +143,9 @@ namespace HzNS.Cmdr
         public bool EnableUnknownCommandThrows { get; set; } = false;
         public bool EnableUnknownFlagThrows { get; set; } = false;
 
+        
+        public bool SortAsc { get; set; } = true;
+        
         /// <summary>
         /// Default tab stop position in help screen.
         /// </summary>
