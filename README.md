@@ -73,8 +73,6 @@ Please replace `1.0.29` with the newest version (stable or pre-release), see the
 
 - [x] Sortable commands and options/flags: sorted by alphabetic order or not.
 
-- [x] Sortable commands group and options/flags group as your wish ().
-
 - [x] Groupable commands and options/flags.
   
   Group Title may have a non-displayable prefix for sorting, separated by '.'.
@@ -168,6 +166,8 @@ Please replace `1.0.29` with the newest version (stable or pre-release), see the
 
 ## `Option Store` - Hierarchical Configurations Store
 
+Standard primitive types and non-primitive types.
+
 #### `Get()`, `GetAs<T>()`
 #### `Set<T>()`, `SetWithoutPrefix<T>()`
 #### `Delete()`
@@ -210,7 +210,10 @@ return a `SlotEntries` map so that you can yaml it:
   }
 ```
 
-### CMDR EnvVars
+
+
+
+## CMDR EnvVars
 
 #### `CMDR_DUMP`
 
