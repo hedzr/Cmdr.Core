@@ -11,6 +11,14 @@ namespace Simple
     [SuppressMessage("ReSharper", "ArrangeTypeMemberModifiers")]
     class Program
     {
+        enum Direction
+        {
+            North = 1,
+            East = 2,
+            South = 4,
+            West = 8,
+        }
+        
         [SuppressMessage("ReSharper", "RedundantExplicitArrayCreation")]
         static int Main(string[] args) => Cmdr.NewWorker(
 
@@ -41,6 +49,11 @@ namespace Simple
                             .AddFlag(new Flag<TimeSpan>
                             {
                                 Long = "time-span", Short = "ts", Description = "TimeSpan",
+                                UseMomentTimeFormat = true,
+                            })
+                            .AddFlag(new Flag<Direction>
+                            {
+                                Long = "direction", Short = "dir", Description = "Direction",
                                 UseMomentTimeFormat = true,
                             })
                         );

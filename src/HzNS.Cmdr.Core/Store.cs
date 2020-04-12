@@ -566,10 +566,11 @@ namespace HzNS.Cmdr
                 #endregion
             }
 
-            Console.WriteLine("1_1");
+            Cmdr.Instance.Worker?.log?.logDebug("1_1");
+            node.Values[key] = val;
             Cmdr.Instance.Worker?.log?.logDebug(
                 $"[W][setter on {dv?.GetType()}, dv={dv}, new val={val}]: key = {parts?.ToStringEx()}");
-            return false;
+            return true;
         }
 
         // ReSharper disable once SuggestBaseTypeForParameter
