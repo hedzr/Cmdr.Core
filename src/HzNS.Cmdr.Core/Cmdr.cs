@@ -1,8 +1,11 @@
 #nullable enable
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using HzNS.Cmdr.Base;
+using HzNS.Cmdr.CmdrAttrs;
 using HzNS.Cmdr.Exception;
+using HzNS.Cmdr.Logger;
 
 namespace HzNS.Cmdr
 {
@@ -74,7 +77,7 @@ namespace HzNS.Cmdr
         // ReSharper disable once MemberCanBePrivate.Global
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
         // public IDefaultMatchers? Logger { get; internal set; }
-        
+
         public Store Store { get; } = Store.Instance;
 
 
@@ -86,6 +89,146 @@ namespace HzNS.Cmdr
         // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
         public bool EnableAutoBoxingWhenExtracting { get; set; } = true;
 
+
+        public static int Compile<T>(string[] args, ILogger? log = null, params Action<Worker>[] opts)
+        {
+            if (log != null)
+            {
+                Instance.Worker = new Worker(RootCommand.New(new AppInfo()));
+                if (Instance.Worker is Worker w)
+                {
+                    log.EnableCmdrLogInfo = true;
+                    log.EnableCmdrLogTrace = true;
+                    w.EnableCmdrLogInfo = true;
+                    w.EnableCmdrLogDebug = true;
+                    w.EnableCmdrLogTrace = true;
+                    w.SetLogger(log);
+                }
+            }
+
+            return compile(typeof(T), args, opts);
+        }
+
+        private static int compile(Type t, string[] args, params Action<Worker>[] opts)
+        {
+            RootCommand rootCmd;
+
+            // find app info
+            var appInfoAttr = Attribute.GetCustomAttribute(t, typeof(CmdrAppInfo));
+
+            if (appInfoAttr is CmdrAppInfo a)
+            {
+                rootCmd = RootCommand.New(new AppInfo
+                {
+                    AppName = a.AppName,
+                    AppVersionInt = 0,
+                    Author = a.Author,
+                    Copyright = a.Copyright,
+                    BuildTags = a.Tags,
+                });
+            }
+            else
+            {
+                rootCmd = RootCommand.New(new AppInfo());
+            }
+
+            // loop for commands,
+
+            compileCommands(rootCmd, t, args);
+
+            // loop for flags/options,
+
+            // build, and run!
+
+            NewWorker(rootCmd, opts).Run(args);
+
+            return 0;
+        }
+
+        // ReSharper disable once InconsistentNaming
+        private static int compileCommands(BaseCommand cmd, Type t, string[] args)
+        {
+            foreach (var nt in t.GetNestedTypes())
+            {
+                var attr = (CmdrAttrs.CmdrCommand?) Attribute.GetCustomAttribute(nt,
+                    typeof(CmdrAttrs.CmdrCommand));
+                if (attr == null) continue;
+
+                var desc = (CmdrAttrs.CmdrDescriptions?) Attribute.GetCustomAttribute(nt,
+                    typeof(CmdrAttrs.CmdrDescriptions));
+                var group = (CmdrAttrs.CmdrGroup?) Attribute.GetCustomAttribute(nt,
+                    typeof(CmdrAttrs.CmdrGroup));
+                var hidden = (CmdrAttrs.CmdrHidden?) Attribute.GetCustomAttribute(nt,
+                    typeof(CmdrAttrs.CmdrHidden));
+                var vars = (CmdrAttrs.CmdrEnvVars?) Attribute.GetCustomAttribute(nt,
+                    typeof(CmdrAttrs.CmdrEnvVars));
+
+                var obj = Activator.CreateInstance(nt);
+                var action = findForMethods<CmdrAttrs.CmdrAction>(nt);
+                var actionPre = findForMethods<CmdrAttrs.CmdrPreAction>(nt);
+                var actionPost = findForMethods<CmdrAttrs.CmdrPostAction>(nt);
+                var actionOnSet = findForMethods<CmdrAttrs.CmdrOnSetAction>(nt);
+
+                var subCommand = new Command
+                {
+                    Long = attr.Long,
+                    Short = attr.Short,
+                    Aliases = attr.Aliases,
+                    Description = desc?.Description ?? string.Empty,
+                    DescriptionLong = desc?.DescriptionLong ?? string.Empty,
+                    Examples = desc?.Examples ?? string.Empty,
+                    Group = group?.GroupName ?? string.Empty,
+                    Hidden = hidden?.HiddenFlag ?? false,
+                    EnvVars = vars?.VariableNames ?? new string[] { },
+#pragma warning disable CS8603,CS8605
+                    PreAction = (worker, opt, remainArgs) =>
+                        actionPre == null || (bool) actionPre.Invoke(obj, new object?[] {worker, opt, remainArgs}),
+#pragma warning restore CS8603,CS8605
+                    PostAction = (worker, opt, remainArgs) =>
+                        actionPost?.Invoke(obj, new object?[] {worker, opt, remainArgs}),
+                    Action = (worker, opt, remainArgs) =>
+                        action?.Invoke(obj, new object?[] {worker, opt, remainArgs}),
+                    OnSet = (worker, opt, ov, nv) => actionOnSet?.Invoke(obj, new object?[] {worker, opt, ov, nv}),
+                    TailArgs = desc?.TailArgs ?? string.Empty
+                };
+                cmd.AddCommand(subCommand);
+
+                Cmdr.Instance.Worker?.log?.logInfo("  - Add Command to {cmd}: {sub}.", cmd, subCommand);
+                if (action != null || actionPre != null || actionPost != null || actionOnSet != null)
+                {
+                    Cmdr.Instance.Worker?.log?.logInfo(
+                        "    -> link to {obj}[{objType}].Action/Pre/Post/OnSet ({a},{pre},{post},{onset})",
+                        obj, nt, action, actionPre, actionPost, actionOnSet);
+                }
+
+                compileCommands(subCommand, nt, args);
+            }
+
+            return 0;
+        }
+
+        // // ReSharper disable once InconsistentNaming
+        // private static T findForMethodsClz<T>(Type nt) where T : class
+        // {
+        //     return null;
+        // }
+
+        // ReSharper disable once InconsistentNaming
+        private static MethodInfo? findForMethods<T>(Type nt) where T : System.Attribute
+        {
+            foreach (var mtd in nt.GetMethods())
+            {
+#pragma warning disable CS8600
+                var attr = (T) Attribute.GetCustomAttribute(mtd, typeof(T));
+#pragma warning restore CS8600
+                if (attr != null)
+                {
+                    return mtd;
+                }
+            }
+
+            return null;
+        }
 
         #region Singleton Pattern
 

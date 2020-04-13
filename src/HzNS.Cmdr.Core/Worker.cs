@@ -77,6 +77,12 @@ namespace HzNS.Cmdr
             set => DefaultMatchers.EnableCmdrGreedyLongFlag = value;
         }
 
+        public bool EnableCmdrLogInfo
+        {
+            get => DefaultMatchers.EnableCmdrLogInfo;
+            set => DefaultMatchers.EnableCmdrLogInfo = value;
+        }
+
         public bool EnableCmdrLogTrace
         {
             get => DefaultMatchers.EnableCmdrLogTrace;
