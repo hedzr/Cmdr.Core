@@ -62,7 +62,7 @@ namespace HzNS.Cmdr.Base
         private string _toggleGroup = "";
         private int _hitCount = 0;
         private bool _useMomentTimeFormat = true;
-        private string _placeHolder;
+        private string _placeHolder = "";
 
 
         public object? getDefaultValue()
