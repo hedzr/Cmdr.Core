@@ -15,6 +15,22 @@ see also:
 
 ### CHANGELOG
 
+#### Working
+
+- missed `SortByAlphabeticAscending`
+
+
+
+#### v1.0.139
+
+- bug fixed
+- added Declarative API via C# Attributes
+- supports more non-primitive types, such as: Uri, ...
+
+
+
+#### Older
+
 - The test cases are passed.
 - change the signatures for IPainter, IBaseWorker, ...
 

@@ -7,13 +7,12 @@
 <!--        <AssemblyVersion>1.0.1</AssemblyVersion>-->
 <!--        <FileVersion>1.0.1</FileVersion>-->
         
-        <PackageTags>cmdr, commandline, commandline-arguments, configuration, hierarchical-configurations, parser, option, argument,</PackageTags>
+        <PackageTags>cmdr, hierarchical-configurations, commandline, parser，commandline-arguments, configuration, option, argument,</PackageTags>
         <PackageId>HzNS.Cmdr.Core</PackageId>
         <Authors>Hedzr Yeh</Authors>
         <Company>obsez team</Company>
         <Title>Cmdr.Core</Title>
         <Description>Useful POSIX command line arguments parser for .Net. Hierarchical-configuration Store for app.</Description>
-<!--        <PackageVersion>1.0.2</PackageVersion>-->
         <Copyright>Copyright © by Hedzr, 2020.</Copyright>
         <PackageProjectUrl>https://github.com/hedzr/Cmdr.Core</PackageProjectUrl>
 <!--        <PackageIconUrl>https://github.com/hedzr/Cmdr.Core</PackageIconUrl>-->

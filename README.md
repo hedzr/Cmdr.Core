@@ -58,6 +58,8 @@ Please replace `1.0.29` with the newest version (stable or pre-release), see the
 
 - [x] Supports for `-D+`, `-D-` to enable/disable a bool option.
 
+- [x] Supports for PassThrough by `--`. (Passing remaining command line arguments after -- (optional))
+
 - [x] Automatic help screen generation (*Generates and prints well-formatted help message*)
 
 - [x] Predefined commands and flags:
@@ -66,14 +68,14 @@ Please replace `1.0.29` with the newest version (stable or pre-release), see the
   - Version & Build Info: `--version`/`--ver`/`-V`, `--build-info`/`-#`
     - Simulating version at runtime with `—version-sim 1.9.1`
     - [ ] generally, `conf.AppName` and `conf.Version` are originally.
-    - `~~tree`: list all commands and sub-commands.
+    - `--tree`: list all commands and sub-commands.
     - `--config <location>`: specify the location of the root config file.
     - `version` command available.
   - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
 
-- [x] Sortable commands and options/flags: sorted by alphabetic order or not.
+- [x] Sortable commands and options/flags: sorted by alphabetic order or not (`worker.SortByAlphabeticAscending`).
 
-- [x] Groupable commands and options/flags.
+- [x] Grouped commands and options/flags.
   
   Group Title may have a non-displayable prefix for sorting, separated by '.'.
   
@@ -240,9 +242,14 @@ allows the worker `logDebug()`.
 allows more logging output.
 
 
+
+
+
 ## Getting Start
 
-Basically, the Main program looks lile:
+### Fluent API
+
+Basically, the Main program looks like:
 
 ```c#
 static int Main(string[] args) => 
@@ -403,6 +410,72 @@ namespace Simple
 ```
 
 </details>
+
+
+### Declarative API
+
+Since v1.0.139, we added the declarative API for compatibility with some others command-line argument parser libraries.
+
+A sample at: [SimpleAttrs](https://github.com/hedzr/Cmdr.Core/tree/master/src/SampleAttrs).
+
+The codes might be:
+
+<details>
+	<summary> Expand to source codes </summary>
+
+
+```c#
+class Program
+{
+    static int Main(string[] args) => Cmdr.Compile<SampleAttrApp>(args);
+}
+
+[CmdrAppInfo(appName: "SimpleAttrs", author: "hedzr", copyright: "copyright")]
+public class SampleAttrApp
+{
+    [CmdrOption(longName: "count", shortName: "c", "cnt")]
+    [CmdrDescriptions(description: "a counter", descriptionLong: "", examples: "")]
+    [CmdrRange(min: 0, max: 10)]
+    [CmdrRequired]
+    public int Count { get; }
+
+    [CmdrCommand(longName: "tags", shortName: "t")]
+    [CmdrGroup(@group: "")]
+    [CmdrDescriptions(description: "tags operations")]
+    public class TagsCmd
+    {
+        [CmdrCommand(longName: "mode", shortName: "m")]
+        [CmdrDescriptions(description: "set tags' mode", descriptionLong: "", examples: "")]
+        public class ModeCmd
+        {
+            [CmdrAction]
+            public void Execute(IBaseWorker w, IBaseOpt cmd, IEnumerable<string> remainArgs)
+            {
+                Console.WriteLine($"Hit: {cmd}, Remains: {remainArgs}. Count: {Cmdr.Instance.Store.GetAs<int>(key: "count")}");
+             }
+
+            [CmdrOption(longName: "count2", shortName: "c2", "cnt2")]
+            [CmdrDescriptions(description: "a counter", descriptionLong: "", examples: "", placeHolder: "COUNT")]
+            public int Count { get; }
+
+            [CmdrOption(longName: "ok", shortName: "ok")]
+            [CmdrDescriptions(description: "boolean option", descriptionLong: "", examples: "")]
+            [CmdrHidden]
+            public bool OK { get; }
+            
+            [CmdrOption(longName: "addr", shortName: "a", "address")]
+            [CmdrDescriptions(description: "string option", descriptionLong: "", examples: "", placeHolder: "HOST[:PORT]")]
+            public string Address { get; }
+        }
+    }
+}
+```
+
+</details>
+
+
+
+
 
 ### Logger
 
