@@ -14,7 +14,7 @@ namespace SampleAttrs
         // internal static int Main(string[] args) => Cmdr.Compile<Prog1>(args);
 
         [CmdrOption(longName: "count", shortName: "c", "cnt")]
-        [CmdrDescriptions(description: "a counter", descriptionLong: "",examples: "")]
+        [CmdrDescriptions(description: "a counter", descriptionLong: "", examples: "")]
         [CmdrRange(min: 0, max: 10)]
         [CmdrRequired]
         public int Count { get; }
@@ -25,7 +25,7 @@ namespace SampleAttrs
         public class TagsCmd
         {
             [CmdrCommand(longName: "mode", shortName: "m")]
-            [CmdrDescriptions(description: "set tags' mode", descriptionLong: "",examples: "")]
+            [CmdrDescriptions(description: "set tags' mode", descriptionLong: "", examples: "")]
             public class ModeCmd
             {
                 [CmdrAction]
@@ -33,12 +33,25 @@ namespace SampleAttrs
                 {
                     // throw new System.NotImplementedException();
                     Console.WriteLine(
-                        value: $"Hit: {cmd}, Remains: {remainArgs}. Count: {Cmdr.Instance.Store.GetAs<int>(key: "count")}");
+                        value:
+                        $"Hit: {cmd}, Remains: {remainArgs}. Count: {Cmdr.Instance.Store.GetAs<int>(key: "count")}");
                     // for (var i = 0; i < Count; i++)
                     // {
                     //     // Prompt.GetPassword("Enter your password: ");
                     // }
                 }
+
+                [CmdrOption(longName: "count2", shortName: "c2", "cnt2")]
+                [CmdrDescriptions(description: "a counter", descriptionLong: "", examples: "", placeHolder: "COUNT")]
+                public int Count { get; }
+
+                [CmdrOption(longName: "ok", shortName: "ok")]
+                [CmdrDescriptions(description: "boolean option", descriptionLong: "", examples: "")]
+                public bool OK { get; }
+                
+                [CmdrOption(longName: "addr", shortName: "a", "address")]
+                [CmdrDescriptions(description: "string option", descriptionLong: "", examples: "", placeHolder: "HOST[:PORT]")]
+                public string Address { get; }
             }
         }
     }

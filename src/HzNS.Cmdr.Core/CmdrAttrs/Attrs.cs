@@ -27,7 +27,8 @@ namespace HzNS.Cmdr.CmdrAttrs
                     AttributeTargets.Struct, AllowMultiple = true)]
     public class CmdrCommand : BaseOptAttr
     {
-        public CmdrCommand(string longName, string? shortName = null, params string[] aliases) : base(longName, shortName,
+        public CmdrCommand(string longName, string? shortName = null, params string[] aliases) : base(longName,
+            shortName,
             aliases)
         {
         }
@@ -39,8 +40,9 @@ namespace HzNS.Cmdr.CmdrAttrs
     public class CmdrOption : BaseOptAttr
     {
         // public Type Type { get; set; }
-        
-        public CmdrOption(string longName, string? shortName=null, params string[] aliases) : base(longName, shortName,
+
+        public CmdrOption(string longName, string? shortName = null, params string[] aliases) : base(longName,
+            shortName,
             aliases)
         {
             // this.Type = type;
@@ -67,11 +69,19 @@ namespace HzNS.Cmdr.CmdrAttrs
         public string Description;
         public string DescriptionLong;
         public string Examples;
+
+        /// <summary>
+        /// For Command only
+        /// </summary>
         public string TailArgs;
+
+        /// <summary>
+        /// For Flag only
+        /// </summary>
         public string PlaceHolder;
 
         public CmdrDescriptions(string description, string? descriptionLong = null, string? examples = null,
-            string? tailArgs = null,string? placeHolder = null)
+            string? tailArgs = null, string? placeHolder = null)
         {
             Description = description;
             DescriptionLong = descriptionLong ?? string.Empty;
