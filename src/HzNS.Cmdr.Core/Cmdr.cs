@@ -146,12 +146,106 @@ namespace HzNS.Cmdr
         // ReSharper disable once InconsistentNaming
         private static int compileCommands(BaseCommand cmd, Type t, string[] args)
         {
+            foreach (var fi in t.GetFields())
+            {
+                Cmdr.Instance.Worker?.log?.logInfo("  - - - field {fld}.", fi);
+            }
+
+            foreach (var pi in t.GetProperties())
+            {
+                Cmdr.Instance.Worker?.log?.logInfo("  - - - property {prp}.", pi);
+           
+                var attr = (CmdrAttrs.CmdrOption?) Attribute.GetCustomAttribute(pi,
+                    typeof(CmdrAttrs.CmdrOption));
+                if (attr == null) continue;
+                
+                
+                var desc = (CmdrAttrs.CmdrDescriptions?) Attribute.GetCustomAttribute(pi,
+                    typeof(CmdrAttrs.CmdrDescriptions));
+                var group = (CmdrAttrs.CmdrGroup?) Attribute.GetCustomAttribute(pi,
+                    typeof(CmdrAttrs.CmdrGroup));
+                var hidden = (CmdrAttrs.CmdrHidden?) Attribute.GetCustomAttribute(pi,
+                    typeof(CmdrAttrs.CmdrHidden));
+                var vars = (CmdrAttrs.CmdrEnvVars?) Attribute.GetCustomAttribute(pi,
+                    typeof(CmdrAttrs.CmdrEnvVars));
+                var required = (CmdrAttrs.CmdrRequired?) Attribute.GetCustomAttribute(pi,
+                    typeof(CmdrAttrs.CmdrRequired));
+
+                var obj = Activator.CreateInstance(t);
+                // TODO the actions for a flag - class property
+                var action = findForMethods<CmdrAttrs.CmdrAction>(pi.PropertyType);
+                var actionPre = findForMethods<CmdrAttrs.CmdrPreAction>(pi.PropertyType);
+                var actionPost = findForMethods<CmdrAttrs.CmdrPostAction>(pi.PropertyType);
+                var actionOnSet = findForMethods<CmdrAttrs.CmdrOnSetAction>(pi.PropertyType);
+
+                var tt = typeof(Flag<>);
+                var constructed = tt.MakeGenericType(new Type[]{pi.PropertyType});
+                var flag = Activator.CreateInstance(constructed, new object?[]
+                {
+                    attr.Short, attr.Long, attr.Aliases,
+                    desc?.Description ?? string.Empty, desc?.DescriptionLong ?? string.Empty,
+                    desc?.Examples ?? string.Empty,
+                    pi.GetValue(obj), "",
+                });
+                if (flag is IFlag f)
+                {
+                    if (hidden != null) f.Hidden = true;
+                    if (group != null)
+                    {
+                        f.Group = group.GroupName;
+                        f.ToggleGroup = group.ToggleGroupName;
+                    }
+                    if (vars != null) f.EnvVars = vars.VariableNames;
+                    if (desc != null) f.PlaceHolder = desc.PlaceHolder;
+                }
+
+                // var flag = new Flag<T>
+                // {
+                //     Long = attr.Long,
+                //     Short = attr.Short,
+                //     Aliases = attr.Aliases,
+                //     Description = desc?.Description ?? string.Empty,
+                //     DescriptionLong = desc?.DescriptionLong ?? string.Empty,
+                //     Examples = desc?.Examples ?? string.Empty,
+                //     Group = group?.GroupName ?? string.Empty,
+                //     Hidden = hidden?.HiddenFlag ?? false,
+                //     EnvVars = vars?.VariableNames ?? new string[] { },
+                //     // TailArgs = desc?.TailArgs ?? string.Empty
+                // };
+//                 if (action != null)
+//                     flag.Action = (worker, opt, remainArgs) =>
+//                         action.Invoke(obj, new object?[] {worker, opt, remainArgs});
+// #pragma warning disable CS8603,CS8605
+//                 if (actionPre != null)
+//                     flag.PreAction = (worker, opt, remainArgs) =>
+//                         (bool) actionPre.Invoke(obj, new object?[] {worker, opt, remainArgs});
+// #pragma warning restore CS8603,CS8605
+//                 if (actionPost != null)
+//                     flag.PostAction = (worker, opt, remainArgs) =>
+//                         actionPost.Invoke(obj, new object?[] {worker, opt, remainArgs});
+//                 if (actionOnSet != null)
+//                     flag.OnSet = (worker, opt, ov, nv) =>
+//                         actionOnSet?.Invoke(obj, new object?[] {worker, opt, ov, nv});
+                cmd.AddFlagGeneric(flag, required!=null);
+
+                Cmdr.Instance.Worker?.log?.logInfo("  - Add Flag to {cmd}: {flg}.", cmd, flag);
+                if (action != null || actionPre != null || actionPost != null || actionOnSet != null)
+                {
+                    Cmdr.Instance.Worker?.log?.logInfo(
+                        "    -> link to {obj}[{objType}].Action/Pre/Post/OnSet ({a},{pre},{post},{onset})",
+                        obj, pi, action, actionPre, actionPost, actionOnSet);
+                }
+
+            }
+            
             foreach (var nt in t.GetNestedTypes())
             {
                 var attr = (CmdrAttrs.CmdrCommand?) Attribute.GetCustomAttribute(nt,
                     typeof(CmdrAttrs.CmdrCommand));
                 if (attr == null) continue;
 
+                #region for a command
+                
                 var desc = (CmdrAttrs.CmdrDescriptions?) Attribute.GetCustomAttribute(nt,
                     typeof(CmdrAttrs.CmdrDescriptions));
                 var group = (CmdrAttrs.CmdrGroup?) Attribute.GetCustomAttribute(nt,
@@ -204,6 +298,8 @@ namespace HzNS.Cmdr
                         obj, nt, action, actionPre, actionPost, actionOnSet);
                 }
 
+                #endregion
+                
                 compileCommands(subCommand, nt, args);
             }
 

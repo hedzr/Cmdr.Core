@@ -68,14 +68,16 @@ namespace HzNS.Cmdr.CmdrAttrs
         public string DescriptionLong;
         public string Examples;
         public string TailArgs;
+        public string PlaceHolder;
 
         public CmdrDescriptions(string description, string? descriptionLong = null, string? examples = null,
-            string? tailArgs = null)
+            string? tailArgs = null,string? placeHolder = null)
         {
             Description = description;
             DescriptionLong = descriptionLong ?? string.Empty;
             Examples = examples ?? string.Empty;
             TailArgs = tailArgs ?? string.Empty;
+            placeHolder = placeHolder ?? string.Empty;
         }
     }
 
@@ -143,20 +145,20 @@ namespace HzNS.Cmdr.CmdrAttrs
     }
 
 
-    [AttributeUsage(AttributeTargets.Field |
-                    AttributeTargets.Enum |
-                    AttributeTargets.Property)]
-    public class CmdrDefaultValue : Attribute
-    {
-        public object Value { get; set; }
-        public string PlaceHolder { get; set; }
-
-        public CmdrDefaultValue(bool required = true, string? placeHolder = null)
-        {
-            Value = required;
-            PlaceHolder = placeHolder ?? string.Empty;
-        }
-    }
+    // [AttributeUsage(AttributeTargets.Field |
+    //                 AttributeTargets.Enum |
+    //                 AttributeTargets.Property)]
+    // public class CmdrDefaultValue : Attribute
+    // {
+    //     public object Value { get; set; }
+    //     public string PlaceHolder { get; set; }
+    //
+    //     public CmdrDefaultValue(bool required = true, string? placeHolder = null)
+    //     {
+    //         Value = required;
+    //         PlaceHolder = placeHolder ?? string.Empty;
+    //     }
+    // }
 
     [AttributeUsage(AttributeTargets.Field |
                     AttributeTargets.Enum |
