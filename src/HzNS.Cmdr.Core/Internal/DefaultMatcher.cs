@@ -43,14 +43,14 @@ namespace HzNS.Cmdr.Internal
         public static bool EnableCmdrGreedyIncrementalMode { get; set; } = true;
 
 
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public static bool EnableCmdrLogInfo { get; set; } = true;
-
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public static bool EnableCmdrLogTrace { get; set; }
-
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public static bool EnableCmdrLogDebug { get; set; }
+        // // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        // public static bool EnableCmdrLogInfo { get; set; } = true;
+        //
+        // // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        // public static bool EnableCmdrLogTrace { get; set; }
+        //
+        // // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        // public static bool EnableCmdrLogDebug { get; set; }
 
 
         // ReSharper disable once InconsistentNaming
@@ -885,7 +885,7 @@ namespace HzNS.Cmdr.Internal
         // ReSharper disable once FieldCanBeMadeReadOnly.Local
         private static Action<IBaseWorker, IBaseOpt, object?, object?>? defaultOnSet = (w, flg, oldVal, newVal) =>
         {
-            if (EnableCmdrLogDebug)
+            if (w.EnableCmdrLogDebug)
                 Console.WriteLine($"--> onSet: {flg} changed ({oldVal} -> {newVal})");
         };
 

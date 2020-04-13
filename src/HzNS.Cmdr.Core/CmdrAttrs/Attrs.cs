@@ -27,9 +27,23 @@ namespace HzNS.Cmdr.CmdrAttrs
                     AttributeTargets.Struct, AllowMultiple = true)]
     public class CmdrCommand : BaseOptAttr
     {
-        public CmdrCommand(string longName, string shortName, params string[] aliases) : base(longName, shortName,
+        public CmdrCommand(string longName, string? shortName = null, params string[] aliases) : base(longName, shortName,
             aliases)
         {
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Field |
+                    AttributeTargets.Enum |
+                    AttributeTargets.Property, AllowMultiple = true)]
+    public class CmdrOption : BaseOptAttr
+    {
+        // public Type Type { get; set; }
+        
+        public CmdrOption(string longName, string? shortName=null, params string[] aliases) : base(longName, shortName,
+            aliases)
+        {
+            // this.Type = type;
         }
     }
 
@@ -79,17 +93,6 @@ namespace HzNS.Cmdr.CmdrAttrs
         {
             ToggleGroupName = toggleGroup ?? string.Empty;
             GroupName = toggleGroup ?? (group ?? string.Empty);
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.Field |
-                    AttributeTargets.Enum |
-                    AttributeTargets.Property, AllowMultiple = true)]
-    public class CmdrOption : BaseOptAttr
-    {
-        public CmdrOption(string longName, string shortName, params string[] aliases) : base(longName, shortName,
-            aliases)
-        {
         }
     }
 
@@ -143,6 +146,21 @@ namespace HzNS.Cmdr.CmdrAttrs
     [AttributeUsage(AttributeTargets.Field |
                     AttributeTargets.Enum |
                     AttributeTargets.Property)]
+    public class CmdrDefaultValue : Attribute
+    {
+        public object Value { get; set; }
+        public string PlaceHolder { get; set; }
+
+        public CmdrDefaultValue(bool required = true, string? placeHolder = null)
+        {
+            Value = required;
+            PlaceHolder = placeHolder ?? string.Empty;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Field |
+                    AttributeTargets.Enum |
+                    AttributeTargets.Property)]
     public class CmdrRequired : Attribute
     {
         public bool State { get; set; }
@@ -183,10 +201,10 @@ namespace HzNS.Cmdr.CmdrAttrs
             public string Short;
             public string[] Aliases;
 
-            protected BaseOptAttr(string longName, string shortName, params string[] aliases)
+            protected BaseOptAttr(string longName, string? shortName = null, params string[] aliases)
             {
                 Long = longName;
-                Short = shortName;
+                Short = shortName ?? string.Empty;
                 Aliases = aliases;
             }
         }

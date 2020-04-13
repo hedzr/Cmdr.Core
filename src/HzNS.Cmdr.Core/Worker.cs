@@ -79,21 +79,38 @@ namespace HzNS.Cmdr
 
         public bool EnableCmdrLogInfo
         {
-            get => DefaultMatchers.EnableCmdrLogInfo;
-            set => DefaultMatchers.EnableCmdrLogInfo = value;
+            get => log?.EnableCmdrLogInfo ?? false;
+            set
+            {
+                if (log != null) log.EnableCmdrLogInfo = value;
+            }
         }
 
-        public bool EnableCmdrLogTrace
-        {
-            get => DefaultMatchers.EnableCmdrLogTrace;
-            set => DefaultMatchers.EnableCmdrLogTrace = value;
+        public bool EnableCmdrLogDebug { get; set; }
+        public bool EnableCmdrLogTrace { 
+            get => log?.EnableCmdrLogTrace ?? false;
+            set
+            {
+                if (log != null) log.EnableCmdrLogTrace = value;
+            }
         }
-
-        public bool EnableCmdrLogDebug
-        {
-            get => DefaultMatchers.EnableCmdrLogDebug;
-            set => DefaultMatchers.EnableCmdrLogDebug = value;
-        }
+        // public bool EnableCmdrLogInfo
+        // {
+        //     get => DefaultMatchers.EnableCmdrLogInfo;
+        //     set => DefaultMatchers.EnableCmdrLogInfo = value;
+        // }
+        //
+        // public bool EnableCmdrLogDebug
+        // {
+        //     get => DefaultMatchers.EnableCmdrLogDebug;
+        //     set => DefaultMatchers.EnableCmdrLogDebug = value;
+        // }
+        //
+        // public bool EnableCmdrLogTrace
+        // {
+        //     get => DefaultMatchers.EnableCmdrLogTrace;
+        //     set => DefaultMatchers.EnableCmdrLogTrace = value;
+        // }
 
 
         public bool EnableAutoBoxingWhenExtracting
@@ -1082,8 +1099,8 @@ namespace HzNS.Cmdr
             // NOTE that the logger `log` is not ready yet at this time.
             ColorifyEnabler.Enable();
 
-            DefaultMatchers.EnableCmdrLogTrace = Util.GetEnvValueBool("CMDR_TRACE");
-            DefaultMatchers.EnableCmdrLogDebug = Util.GetEnvValueBool("CMDR_DEBUG", DefaultMatchers.EnableCmdrLogTrace);
+            EnableCmdrLogTrace = Util.GetEnvValueBool("CMDR_TRACE");
+            EnableCmdrLogDebug = Util.GetEnvValueBool("CMDR_DEBUG", EnableCmdrLogTrace);
             OptionsStore.Set("debug", Util.GetEnvValueBool("DEBUG"));
             OptionsStore.Set("trace", Util.GetEnvValueBool("TRACE"));
             OptionsStore.Set("verbose", Util.GetEnvValueBool("VERBOSE"));

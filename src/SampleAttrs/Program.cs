@@ -29,17 +29,14 @@ namespace SampleAttrs
                 // .WriteTo.File(Path.Combine("logs", @"access.log"), rollingInterval: RollingInterval.Day)
                 // .WriteTo.Console()
                 .CreateLogger();
+            var loggerWrapper = HzNS.Cmdr.Logger.Serilog.SerilogBuilder.Build((logger) =>
+            {
+                // logger.EnableCmdrLogInfo = true;
+                // logger.EnableCmdrLogTrace = true;
+            });
 
-            return Cmdr.Compile<SampleAttrApp>(args,
-                HzNS.Cmdr.Logger.Serilog.SerilogBuilder.Build((logger) =>
-                {
-                    // logger.EnableCmdrLogInfo = true;
-                    // logger.EnableCmdrLogTrace = true;
-                }),
-                (w) =>
-                {
-                    // w.SetLogger();
-                });
+            return Cmdr.Compile<SampleAttrApp>(args,loggerWrapper,
+                (w) => w.SetLogger(loggerWrapper));
         }
     }
 }

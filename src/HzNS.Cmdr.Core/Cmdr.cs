@@ -97,8 +97,6 @@ namespace HzNS.Cmdr
                 Instance.Worker = new Worker(RootCommand.New(new AppInfo()));
                 if (Instance.Worker is Worker w)
                 {
-                    log.EnableCmdrLogInfo = true;
-                    log.EnableCmdrLogTrace = true;
                     w.EnableCmdrLogInfo = true;
                     w.EnableCmdrLogDebug = true;
                     w.EnableCmdrLogTrace = true;
@@ -180,17 +178,22 @@ namespace HzNS.Cmdr
                     Group = group?.GroupName ?? string.Empty,
                     Hidden = hidden?.HiddenFlag ?? false,
                     EnvVars = vars?.VariableNames ?? new string[] { },
-#pragma warning disable CS8603,CS8605
-                    PreAction = (worker, opt, remainArgs) =>
-                        actionPre == null || (bool) actionPre.Invoke(obj, new object?[] {worker, opt, remainArgs}),
-#pragma warning restore CS8603,CS8605
-                    PostAction = (worker, opt, remainArgs) =>
-                        actionPost?.Invoke(obj, new object?[] {worker, opt, remainArgs}),
-                    Action = (worker, opt, remainArgs) =>
-                        action?.Invoke(obj, new object?[] {worker, opt, remainArgs}),
-                    OnSet = (worker, opt, ov, nv) => actionOnSet?.Invoke(obj, new object?[] {worker, opt, ov, nv}),
                     TailArgs = desc?.TailArgs ?? string.Empty
                 };
+                if (action != null)
+                    subCommand.Action = (worker, opt, remainArgs) =>
+                        action.Invoke(obj, new object?[] {worker, opt, remainArgs});
+#pragma warning disable CS8603,CS8605
+                if (actionPre != null)
+                    subCommand.PreAction = (worker, opt, remainArgs) =>
+                        (bool) actionPre.Invoke(obj, new object?[] {worker, opt, remainArgs});
+#pragma warning restore CS8603,CS8605
+                if (actionPost != null)
+                    subCommand.PostAction = (worker, opt, remainArgs) =>
+                        actionPost.Invoke(obj, new object?[] {worker, opt, remainArgs});
+                if (actionOnSet != null)
+                    subCommand.OnSet = (worker, opt, ov, nv) =>
+                        actionOnSet?.Invoke(obj, new object?[] {worker, opt, ov, nv});
                 cmd.AddCommand(subCommand);
 
                 Cmdr.Instance.Worker?.log?.logInfo("  - Add Command to {cmd}: {sub}.", cmd, subCommand);

@@ -30,6 +30,8 @@ namespace HzNS.Cmdr.Base
         // ReSharper disable once MemberCanBeMadeStatic.Global
         bool EnableCmdrGreedyLongFlag { get; set; }
 
+       
+        bool EnableCmdrLogInfo { get; set; }
         bool EnableCmdrLogTrace { get; set; }
         bool EnableCmdrLogDebug { get; set; }
         bool EnableAutoBoxingWhenExtracting { get; set; }
