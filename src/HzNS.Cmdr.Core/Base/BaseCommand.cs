@@ -11,29 +11,11 @@ namespace HzNS.Cmdr.Base
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
     public abstract class BaseCommand : BaseOpt, ICommand, IEquatable<BaseCommand>
     {
-        public bool Equals(BaseCommand? other)
-        {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return _flags.Equals(other._flags) && _subCommands.Equals(other._subCommands);
-        }
-
-        public override bool Equals(object? obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((BaseCommand) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(_flags, _subCommands);
-        }
-
         private readonly List<IFlag> _flags = new List<IFlag>();
 
         private readonly List<ICommand> _subCommands = new List<ICommand>();
+        private string _tailArgs = "";
+        private List<IFlag> _requiredFlags = new List<IFlag>();
 
         // ReSharper disable once PublicConstructorInAbstractClass
         public BaseCommand()
@@ -69,9 +51,17 @@ namespace HzNS.Cmdr.Base
         }
 
         // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-        public string TailArgs { get; set; } = "";
+        public string TailArgs
+        {
+            get => _tailArgs;
+            set => _tailArgs = value;
+        }
 
-        public List<IFlag> RequiredFlags { get; internal set; } = new List<IFlag>();
+        public List<IFlag> RequiredFlags
+        {
+            get => _requiredFlags;
+            internal set => _requiredFlags = value;
+        }
 
         public Dictionary<string, List<IFlag>> ToggleableFlags { get; internal set; } =
             new Dictionary<string, List<IFlag>>();
@@ -236,10 +226,92 @@ namespace HzNS.Cmdr.Base
                 return string.Join(" ", titles);
             }
         }
+        
+        
+        
+        public static BaseCommand operator +(BaseCommand cmd, BaseCommand cc)
+        {
+            cmd.AddCommand(cc);
+            return cmd;
+        }
+        public static BaseCommand operator -(BaseCommand cmd, BaseCommand cc)
+        {
+            cmd.SubCommands.Remove(cc);
+            return cmd;
+        }
+        
+        public static BaseCommand operator +(BaseCommand cmd, IFlag flg)
+        {
+            cmd.AddFlagGeneric(flg);
+            return cmd;
+        }
+        public static BaseCommand operator -(BaseCommand cmd, IFlag flg)
+        {
+            cmd.Flags.Remove(flg);
+            return cmd;
+        }
+        
+        
+        
 
         // public static bool operator ==(BaseCommand a, string s) => a != null && (a.Match(s) || a.Match(s, true));
 
         // public static bool operator !=(BaseCommand a, string s) => (a == null || (!a.Match(s) && !a.Match(s, true)));
+
+        // public bool Equals(BaseCommand? other)
+        // {
+        //     if (ReferenceEquals(null, other)) return false;
+        //     if (ReferenceEquals(this, other)) return true;
+        //     return _flags.Equals(other._flags) && _subCommands.Equals(other._subCommands);
+        // }
+        //
+        // public override bool Equals(object? obj)
+        // {
+        //     if (ReferenceEquals(null, obj)) return false;
+        //     if (ReferenceEquals(this, obj)) return true;
+        //     if (obj.GetType() != GetType()) return false;
+        //     return Equals((BaseCommand) obj);
+        // }
+        //
+        // public override int GetHashCode()
+        // {
+        //     return HashCode.Combine(_flags, _subCommands);
+        // }
+
+
+        public bool Equals(BaseCommand? other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return base.Equals(other) && 
+                   _flags.Equals(other._flags) && 
+                   _subCommands.Equals(other._subCommands) && 
+                   TailArgs == other.TailArgs && 
+                   RequiredFlags.Equals(other.RequiredFlags);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((BaseCommand) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(base.GetHashCode(), _flags, _subCommands, TailArgs, RequiredFlags);
+        }
+
+        public static bool operator ==(BaseCommand? left, BaseCommand? right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(BaseCommand? left, BaseCommand? right)
+        {
+            return !Equals(left, right);
+        }
 
         public override string ToString()
         {
