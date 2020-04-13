@@ -50,7 +50,7 @@ namespace HzNS.Cmdr.Logger.Serilog
         [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public global::Serilog.ILogger log { get; private set; }
 
-        public bool EnableCmdrLogInfo { get; set; }
+        public bool EnableCmdrLogInfo { get; set; } = true;
         public bool EnableCmdrLogTrace { get; set; }
 
         // public ILogger log;

@@ -19,7 +19,9 @@
         <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
         <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
         <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
-        <PackageVersion>1.0.8</PackageVersion>
+        <PackageVersion>1.0.9</PackageVersion>
+        <PackageReleaseNotes>Logger abstract layer for Cmdr.Core.
+        </PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
