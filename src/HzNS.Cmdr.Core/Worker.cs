@@ -167,7 +167,12 @@ namespace HzNS.Cmdr
         public bool EnableUnknownFlagThrows { get; set; } = false;
 
         
-        public bool SortAsc { get; set; } = true;
+        /// <summary>
+        /// Sort commands/flags by alphabetic order. (Default: true)
+        /// <br/>
+        /// [SortAsc] controls the order in [Walk()].
+        /// </summary>
+        public bool SortByAlphabeticAscending { get; set; } = true;
         
         /// <summary>
         /// Default tab stop position in help screen.
@@ -538,6 +543,7 @@ namespace HzNS.Cmdr
             }
         }
 
+        
         private void loadExternalConfigurationsFromPredefinedLocations(IBaseWorker w, IRootCommand root)
         {
             if (!EnableExternalConfigFilesLoading) return;
@@ -617,8 +623,7 @@ namespace HzNS.Cmdr
 
             return false;
         }
-
-
+        
         private bool loadExternalConfigurationsFrom(string location, IBaseWorker w, IRootCommand root)
         {
             var s1 = Regex.Replace(location, @"\$([A-Za-z0-9_]+)", @"%$1%",
@@ -981,6 +986,21 @@ namespace HzNS.Cmdr
                 return true; // return false to break the walkForFlags' loop.
             });
             log?.logDebug("_xrefs was built.");
+
+            if (SortByAlphabeticAscending)
+            {
+                sortCommandsAndFlags(command);
+            }
+        }
+
+        private void sortCommandsAndFlags(ICommand parent)
+        {
+            parent.Flags.Sort((o1, o2) => string.CompareOrdinal(o1.Long, o2.Long));
+            parent.SubCommands.Sort((o1, o2) => string.CompareOrdinal(o1.Long, o2.Long));
+            foreach (var cmd in parent.SubCommands)
+            {
+                sortCommandsAndFlags(cmd);
+            }
         }
 
         // ReSharper disable once SuggestBaseTypeForParameter
@@ -1042,20 +1062,23 @@ namespace HzNS.Cmdr
             Func<ICommand, IFlag?, int, bool>? flagsWatcher = null,
             int level = 0)
         {
-            // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var f in parent.Flags)
-                if (flagsWatcher != null && flagsWatcher(parent, f, level) == false)
-                    return false;
-            if (parent.Flags.Count == 0 && flagsWatcher != null)
+            if (parent.Flags.Count == 0)
             {
-                if (flagsWatcher(parent, null, level) == false)
+                if (flagsWatcher != null && flagsWatcher(parent, null, level) == false)
                     return false;
-                // this.buildParentFlags(parent.Owner, optionLines, tabStop, noBacktrace);
+            }
+            else
+            {
+                // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+                foreach (var f in parent.Flags)
+                    if (flagsWatcher != null && flagsWatcher(parent, f, level) == false)
+                        return false;
             }
 
             if (parent.SubCommands == null) return true;
 
-            foreach (var cmd in parent.SubCommands)
+            var commands = parent.SubCommands;
+            foreach (var cmd in commands)
             {
                 if (commandsWatcher != null && commandsWatcher.Invoke(parent, cmd, level) == false)
                     return false;
@@ -1065,7 +1088,10 @@ namespace HzNS.Cmdr
 
             return true;
         }
+        
+        // private Comparison<T> defaultComparator = (o1, o2) => string.CompareOrdinal(o1.Long, o2.Long);
 
+        
         // ReSharper disable once UnusedMember.Local
         [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
         private bool walkForFlags(ICommand parent, Func<ICommand, IFlag, int, bool> watcher1, int level = 0)

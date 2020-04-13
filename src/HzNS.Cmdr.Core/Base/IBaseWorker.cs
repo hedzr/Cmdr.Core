@@ -73,9 +73,11 @@ namespace HzNS.Cmdr.Base
         bool AppTraceMode { get; }
 
         /// <summary>
-        /// Sort commands/flags by alphabetic order.
+        /// Sort commands/flags by alphabetic order. (Default: true)
+        /// <br/>
+        /// [SortAsc] controls the order in [Walk()].
         /// </summary>
-        bool SortAsc { get; set; }
+        bool SortByAlphabeticAscending { get; set; }
 
         /// <summary>
         /// Default tab stop position in help screen.
