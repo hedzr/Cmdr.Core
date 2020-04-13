@@ -90,7 +90,7 @@ namespace HzNS.Cmdr.Base
             if (flag is IFlag f)
             {
                 var ts = f.GetType().GetGenericArguments();
-                if (ts.Length==1)
+                if (ts.Length == 1)
                 {
                     f.Owner = this;
 

@@ -147,7 +147,7 @@ namespace HzNS.Cmdr.Internal.Painter
                 if (commandLines.Count > 0)
                 {
                     oln($"\nCommands Tree For '{title}':");
-                    ShowOne(commandLines, tabStop);
+                    ShowLinesOneByOne(commandLines, tabStop);
                 }
                 else
                     oln($"\nNO SUB-COMMANDS For '{title}'");
@@ -160,7 +160,7 @@ namespace HzNS.Cmdr.Internal.Painter
                         oln("\nCommands:");
                     else
                         oln("\nSub-Commands:");
-                    ShowOne(commandLines, tabStop);
+                    ShowLinesOneByOne(commandLines, tabStop);
                 }
             }
 
@@ -174,25 +174,29 @@ namespace HzNS.Cmdr.Internal.Painter
                     if (!treeMode)
                     {
                         // writer.WriteLine($"\nOptions {UpperBoundLevel - lvl}:");
-                        if (step == 0)
-                            oln($"\nOptions:");
-                        else if (cf.cmd.IsRoot)
+                        if (cf.cmd.IsRoot)
                             oln($"\nGlobal Options:");
                         else if (step == 1)
                             oln($"\nParent Options ({cf.cmd.backtraceTitles}):");
+                        else if (step == 0)
+                            oln($"\nOptions:"); // {lvl}/{WorkerFunctions.UpperBoundLevel - lvl}:");
                         else
                             oln($"\nParents Options ({cf.cmd.backtraceTitles}):");
                     }
 
-                    ShowOne(cf.lines, tabStop, step);
+                    ShowLinesOneByOne(cf.lines, tabStop, step);
                     step++;
                 }
+            }
+            else if (!treeMode)
+            {
+                oln($"\nOptions:\n  None");
             }
         }
 
 
         // ReSharper disable once UnusedParameter.Local
-        private void ShowOne(SortedDictionary<string, List<TwoString>> lines,
+        private void ShowLinesOneByOne(SortedDictionary<string, List<TwoString>> lines,
             // Format writer, 
             int tabStop, int level = 0)
         {
@@ -388,6 +392,8 @@ namespace HzNS.Cmdr.Internal.Painter
                 commandsWatcher: (owner, cmd, level) => true,
                 flagsWatcher: (owner, flg, level) =>
                 {
+                    if (flg == null) return true;
+                    
                     var s = Cmdr.Instance.Store;
                     var (slot, vk) = s.FindBy(flg.ToKeys());
                     // ReSharper disable once InvertIf

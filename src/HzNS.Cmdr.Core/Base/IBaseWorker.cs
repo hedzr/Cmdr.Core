@@ -81,6 +81,7 @@ namespace HzNS.Cmdr.Base
         /// Default tab stop position in help screen.
         /// </summary>
         int TabStop { get; set; }
+        bool EnablePlaceHolderForShortAndAliasFlag { get; set; }
 
 
         /// <summary>

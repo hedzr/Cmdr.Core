@@ -77,7 +77,7 @@ namespace HzNS.Cmdr.CmdrAttrs
             DescriptionLong = descriptionLong ?? string.Empty;
             Examples = examples ?? string.Empty;
             TailArgs = tailArgs ?? string.Empty;
-            placeHolder = placeHolder ?? string.Empty;
+            PlaceHolder = placeHolder ?? string.Empty;
         }
     }
 

@@ -420,7 +420,7 @@ namespace HzNS.Cmdr
 
         public override bool Walk(ICommand? parent = null,
             Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
-            Func<ICommand, IFlag, int, bool>? flagsWatcher = null)
+            Func<ICommand, IFlag?, int, bool>? flagsWatcher = null)
         {
             return walkFor(parent ?? _root, commandsWatcher, flagsWatcher);
         }
@@ -913,6 +913,8 @@ namespace HzNS.Cmdr
                 return true;
             }, (owner, flag, level) =>
             {
+                if (flag == null) return true;
+                
                 var x = xrefs;
                 if (!x.ContainsKey(owner))
                     x.TryAdd(owner, new Xref());
@@ -1037,13 +1039,19 @@ namespace HzNS.Cmdr
 
         private bool walkFor(ICommand parent,
             Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
-            Func<ICommand, IFlag, int, bool>? flagsWatcher = null,
+            Func<ICommand, IFlag?, int, bool>? flagsWatcher = null,
             int level = 0)
         {
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
             foreach (var f in parent.Flags)
                 if (flagsWatcher != null && flagsWatcher(parent, f, level) == false)
                     return false;
+            if (parent.Flags.Count == 0 && flagsWatcher != null)
+            {
+                if (flagsWatcher(parent, null, level) == false)
+                    return false;
+                // this.buildParentFlags(parent.Owner, optionLines, tabStop, noBacktrace);
+            }
 
             if (parent.SubCommands == null) return true;
 

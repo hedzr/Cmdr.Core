@@ -154,12 +154,12 @@ namespace HzNS.Cmdr
             foreach (var pi in t.GetProperties())
             {
                 Cmdr.Instance.Worker?.log?.logInfo("  - - - property {prp}.", pi);
-           
+
                 var attr = (CmdrAttrs.CmdrOption?) Attribute.GetCustomAttribute(pi,
                     typeof(CmdrAttrs.CmdrOption));
                 if (attr == null) continue;
-                
-                
+
+
                 var desc = (CmdrAttrs.CmdrDescriptions?) Attribute.GetCustomAttribute(pi,
                     typeof(CmdrAttrs.CmdrDescriptions));
                 var group = (CmdrAttrs.CmdrGroup?) Attribute.GetCustomAttribute(pi,
@@ -179,7 +179,7 @@ namespace HzNS.Cmdr
                 var actionOnSet = findForMethods<CmdrAttrs.CmdrOnSetAction>(pi.PropertyType);
 
                 var tt = typeof(Flag<>);
-                var constructed = tt.MakeGenericType(new Type[]{pi.PropertyType});
+                var constructed = tt.MakeGenericType(new Type[] {pi.PropertyType});
                 var flag = Activator.CreateInstance(constructed, new object?[]
                 {
                     attr.Short, attr.Long, attr.Aliases,
@@ -195,6 +195,7 @@ namespace HzNS.Cmdr
                         f.Group = group.GroupName;
                         f.ToggleGroup = group.ToggleGroupName;
                     }
+
                     if (vars != null) f.EnvVars = vars.VariableNames;
                     if (desc != null) f.PlaceHolder = desc.PlaceHolder;
                 }
@@ -226,9 +227,9 @@ namespace HzNS.Cmdr
 //                 if (actionOnSet != null)
 //                     flag.OnSet = (worker, opt, ov, nv) =>
 //                         actionOnSet?.Invoke(obj, new object?[] {worker, opt, ov, nv});
-                cmd.AddFlagGeneric(flag, required!=null);
+                if(flag!=null) cmd.AddFlagGeneric(flag, required != null);
 
-                Cmdr.Instance.Worker?.log?.logInfo("  - Add Flag to {cmd}: {flg}.", cmd, flag);
+                Cmdr.Instance.Worker?.log?.logInfo("  - Add Flag to {cmd}: flag = {flag}.", cmd, flag);
                 if (action != null || actionPre != null || actionPost != null || actionOnSet != null)
                 {
                     Cmdr.Instance.Worker?.log?.logInfo(
@@ -237,7 +238,7 @@ namespace HzNS.Cmdr
                 }
 
             }
-            
+
             foreach (var nt in t.GetNestedTypes())
             {
                 var attr = (CmdrAttrs.CmdrCommand?) Attribute.GetCustomAttribute(nt,

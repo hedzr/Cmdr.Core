@@ -15,6 +15,6 @@ namespace HzNS.Cmdr.Base
 
         public bool Walk(ICommand? parent = null,
             Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
-            Func<ICommand, IFlag, int, bool>? flagsWatcher = null);
+            Func<ICommand, IFlag?, int, bool>? flagsWatcher = null);
     }
 }
