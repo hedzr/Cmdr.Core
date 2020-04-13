@@ -7,7 +7,13 @@ namespace HzNS.Cmdr.Logger
     [SuppressMessage("ReSharper", "UnusedParameter.Global")]
     public interface ILogger
     {
+        /// <summary>
+        /// Enable info logging?
+        /// </summary>
         bool EnableCmdrLogInfo { get; set; }
+        /// <summary>
+        /// Enable debug/trace logging?
+        /// </summary>
         bool EnableCmdrLogTrace { get; set; }
 
         void logInfo(string messageTemplate);
