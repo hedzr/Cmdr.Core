@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simple", "..\Examples\Simpl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleNoLog", "..\Examples\SimpleNoLog\SimpleNoLog.csproj", "{42C476F6-7776-4452-9968-BEEE7661DBAA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleAttrs", "SampleAttrs\SampleAttrs.csproj", "{078C42E0-E6BB-4B00-A3C0-6D2FAFB1373B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{42C476F6-7776-4452-9968-BEEE7661DBAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42C476F6-7776-4452-9968-BEEE7661DBAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42C476F6-7776-4452-9968-BEEE7661DBAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{078C42E0-E6BB-4B00-A3C0-6D2FAFB1373B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{078C42E0-E6BB-4B00-A3C0-6D2FAFB1373B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{078C42E0-E6BB-4B00-A3C0-6D2FAFB1373B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{078C42E0-E6BB-4B00-A3C0-6D2FAFB1373B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

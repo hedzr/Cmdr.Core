@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Reflection;
 using HzNS.Cmdr.Tool;
 
 namespace HzNS.Cmdr.Base
@@ -8,7 +9,9 @@ namespace HzNS.Cmdr.Base
     {
         public string AppName { get; set; } = "";
 
-        public string AppVersion =>
+        public string AppVersion => VersionUtil.GetInformationalVersion(Assembly.GetEntryAssembly() ?? VersionUtil.CmdrAssembly) ?? "v?.?"; // GetType().Assembly.GetName().Version.ToString();
+
+        public string CmdrVersion =>
             string.IsNullOrWhiteSpace(VersionUtil.InformationalVersion)
                 ? VersionUtil.InformationalVersion
                 : VersionUtil.AssemblyVersion; // GetType().Assembly.GetName().Version.ToString();

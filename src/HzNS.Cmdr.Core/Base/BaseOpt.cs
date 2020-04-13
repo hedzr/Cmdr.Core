@@ -40,6 +40,8 @@ namespace HzNS.Cmdr.Base
         public bool Hidden { get; set; } = false;
         public string[] EnvVars { get; set; } = { };
 
+        public string HitTitle { get; set; } = "";
+
         public Func<IBaseWorker, IBaseOpt, IEnumerable<string>, bool>? PreAction { get; set; }
         public Action<IBaseWorker, IBaseOpt, IEnumerable<string>>? PostAction { get; set; }
         public Action<IBaseWorker, IBaseOpt, IEnumerable<string>>? Action { get; set; }

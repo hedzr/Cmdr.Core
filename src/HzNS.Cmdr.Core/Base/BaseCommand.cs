@@ -76,7 +76,7 @@ namespace HzNS.Cmdr.Base
         public Dictionary<string, List<IFlag>> ToggleableFlags { get; internal set; } =
             new Dictionary<string, List<IFlag>>();
 
-        public string HitTitle { get; set; } = "";
+        // public string HitTitle { get; set; } = "";
 
         public ICommand AddCommand(ICommand cmd)
         {
@@ -85,10 +85,39 @@ namespace HzNS.Cmdr.Base
             return this;
         }
 
+        public ICommand AddFlagGeneric(object flag, bool required = false)
+        {
+            if (flag is IFlag f)
+            {
+                var ts = f.GetType().GetGenericArguments();
+                if (ts.Length == 1)
+                {
+                    f.Owner = this;
+
+                    _flags.Add(f);
+
+                    if (required)
+                        RequiredFlags.Add(f);
+
+                    // ReSharper disable once InvertIf
+                    if (!string.IsNullOrWhiteSpace(f.ToggleGroup) && ts[0] == typeof(bool))
+                    {
+                        if (string.IsNullOrWhiteSpace(f.Group))
+                            f.Group = f.ToggleGroup;
+                        if (!ToggleableFlags.ContainsKey(f.ToggleGroup))
+                            ToggleableFlags.TryAdd(f.ToggleGroup, new List<IFlag>());
+                        ToggleableFlags[f.ToggleGroup].Add(f);
+                    }
+                }
+            }
+
+            return this;
+        }
+
         public ICommand AddFlag<T>(IFlag<T> flag, bool required = false)
         {
             flag.Owner = this;
-            
+
             _flags.Add(flag);
 
             if (required)

@@ -17,20 +17,27 @@ namespace HzNS.Cmdr.Base
         /// </summary>
         string TailArgs { get; }
 
+        /// <summary>
+        /// Fast references for internal usages
+        /// </summary>
         List<IFlag> RequiredFlags { get; }
+        /// <summary>
+        /// Fast references for internal usages
+        /// </summary>
         Dictionary<string, List<IFlag>> ToggleableFlags { get; }
 
+        /// <summary>
+        /// for a command/flag, sample returns is "tags mode sub1 sub2".
+        /// </summary>
         // ReSharper disable once InconsistentNaming
         string backtraceTitles { get; }
-        string HitTitle { get; }
-
+        
         ICommand AddCommand(ICommand cmd);
         ICommand AddFlag<T>(IFlag<T> flag, bool required = false);
         ICommand AddAction(Action<IBaseWorker, IBaseOpt, IEnumerable<string>> action);
 
         bool IsRoot { get; }
 
-        // IRootCommand? FindRoot();
         int FindLevel();
 
         bool IsEqual(string title);

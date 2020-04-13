@@ -11,6 +11,14 @@ namespace Simple
     [SuppressMessage("ReSharper", "ArrangeTypeMemberModifiers")]
     class Program
     {
+        enum Direction
+        {
+            North = 1,
+            East = 2,
+            South = 4,
+            West = 8,
+        }
+        
         [SuppressMessage("ReSharper", "RedundantExplicitArrayCreation")]
         static int Main(string[] args) => Cmdr.NewWorker(
 
@@ -32,6 +40,23 @@ namespace Simple
 
                         // for "dz"
                         _a = 0;
+
+                        root.AddCommand(new Command
+                            {
+                                Short = "t", Long = "test", Description = "test command",
+                            }
+                            .AddFlag(new Flag<Uri> {Long = "uri", Description = "URI"})
+                            .AddFlag(new Flag<TimeSpan>
+                            {
+                                Long = "time-span", Short = "ts", Description = "TimeSpan",
+                                UseMomentTimeFormat = true,
+                            })
+                            .AddFlag(new Flag<Direction>
+                            {
+                                Long = "direction", Short = "dir", Description = "Direction",
+                                UseMomentTimeFormat = true,
+                            })
+                        );
 
                         root.AddCommand(new Command
                             {

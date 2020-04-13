@@ -29,7 +29,7 @@ namespace HzNS.Cmdr.Internal
 
         public abstract bool Walk(ICommand? parent = null,
             Func<ICommand, ICommand, int, bool>? commandsWatcher = null,
-            Func<ICommand, IFlag, int, bool>? flagsWatcher = null);
+            Func<ICommand, IFlag?, int, bool>? flagsWatcher = null);
 
 
         #region ShowVersionsScreen
@@ -214,6 +214,7 @@ namespace HzNS.Cmdr.Internal
                 },
                 (owner, flag, level) =>
                 {
+                    if (flag == null) return true;
                     if (flag.Hidden) return true;
 
                     var sb = new StringBuilder("  ");
@@ -277,13 +278,109 @@ namespace HzNS.Cmdr.Internal
 
         #endregion
 
+
+        internal const int UpperBoundLevel = int.MaxValue;
+
+        // // ReSharper disable once InconsistentNaming
+        // private bool noBacktrace;
+
+        internal int tabStopCalculated = 45;
+
+
+        private void buildParentFlags(IBaseWorker w, ICommand? oo,
+            IDictionary<int, CmdFlagLines> optionLines,
+            int tabStop, bool noBacktrace)
+        {
+            // var oo = owner.Owner;
+            while (oo != null && !ReferenceEquals(oo, oo.Owner))
+            {
+                w.Walk(oo,
+                    (o, c, l) => true,
+                    flagsWatcherBuilder(w, optionLines, tabStop, noBacktrace)
+                );
+                oo = oo.Owner;
+            }
+        }
+
+        #region flagsWatcherBuilder
+
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once MemberCanBeMadeStatic.Local
+        // ReSharper disable once SuggestBaseTypeForParameter
+        internal Func<ICommand, IFlag?, int /*level*/, bool> flagsWatcherBuilder(IBaseWorker w,
+            // SortedDictionary<string, List<TwoString>> commandLines,
+            IDictionary<int, CmdFlagLines> optionLines,
+            int tabStop, bool noBacktrace)
+        {
+            return (owner, flag, level) =>
+            {
+                if (level > 0) return true;
+                
+                if (flag != null)
+                {
+                    if (flag.Hidden) return true;
+
+                    var sb = new StringBuilder("  ");
+
+                    var ph = string.IsNullOrWhiteSpace(flag.PlaceHolder) ? string.Empty : "=" + flag.PlaceHolder;
+                    // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+                    if (!string.IsNullOrWhiteSpace(flag.Short))
+                        if (w.EnablePlaceHolderForShortAndAliasFlag)
+                            sb.Append($"{Util.SwitchChar(false)}{flag.Short}{ph}, ");
+                        else
+                            sb.Append($"{Util.SwitchChar(false)}{flag.Short}, ");
+                    else
+                        sb.Append("    ");
+                    if (!string.IsNullOrWhiteSpace(flag.Long))
+                        sb.Append($"{Util.SwitchChar(true)}{flag.Long}{ph}");
+                    if (flag.Aliases.Length > 0)
+                        if (w.EnablePlaceHolderForShortAndAliasFlag)
+                            sb.Append(", --").AppendJoin($"{ph},--", flag.Aliases).Append(ph);
+                        else
+                            sb.Append(", --").AppendJoin(",--", flag.Aliases);
+
+                    var sb2 = new StringBuilder();
+                    if (!string.IsNullOrWhiteSpace(flag.Description)) sb2.Append(flag.Description);
+                    else if (!string.IsNullOrWhiteSpace(flag.DescriptionLong)) sb2.Append(flag.DescriptionLong);
+
+                    // if (!optionLines.ContainsKey(flag.Group))
+                    //     optionLines.TryAdd(flag.Group, new List<TwoString>());
+                    //
+                    // if (sb.Length >= tabStop) tabStop = sb.Length + 1;
+                    // optionLines[flag.Group].Add(new TwoString {Part1 = sb.ToString(), Part2 = sb2.ToString()});
+
+                    var lvl = UpperBoundLevel - owner.FindLevel();
+                    if (!optionLines.ContainsKey(lvl))
+                        optionLines.TryAdd(lvl,
+                            new CmdFlagLines {cmd = owner, lines = new SortedDictionary<string, List<TwoString>>()});
+                    if (!optionLines[lvl].lines.ContainsKey(flag.Group))
+                        optionLines[lvl].lines.TryAdd(flag.Group, new List<TwoString>());
+
+                    if (sb.Length >= tabStop) tabStop = sb.Length + 1;
+                    optionLines[lvl].lines[flag.Group].Add(new TwoString
+                        {Level = level, Flag = flag, Part1 = sb.ToString(), Part2 = sb2.ToString()});
+                }
+
+                // ReSharper disable once InvertIf
+                if (!noBacktrace)
+                {
+                    noBacktrace = true;
+                    buildParentFlags(w, owner.Owner, optionLines, tabStop, noBacktrace);
+                }
+
+                return true;
+            };
+        }
+
+        #endregion
+
         #region commandsWatcherBuilder
 
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         // ReSharper disable once SuggestBaseTypeForParameter
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]
-        private Func<ICommand, ICommand, int, bool>? commandsWatcherBuilder(IBaseWorker w,
+        internal Func<ICommand, ICommand, int, bool>? commandsWatcherBuilder(IBaseWorker w,
             IDictionary<string, List<TwoString>> commandLines,
             int tabStop, bool noBacktrace)
         {
@@ -314,89 +411,6 @@ namespace HzNS.Cmdr.Internal
 
         #endregion
 
-        #region flagsWatcherBuilder
-
-        // ReSharper disable once InconsistentNaming
-        // ReSharper disable once MemberCanBeMadeStatic.Local
-        // ReSharper disable once SuggestBaseTypeForParameter
-        private Func<ICommand, IFlag, int /*level*/, bool> flagsWatcherBuilder(IBaseWorker w,
-            // SortedDictionary<string, List<TwoString>> commandLines,
-            IDictionary<int, CmdFlagLines> optionLines,
-            int tabStop, bool noBacktrace)
-        {
-            return (owner, flag, level) =>
-            {
-                if (level > 0) return true;
-                if (flag.Hidden) return true;
-
-                var sb = new StringBuilder("  ");
-
-                var ph = string.IsNullOrWhiteSpace(flag.PlaceHolder) ? string.Empty : "=" + flag.PlaceHolder;
-                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-                if (!string.IsNullOrWhiteSpace(flag.Short))
-                    if (EnablePlaceHolderForShortAndAliasFlag)
-                        sb.Append($"{Util.SwitchChar(false)}{flag.Short}{ph}, ");
-                    else
-                        sb.Append($"{Util.SwitchChar(false)}{flag.Short}, ");
-                else
-                    sb.Append("    ");
-                if (!string.IsNullOrWhiteSpace(flag.Long))
-                    sb.Append($"{Util.SwitchChar(true)}{flag.Long}{ph}");
-                if (flag.Aliases.Length > 0)
-                    if (EnablePlaceHolderForShortAndAliasFlag)
-                        sb.Append(", --").AppendJoin($"{ph},--", flag.Aliases).Append(ph);
-                    else
-                        sb.Append(", --").AppendJoin(",--", flag.Aliases);
-
-                var sb2 = new StringBuilder();
-                if (!string.IsNullOrWhiteSpace(flag.Description)) sb2.Append(flag.Description);
-                else if (!string.IsNullOrWhiteSpace(flag.DescriptionLong)) sb2.Append(flag.DescriptionLong);
-
-                // if (!optionLines.ContainsKey(flag.Group))
-                //     optionLines.TryAdd(flag.Group, new List<TwoString>());
-                //
-                // if (sb.Length >= tabStop) tabStop = sb.Length + 1;
-                // optionLines[flag.Group].Add(new TwoString {Part1 = sb.ToString(), Part2 = sb2.ToString()});
-
-                var lvl = UpperBoundLevel - owner.FindLevel();
-                if (!optionLines.ContainsKey(lvl))
-                    optionLines.TryAdd(lvl,
-                        new CmdFlagLines {cmd = owner, lines = new SortedDictionary<string, List<TwoString>>()});
-                if (!optionLines[lvl].lines.ContainsKey(flag.Group))
-                    optionLines[lvl].lines.TryAdd(flag.Group, new List<TwoString>());
-
-                if (sb.Length >= tabStop) tabStop = sb.Length + 1;
-                optionLines[lvl].lines[flag.Group].Add(new TwoString
-                    {Level = level, Flag = flag, Part1 = sb.ToString(), Part2 = sb2.ToString()});
-
-                // ReSharper disable once InvertIf
-                if (!noBacktrace)
-                {
-                    noBacktrace = true;
-                    var oo = owner.Owner;
-                    while (oo != null && !ReferenceEquals(oo, oo.Owner))
-                    {
-                        w.Walk(oo,
-                            (o, c, l) => true,
-                            flagsWatcherBuilder(w, optionLines, tabStop, noBacktrace)
-                        );
-                        oo = oo.Owner;
-                    }
-                }
-
-                return true;
-            };
-        }
-
-        #endregion
-
-
-        private const int UpperBoundLevel = int.MaxValue;
-
-        // // ReSharper disable once InconsistentNaming
-        // private bool noBacktrace;
-
-        private int tabStopCalculated = 45;
 
         private static void Test()
         {

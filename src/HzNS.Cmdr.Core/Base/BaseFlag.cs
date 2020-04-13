@@ -31,8 +31,6 @@ namespace HzNS.Cmdr.Base
 
         public string ToggleGroup { get; set; } = "";
         public bool UseMomentTimeFormat { get; set; } = true;
-
-        public string HitTitle { get; set; } = "";
         public int HitCount { get; set; } = 0;
 
         public object? getDefaultValue()

@@ -5,8 +5,8 @@
         <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-        <AssemblyVersion>1.0.1</AssemblyVersion>
-        <FileVersion>1.0.1</FileVersion>
+        <AssemblyVersion>1.1.0</AssemblyVersion>
+        <FileVersion>1.1.0</FileVersion>
 
         <Title>Cmdr.Core.Logger</Title>
         <PackageTags>cmdr, logger, logger-abstract-layer, </PackageTags>
@@ -14,7 +14,6 @@
         <Authors>Hedzr Yeh</Authors>
         <Company>obsez team</Company>
         <Description>Logger abstract layer for Cmdr.Core.</Description>
-        <!--        <PackageVersion>1.0.2</PackageVersion>-->
         <Copyright>Copyright © by Hedzr, 2020.</Copyright>
         <PackageProjectUrl>https://github.com/hedzr/Cmdr.Core</PackageProjectUrl>
         <RepositoryUrl>https://github.com/hedzr/Cmdr.Core</RepositoryUrl>
@@ -22,6 +21,9 @@
         <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
         <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
         <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
+        <PackageVersion>1.0.9</PackageVersion>
+        <PackageReleaseNotes>Logger abstract layer for Cmdr.Core.
+        </PackageReleaseNotes>
     </PropertyGroup>
 
 </Project>

@@ -8,7 +8,9 @@ namespace HzNS.Cmdr.Base
         string AppName { get; }
         string AppVersion { get; }
         int AppVersionInt { get; }
-
+        
+        string CmdrVersion { get; }
+        
         string Author { get; }
         string Copyright { get; }
 

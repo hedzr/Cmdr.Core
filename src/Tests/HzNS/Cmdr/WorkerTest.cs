@@ -96,7 +96,7 @@ namespace Tests.HzNS.Cmdr
                 {
                     args = "server -h", ok = true, expected = (w, args) =>
                     {
-                        Assert.Equal("server", w.ParsedCommand.backtraceTitles);
+                        Assert.Equal("server", w.ParsedCommand?.backtraceTitles);
                         return true;
                     }
                 },
@@ -104,7 +104,7 @@ namespace Tests.HzNS.Cmdr
                 {
                     args = "s s -h", ok = true, expected = (w, args) =>
                     {
-                        Assert.Equal("server start", w.ParsedCommand.backtraceTitles);
+                        Assert.Equal("server start", w.ParsedCommand?.backtraceTitles);
                         return true;
                     }
                 },
@@ -112,8 +112,8 @@ namespace Tests.HzNS.Cmdr
                 {
                     args = "s run", ok = true, expected = (w, args) =>
                     {
-                        Assert.Equal("server start", w.ParsedCommand.backtraceTitles);
-                        Assert.Equal("run", w.ParsedCommand.HitTitle);
+                        Assert.Equal("server start", w.ParsedCommand?.backtraceTitles);
+                        Assert.Equal("run", w.ParsedCommand?.HitTitle);
                         return true;
                     }
                 },
@@ -121,7 +121,7 @@ namespace Tests.HzNS.Cmdr
                 {
                     args = "s reload --port 8989 -h", ok = true, expected = (w, args) =>
                     {
-                        Assert.Equal("server reload", w.ParsedCommand.backtraceTitles);
+                        Assert.Equal("server reload", w.ParsedCommand?.backtraceTitles);
                         Assert.Equal(8989, ss.GetAs<int>("server.port"));
                         return true;
                     }
@@ -130,7 +130,7 @@ namespace Tests.HzNS.Cmdr
                 {
                     args = "tags -h", ok = true, expected = (w, args) =>
                     {
-                        Assert.Equal("tags", w.ParsedCommand.backtraceTitles);
+                        Assert.Equal("tags", w.ParsedCommand?.backtraceTitles);
                         return true;
                     }
                 },
@@ -138,7 +138,7 @@ namespace Tests.HzNS.Cmdr
                 {
                     args = "tags mode -h", ok = true, expected = (w, args) =>
                     {
-                        Assert.Equal("tags mode", w.ParsedCommand.backtraceTitles);
+                        Assert.Equal("tags mode", w.ParsedCommand?.backtraceTitles);
                         return true;
                     }
                 },
@@ -146,7 +146,7 @@ namespace Tests.HzNS.Cmdr
                 {
                     args = "tags mode s1 -h", ok = true, expected = (w, args) =>
                     {
-                        Assert.Equal("tags mode sub1", w.ParsedCommand.backtraceTitles);
+                        Assert.Equal("tags mode sub1", w.ParsedCommand?.backtraceTitles);
                         return true;
                     }
                 },

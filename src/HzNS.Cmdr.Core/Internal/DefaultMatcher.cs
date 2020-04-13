@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -42,14 +43,14 @@ namespace HzNS.Cmdr.Internal
         public static bool EnableCmdrGreedyIncrementalMode { get; set; } = true;
 
 
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public static bool EnableCmdrLogInfo { get; set; } = true;
-
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public static bool EnableCmdrLogTrace { get; set; }
-
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public static bool EnableCmdrLogDebug { get; set; }
+        // // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        // public static bool EnableCmdrLogInfo { get; set; } = true;
+        //
+        // // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        // public static bool EnableCmdrLogTrace { get; set; }
+        //
+        // // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        // public static bool EnableCmdrLogDebug { get; set; }
 
 
         // ReSharper disable once InconsistentNaming
@@ -254,7 +255,7 @@ namespace HzNS.Cmdr.Internal
                 else
                 {
                     @this.ParsedFlag = matchedFlag;
-                    onFlagMatched(@this, args, i + 1, part, longOpt, matchedFlag, oldValue, value);
+                    onFlagMatched(@this, args, i + 1, fragment, part, longOpt, matchedFlag, oldValue, value);
                     matchedPosition = i + 1;
                 }
 
@@ -486,31 +487,41 @@ namespace HzNS.Cmdr.Internal
                         // fallback converter
 
                         default:
-                            if (dv != null)
+                            var t1 = flg.GetType();
+                            var typ = dv?.GetType() ?? t1.GenericTypeArguments[0];
+                            @this.log?.logWarning(null,
+                                "unacceptable default value ({dv}) datatype: {type}. (extracting {part} at {i}, fragment={fragment})",
+                                dv, typ, part, i, fragment);
+
+                            try
                             {
-                                @this.log?.logWarning(null,
-                                    "unacceptable default value ({dv}) datatype: {type}. (extracting {part} at {i}, fragment={fragment})",
-                                    dv, dv.GetType(), part, i, fragment);
+                                val = Convert.ChangeType(v, typ); // typeof(int)
+                                old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                            }
+                            catch (FormatException ex)
+                            {
+                                @this.log?.logWarning(ex,
+                                    "    changeType failed (FormatException) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
+                                    v, typ, atePos, ateArgs);
+                                val = dv;
+                                old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
+                                atePos = ateArgs = 0;
+                                // throw;
+                            }
+                            catch (InvalidCastException ex)
+                            {
                                 try
                                 {
-                                    val = Convert.ChangeType(v, dv.GetType()); // typeof(int)
+                                    var converter = TypeDescriptor.GetConverter(typ);
+                                    val = converter.ConvertFrom(v);
                                     old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
                                 }
-                                catch (FormatException ex)
+                                catch (System.Exception ex2)
                                 {
+
                                     @this.log?.logWarning(ex,
-                                        "    changeType failed (FormatException) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
-                                        v, dv.GetType(), atePos, ateArgs);
-                                    val = dv;
-                                    old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
-                                    atePos = ateArgs = 0;
-                                    // throw;
-                                }
-                                catch (InvalidCastException ex)
-                                {
-                                    @this.log?.logWarning(ex,
-                                        "    changeType failed (InvalidCastException) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
-                                        v, dv.GetType(), atePos, ateArgs);
+                                        "    changeType failed (InvalidCastException & {ex}) ({v}) datatype: {type}. old ate: [{pos},{arg}]",
+                                        ex2, v, typ, atePos, ateArgs);
                                     val = dv;
                                     old = Cmdr.Instance.Store.Set(flg.ToDottedKey(), val);
                                     atePos = ateArgs = 0;
@@ -593,7 +604,7 @@ namespace HzNS.Cmdr.Internal
         {
             checkRequiredFlagsReady(@this, cmd);
 
-            if (cmd is BaseCommand c)
+            if (cmd is BaseOpt c)
             {
                 c.HitTitle = arg;
             }
@@ -649,7 +660,8 @@ namespace HzNS.Cmdr.Internal
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once MemberCanBeMadeStatic.Local
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-        private static void onFlagMatched<T>(this T @this, IEnumerable<string> args, int position, string fragment,
+        private static void onFlagMatched<T>(this T @this, 
+            IEnumerable<string> args, int position, string fragment, string part,
             in bool longOpt, IFlag flag, object? oldValue, object? value)
             where T : IDefaultMatchers
         {
@@ -662,11 +674,11 @@ namespace HzNS.Cmdr.Internal
             {
                 // ReSharper disable once UnusedVariable
                 var sw = Util.SwitchChar(longOpt);
-                @this.log?.logDebug("  ---> flag matched: {Fragment}", sw + fragment);
+                @this.log?.logDebug("  ---> flag matched: {Part}/{Fragment}", sw+part, sw + fragment);
                 // if (flag is BaseFlag<bool> f)
                 {
                     flag.setValueRecursive("HitCount", flag.HitCount + 1);
-                    flag.setValueRecursive("HitTitle", fragment);
+                    flag.setValueRecursive("HitTitle", part);
                 }
 
                 if (value?.GetType().IsArray == true)
@@ -873,7 +885,7 @@ namespace HzNS.Cmdr.Internal
         // ReSharper disable once FieldCanBeMadeReadOnly.Local
         private static Action<IBaseWorker, IBaseOpt, object?, object?>? defaultOnSet = (w, flg, oldVal, newVal) =>
         {
-            if (EnableCmdrLogDebug)
+            if (w.EnableCmdrLogDebug)
                 Console.WriteLine($"--> onSet: {flg} changed ({oldVal} -> {newVal})");
         };
 

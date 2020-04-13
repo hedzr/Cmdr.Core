@@ -1,11 +1,21 @@
 ### Pre-release
 
-Just for previewing.
+Command-line argument POSIX style parser.
 
-The first final release coming soon.
+Just for preview.  
+The first final release (v1.1) coming soon.
 
-see also project site: https://github.com/hedzr/Cmdr.Core
 
+> NOTE: full symbols and sources debug info in pre-release version (v1.x.x-g#hash), if u can't step into with the normal release. 
+
+
+see also:
+ - project site: https://github.com/hedzr/Cmdr.Core
+ - release note: https://github.com/hedzr/Cmdr.Core/blob/master/RELDOCS.md
+
+### CHANGELOG
+
+- The test cases are passed.
 - change the signatures for IPainter, IBaseWorker, ...
 
 
