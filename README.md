@@ -511,13 +511,25 @@ dotnet add package HzNS.Cmdr.Logger.Serilog --version 1.0.6
         .Run(args);
 ```
 
+
+
+
 ## ACKNOWNLEDGES
 
 ### [Colorify](https://github.com/deinsoftware/colorify)
 
 I have to copy some codes from Colorify for the dotnetcore devenv.
 
-There's some reason. But I will be pleasure to re-integrate the original or put an issue later.
+There's some reason. But I will be pleasure to re-integrate the original or put an issue later (soon).
+
+
+
+## Thanks to JODL
+
+JODL (JetBrains OpenSource Development License) is good:
+
+[![rider](https://gist.githubusercontent.com/hedzr/447849cb44138885e75fe46f1e35b4a0/raw/bedfe6923510405ade4c034c5c5085487532dee4/logo-rider.svg)](https://www.jetbrains.com/?from=hedzr/Cmdr.Core)
+[![jetbrains](https://gist.githubusercontent.com/hedzr/447849cb44138885e75fe46f1e35b4a0/raw/bedfe6923510405ade4c034c5c5085487532dee4/jetbrains.svg)](https://www.jetbrains.com/?from=hedzr/Cmdr.Core)
 
 
 
