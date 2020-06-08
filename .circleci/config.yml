@@ -52,7 +52,7 @@ jobs:
           echo "symbols and sources"
           dotnet.exe nuget push "src\HzNS.Cmdr.Logger.Serilog\bin\Debug\*.nupkg" -k "$env:NUGET_API_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
           echo "passed"
-      # dornet nuget push bug: error: File does not exist, *.snupkg
+      # dotnet nuget push bug: error: File does not exist, *.snupkg
       # https://github.com/NuGet/Home/issues/8148
       # ...
       - run: |
