@@ -1,4 +1,4 @@
-### Pre-release
+### Released
 
 Command-line argument POSIX style parser.
 
@@ -13,9 +13,12 @@ see also:
  - project site: https://github.com/hedzr/Cmdr.Core
  - release note: https://github.com/hedzr/Cmdr.Core/blob/master/RELDOCS.md
 
+
+
+
 ### CHANGELOG
 
-#### Working
+#### v1.1.0
 
 - missed `SortByAlphabeticAscending`
 
