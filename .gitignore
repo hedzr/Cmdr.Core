@@ -3,6 +3,7 @@ obj/
 /packages/
 
 build.sh
+docfx_project/
 
 *.dmp
 *.out

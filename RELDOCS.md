@@ -1,4 +1,4 @@
-### Pre-release
+### Released
 
 Command-line argument POSIX style parser.
 
@@ -13,7 +13,26 @@ see also:
  - project site: https://github.com/hedzr/Cmdr.Core
  - release note: https://github.com/hedzr/Cmdr.Core/blob/master/RELDOCS.md
 
+
+
+
 ### CHANGELOG
+
+#### v1.1.0
+
+- missed `SortByAlphabeticAscending`
+
+
+
+#### v1.0.139
+
+- bug fixed
+- added Declarative API via C# Attributes
+- supports more non-primitive types, such as: Uri, ...
+
+
+
+#### Older
 
 - The test cases are passed.
 - change the signatures for IPainter, IBaseWorker, ...

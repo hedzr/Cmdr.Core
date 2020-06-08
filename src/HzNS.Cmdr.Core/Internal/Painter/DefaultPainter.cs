@@ -176,10 +176,10 @@ namespace HzNS.Cmdr.Internal.Painter
                         // writer.WriteLine($"\nOptions {UpperBoundLevel - lvl}:");
                         if (cf.cmd.IsRoot)
                             oln($"\nGlobal Options:");
-                        else if (step == 1)
-                            oln($"\nParent Options ({cf.cmd.backtraceTitles}):");
                         else if (step == 0)
                             oln($"\nOptions:"); // {lvl}/{WorkerFunctions.UpperBoundLevel - lvl}:");
+                        else if (step == 1)
+                            oln($"\nParent Options ({cf.cmd.backtraceTitles}):");
                         else
                             oln($"\nParents Options ({cf.cmd.backtraceTitles}):");
                     }

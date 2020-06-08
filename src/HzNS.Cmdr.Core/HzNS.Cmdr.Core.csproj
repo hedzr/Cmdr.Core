@@ -7,13 +7,12 @@
 <!--        <AssemblyVersion>1.0.1</AssemblyVersion>-->
 <!--        <FileVersion>1.0.1</FileVersion>-->
         
-        <PackageTags>cmdr, commandline, commandline-arguments, configuration, hierarchical-configurations, parser, option, argument,</PackageTags>
+        <PackageTags>cmdr, hierarchical-configurations, commandline, parser，commandline-arguments, configuration, option, argument,</PackageTags>
         <PackageId>HzNS.Cmdr.Core</PackageId>
         <Authors>Hedzr Yeh</Authors>
         <Company>obsez team</Company>
         <Title>Cmdr.Core</Title>
         <Description>Useful POSIX command line arguments parser for .Net. Hierarchical-configuration Store for app.</Description>
-<!--        <PackageVersion>1.0.2</PackageVersion>-->
         <Copyright>Copyright © by Hedzr, 2020.</Copyright>
         <PackageProjectUrl>https://github.com/hedzr/Cmdr.Core</PackageProjectUrl>
 <!--        <PackageIconUrl>https://github.com/hedzr/Cmdr.Core</PackageIconUrl>-->
@@ -21,16 +20,15 @@
         <RepositoryType>git</RepositoryType>
         <PackageReleaseNotes>Command-line argument POSIX style parser.
 
-    Just for preview.
-    The first final release (v1.1) coming soon.
+            The first final version v1.1 released.
 
-    - The test cases are passed.
-    
-    &gt; NOTE: full symbols and sources debug info in pre-release version (v1.x.x-g#hash), if u can't step into with the normal release.
+            - The test cases are passed.
 
-    See also:
-    - project site: https://github.com/hedzr/Cmdr.Core
-    - release note: https://github.com/hedzr/Cmdr.Core/blob/master/RELDOCS.md
+            &gt; NOTE: full symbols and sources debug info in pre-release version (v1.x.x-g#hash), if u can't step into with the normal release.
+
+            See also:
+            - project site: https://github.com/hedzr/Cmdr.Core
+            - release note: https://github.com/hedzr/Cmdr.Core/blob/master/RELDOCS.md
 
         </PackageReleaseNotes>
         <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
