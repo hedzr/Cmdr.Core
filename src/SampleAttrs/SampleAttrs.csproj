@@ -2,9 +2,9 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp3.0</TargetFramework>
         <UseAppHost>true</UseAppHost>
         <PublishSingleFile>false</PublishSingleFile>
+        <TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
