@@ -21,7 +21,6 @@
         <PackageReleaseNotes>Command-line argument POSIX style parser.
 
             The first final version v1.1 released.
-
             - The test cases are passed.
 
             &gt; NOTE: full symbols and sources debug info in pre-release version (v1.x.x-g#hash), if u can't step into with the normal release.
@@ -32,7 +31,7 @@
 
         </PackageReleaseNotes>
         <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
-        <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>
     </PropertyGroup>
 
     <PropertyGroup>

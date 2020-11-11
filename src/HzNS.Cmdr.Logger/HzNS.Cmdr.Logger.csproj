@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <RootNamespace>HzNS.Cmdr.Logger</RootNamespace>
-        <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <AssemblyVersion>1.1.0</AssemblyVersion>
