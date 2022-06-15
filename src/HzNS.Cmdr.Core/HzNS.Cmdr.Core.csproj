@@ -18,6 +18,7 @@
 <!--        <PackageIconUrl>https://github.com/hedzr/Cmdr.Core</PackageIconUrl>-->
         <RepositoryUrl>https://github.com/hedzr/Cmdr.Core</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageReleaseNotes>Command-line argument POSIX style parser.
 
             The first final version v1.1 released.
@@ -80,6 +81,7 @@
     </PropertyGroup>
     
     <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\"/>
         <ProjectReference Include="..\HzNS.Cmdr.Logger\HzNS.Cmdr.Logger.csproj" />
         <AssemblyAttribute Include="HzNS.Cmdr.Builder.BuildDateAttribute">
             <_Parameter1>$([System.DateTime]::UtcNow.ToString("yyyyMMddHHmmss"))</_Parameter1>
