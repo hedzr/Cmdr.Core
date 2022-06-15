@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using HzNS.Cmdr;
 using HzNS.Cmdr.Base;
+using HzNS.Cmdr.Tool;
 using HzNS.Cmdr.Tool.Ext;
 
 namespace SimpleNoLog
@@ -20,7 +21,7 @@ namespace SimpleNoLog
                     new AppInfo
                     {
                         AppName = "tag-tool-no-log",
-                        // AppVersion = "v1.0.0",
+                        // AppVersion = "v1.3.0",
                         Author = "hedzr",
                         Copyright = "Copyright © Hedzr Studio, 2020. All Rights Reserved.",
                     },
@@ -38,7 +39,7 @@ namespace SimpleNoLog
                                 Short = "dz", Long = "dz", Description = "test divide by zero",
                                 Action = (worker, opt, remainArgs) => { Console.WriteLine($"{B / _a}"); },
                             })
-                            .AddCommand(new Command {Short = "t", Long = "tags", Description = "tags operations"}
+                            .AddCommand(new Command { Short = "t", Long = "tags", Description = "tags operations" }
                                 .AddCommand(new TagsAddCmd())
                                 .AddCommand(new TagsRemoveCmd())
                                 // .AddCommand(new TagsAddCmd { }) // for dup-test
@@ -49,7 +50,7 @@ namespace SimpleNoLog
                                 .AddFlag(new Flag<string>
                                 {
                                     DefaultValue = "consul.ops.local",
-                                    Long = "addr", Short = "a", Aliases = new[] {"address", "host"},
+                                    Long = "addr", Short = "a", Aliases = new[] { "address", "host" },
                                     Description =
                                         "Consul IP/Host and/or Port: HOST[:PORT] (No leading 'http(s)://')",
                                     PlaceHolder = "HOST[:PORT]",
@@ -59,7 +60,7 @@ namespace SimpleNoLog
                                 {
                                     DefaultValue = "",
                                     // ReSharper disable once StringLiteralTypo
-                                    Long = "cacert", Short = "", Aliases = new string[] {"ca-cert"},
+                                    Long = "cacert", Short = "", Aliases = new string[] { "ca-cert" },
                                     Description = "Consul Client CA cert)",
                                     PlaceHolder = "FILE",
                                     Group = "Consul",
@@ -107,7 +108,7 @@ namespace SimpleNoLog
                     // w.EnableEmptyLongFieldThrows = true;
 
                     w.RegisterExternalConfigurationsLoader(ExternalConfigLoader);
-                    
+
                     w.OnDuplicatedCommandChar = (worker, command, isShort, matchingArg) => false;
                     w.OnDuplicatedFlagChar = (worker, command, flag, isShort, matchingArg) => false;
                     w.OnCommandCannotMatched = (parsedCommand, matchingArg) => false;
@@ -123,13 +124,13 @@ namespace SimpleNoLog
             {
                 // Wait for the user to quit the program.
 
-                // Console.WriteLine($"         AssemblyVersion: {VersionUtil.AssemblyVersion}");
-                // Console.WriteLine($"             FileVersion: {VersionUtil.FileVersion}");
-                // Console.WriteLine($"    InformationalVersion: {VersionUtil.InformationalVersion}");
-                // Console.WriteLine($"AssemblyProductAttribute: {VersionUtil.AssemblyProductAttribute}");
-                // Console.WriteLine($"      FileProductVersion: {VersionUtil.FileVersionInfo.ProductVersion}");
-                // Console.WriteLine();
-                
+                Console.WriteLine($"         AssemblyVersion: {VersionUtil.AssemblyVersion}");
+                Console.WriteLine($"             FileVersion: {VersionUtil.FileVersion}");
+                Console.WriteLine($"    InformationalVersion: {VersionUtil.InformationalVersion}");
+                Console.WriteLine($"AssemblyProductAttribute: {VersionUtil.AssemblyProductAttribute}");
+                Console.WriteLine($"      FileProductVersion: {VersionUtil.FileVersionInfo.ProductVersion}");
+                Console.WriteLine();
+
                 // Console.WriteLine("Press 'q' to quit the sample.");
                 // while (Console.Read() != 'q')
                 // {
@@ -144,7 +145,7 @@ namespace SimpleNoLog
             // throw new NotImplementedException();
         }
 
-        
+
         private static int _a = 9;
         private const int B = 10;
     }
