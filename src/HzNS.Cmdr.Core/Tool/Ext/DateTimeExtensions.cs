@@ -111,8 +111,7 @@ namespace HzNS.Cmdr.Tool.Ext
     {
         public static DateTime Parse(string s)
         {
-            DateTime dt;
-            var ok = DateTime.TryParse(s, null, DateTimeStyles.AdjustToUniversal, out dt);
+            var ok = DateTime.TryParse(s, null, DateTimeStyles.AdjustToUniversal, out var dt);
             if (ok) return dt;
 
             return DateTime.ParseExact(s, new[]
@@ -132,7 +131,7 @@ namespace HzNS.Cmdr.Tool.Ext
     {
         public static DateTimeOffset Parse(string s)
         {
-            return DateTimeOffset.ParseExact(s, new[] {"c", "g", "G",}, null);
+            return DateTimeOffset.ParseExact(s, new[] { "c", "g", "G", }, null);
         }
     }
 
@@ -259,7 +258,7 @@ namespace HzNS.Cmdr.Tool.Ext
         // ReSharper disable once InconsistentNaming
         internal static string impl(TimeSpan ts)
         {
-            var delta = (int) Math.Floor(Math.Abs(ts.TotalSeconds));
+            var delta = (int)Math.Floor(Math.Abs(ts.TotalSeconds));
 
             if (delta < 60)
                 return ts.Seconds == 1 ? "one second ago" : ts.Seconds + " seconds ago";
@@ -287,11 +286,11 @@ namespace HzNS.Cmdr.Tool.Ext
 
             if (delta < 31104000) // 12 * 30 * 24 * 60 * 60
             {
-                var months = Convert.ToInt32(Math.Floor((double) ts.Days / 30));
+                var months = Convert.ToInt32(Math.Floor((double)ts.Days / 30));
                 return months <= 1 ? "one month ago" : months + " months ago";
             }
 
-            var years = Convert.ToInt32(Math.Floor((double) ts.Days / 365));
+            var years = Convert.ToInt32(Math.Floor((double)ts.Days / 365));
             return years <= 1 ? "one year ago" : years + " years ago";
         }
 

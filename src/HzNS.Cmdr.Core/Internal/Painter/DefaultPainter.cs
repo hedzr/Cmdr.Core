@@ -54,16 +54,16 @@ namespace HzNS.Cmdr.Internal.Painter
             if (string.IsNullOrWhiteSpace(author))
                 author = "Freeman";
 
-            oln($"{_root?.AppInfo.AppName} - {_root?.AppInfo.AppVersion} - {author}");
+            oln($"{_root?.AppInfo.AppName} - {_root?.AppInfo.AppVersion} - {author}", Colors.txtInfo);
 
             if (singleLine) return;
 
             if (!string.IsNullOrWhiteSpace(_root?.AppInfo.Copyright))
-                olnIndent(_root?.AppInfo.Copyright, ColorDesc, 4);
+                oln(_root?.AppInfo.Copyright, ColorDesc);
 
             if (!string.IsNullOrWhiteSpace(_root?.Description))
             {
-                // oln("\nDescription:");
+                // oln("\nDescription:", Colors.txtInfo);
                 oln("");
                 olnIndent(_root?.Description, ColorDesc, 4);
             }
@@ -81,7 +81,7 @@ namespace HzNS.Cmdr.Internal.Painter
                 if (!string.IsNullOrWhiteSpace(_root?.Examples))
                 {
                     oln("");
-                    oln("Examples:");
+                    oln("Examples:", Colors.txtInfo);
                     olnIndent(_root?.Examples, ColorDesc, 4);
                 }
             }
@@ -103,7 +103,7 @@ namespace HzNS.Cmdr.Internal.Painter
                 tails = cmd.TailArgs;
 
             oln("");
-            oln("Usages:");
+            oln("Usages:", Colors.txtInfo);
             oln($"    {_root?.AppInfo.AppName} {cmds} {tails}");
         }
 
@@ -113,12 +113,12 @@ namespace HzNS.Cmdr.Internal.Painter
 
             if (!string.IsNullOrWhiteSpace(cmd.DescriptionLong))
             {
-                oln("\nDescription:");
+                oln("\nDescription:", Colors.txtInfo);
                 olnIndent(cmd.DescriptionLong, ColorDesc, 4);
             }
             else if (!string.IsNullOrWhiteSpace(cmd.Description))
             {
-                oln("\nDescription:");
+                oln("\nDescription:", Colors.txtInfo);
                 olnIndent(cmd.Description, ColorDesc, 4);
             }
 
@@ -126,7 +126,7 @@ namespace HzNS.Cmdr.Internal.Painter
             if (!string.IsNullOrWhiteSpace(cmd.Examples))
             {
                 oln("");
-                oln("Examples:");
+                oln("Examples:", Colors.txtInfo);
                 olnIndent(cmd.Examples, ColorDesc, 4);
             }
         }
@@ -146,20 +146,17 @@ namespace HzNS.Cmdr.Internal.Painter
                 var title = cmd.IsRoot ? "-ROOT-" : cmd.backtraceTitles;
                 if (commandLines.Count > 0)
                 {
-                    oln($"\nCommands Tree For '{title}':");
+                    oln($"\nCommands Tree For '{title}':", Colors.txtInfo);
                     ShowLinesOneByOne(commandLines, tabStop);
                 }
                 else
-                    oln($"\nNO SUB-COMMANDS For '{title}'");
+                    oln($"\nNO SUB-COMMANDS For '{title}'", Colors.txtMuted);
             }
             else
             {
                 if (commandLines.Count > 0)
                 {
-                    if (cmd.Owner != null && cmd.Owner.IsRoot)
-                        oln("\nCommands:");
-                    else
-                        oln("\nSub-Commands:");
+                    oln(cmd.Owner is { IsRoot: true } ? "\nCommands:" : "\nSub-Commands:", Colors.txtInfo);
                     ShowLinesOneByOne(commandLines, tabStop);
                 }
             }
@@ -175,13 +172,21 @@ namespace HzNS.Cmdr.Internal.Painter
                     {
                         // writer.WriteLine($"\nOptions {UpperBoundLevel - lvl}:");
                         if (cf.cmd.IsRoot)
-                            oln($"\nGlobal Options:");
-                        else if (step == 0)
-                            oln($"\nOptions:"); // {lvl}/{WorkerFunctions.UpperBoundLevel - lvl}:");
-                        else if (step == 1)
-                            oln($"\nParent Options ({cf.cmd.backtraceTitles}):");
+                            oln($"\nGlobal Options:", Colors.txtInfo);
                         else
-                            oln($"\nParents Options ({cf.cmd.backtraceTitles}):");
+                            switch (step)
+                            {
+                                case 0:
+                                    oln($"\nOptions:",
+                                        Colors.txtInfo); // {lvl}/{WorkerFunctions.UpperBoundLevel - lvl}:");
+                                    break;
+                                case 1:
+                                    oln($"\nParent Options ({cf.cmd.backtraceTitles}):", Colors.txtInfo);
+                                    break;
+                                default:
+                                    oln($"\nParents Options ({cf.cmd.backtraceTitles}):", Colors.txtInfo);
+                                    break;
+                            }
                     }
 
                     ShowLinesOneByOne(cf.lines, tabStop, step);
@@ -190,7 +195,8 @@ namespace HzNS.Cmdr.Internal.Painter
             }
             else if (!treeMode)
             {
-                oln($"\nOptions:\n  None");
+                oln($"\nOptions:\n", Colors.txtInfo);
+                olnIndent("None");
             }
         }
 
@@ -358,7 +364,7 @@ namespace HzNS.Cmdr.Internal.Painter
                     };
                     foreach (var (l, r) in list)
                     {
-                        olnTabbedPrint(l, r?.ToString() ?? string.Empty, 32, rightAlign: true);
+                        olnTabbedPrint(l, r.ToString() ?? string.Empty, 32, rightAlign: true);
                     }
 
                     // oln($"             App Version: {root.AppInfo.AppVersion}");
@@ -386,6 +392,7 @@ namespace HzNS.Cmdr.Internal.Painter
 
         // ReSharper disable once SuggestBaseTypeForParameter
         // ReSharper disable once InconsistentNaming
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         private void dumpValues(ICommand parent, IBaseWorker w, int tabStop, bool hitOnly = true)
         {
             w.Walk(parent,
@@ -393,7 +400,7 @@ namespace HzNS.Cmdr.Internal.Painter
                 flagsWatcher: (owner, flg, level) =>
                 {
                     if (flg == null) return true;
-                    
+
                     var s = Cmdr.Instance.Store;
                     var (slot, vk) = s.FindBy(flg.ToKeys());
                     // ReSharper disable once InvertIf

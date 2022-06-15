@@ -24,6 +24,7 @@ namespace HzNS.Cmdr.Tool.Ext
         public static bool HasAttribute<TAttribute>(this Assembly assembly) where TAttribute : Attribute
         {
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             return assembly.GetAttribute<TAttribute>() != null;
         }
 
@@ -40,7 +41,7 @@ namespace HzNS.Cmdr.Tool.Ext
             }
 
 #pragma warning disable CS8600, CS8603
-            return (TAttribute) Attribute.GetCustomAttribute(assembly, typeof(TAttribute));
+            return (TAttribute)Attribute.GetCustomAttribute(assembly, typeof(TAttribute));
 #pragma warning restore CS8600, CS8603
         }
 
