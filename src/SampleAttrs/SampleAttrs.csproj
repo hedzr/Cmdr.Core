@@ -4,7 +4,9 @@
         <OutputType>Exe</OutputType>
         <UseAppHost>true</UseAppHost>
         <PublishSingleFile>false</PublishSingleFile>
-        <TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>
+        <TargetFrameworks>net6.0;netcoreapp3.1;netstandard2.1</TargetFrameworks>
+        <LangVersion>latestmajor</LangVersion>
+        <PackageVersion>1.3.0</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>

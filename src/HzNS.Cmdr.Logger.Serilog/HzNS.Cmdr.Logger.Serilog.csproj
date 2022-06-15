@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <RootNamespace>HzNS.Cmdr.Logger.Serilog</RootNamespace>
-        <TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>
+        <TargetFrameworks>net6.0;netcoreapp3.1;netstandard2.1</TargetFrameworks>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <Title>Cmdr.Core.Logger.Serilog</Title>
@@ -19,9 +19,10 @@
         <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
         <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
         <PackageLicenseUrl>https://github.com/hedzr/Cmdr.Core/blob/master/LICENSE</PackageLicenseUrl>
-        <PackageVersion>1.0.9</PackageVersion>
+        <PackageVersion>1.3.0</PackageVersion>
         <PackageReleaseNotes>Logger abstract layer for Cmdr.Core.
         </PackageReleaseNotes>
+        <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
