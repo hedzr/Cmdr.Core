@@ -9,26 +9,14 @@ namespace HzNS.Cmdr.Tool.Ext
     {
         public static T? ConvertToNullable<T>(this IConvertible convertibleValue) where T : struct
         {
-            if (null == convertibleValue)
-            {
-                return null;
-            }
-
-            return (T?) Convert.ChangeType(convertibleValue, typeof(T));
+            return (T?)Convert.ChangeType(convertibleValue, typeof(T));
         }
 
         public static T ConvertTo<T>(this IConvertible convertibleValue)
         {
-            if (null == convertibleValue)
-            {
-#pragma warning disable CS8603, CS8653
-                return default; // default(T)
-#pragma warning restore CS8603, CS8653
-            }
-
             if (!typeof(T).IsGenericType)
             {
-                return (T) Convert.ChangeType(convertibleValue, typeof(T));
+                return (T)Convert.ChangeType(convertibleValue, typeof(T));
             }
             else
             {
@@ -36,7 +24,7 @@ namespace HzNS.Cmdr.Tool.Ext
 #pragma warning disable CS8604
                 if (genericTypeDefinition == typeof(Nullable<>))
                 {
-                    return (T) Convert.ChangeType(convertibleValue, Nullable.GetUnderlyingType(typeof(T)));
+                    return (T)Convert.ChangeType(convertibleValue, Nullable.GetUnderlyingType(typeof(T)));
                 }
 #pragma warning restore CS8604
             }
@@ -81,8 +69,6 @@ namespace HzNS.Cmdr.Tool.Ext
 
         public static void SetValue<T>(DataRow dr, PropertyInfo property, string colName, T model)
         {
-            if (colName == null)
-                colName = property.Name;
             if (dr.Table.Columns.Contains(colName) && dr[colName].GetType().Name != "DBNull")
             {
                 SetValue(dr[property.Name], property, model);

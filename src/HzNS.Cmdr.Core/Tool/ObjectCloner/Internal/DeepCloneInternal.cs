@@ -34,7 +34,7 @@ namespace HzNS.Cmdr.Tool.ObjectCloner.Internal
                     return Identity;
 
                 var builder = new DeepCloneExpressionBuilder(t);
-                Expression<DeepCloner> finalExpression = builder.Build();
+                var finalExpression = builder.Build();
 
 #if DEBUG
                 // Debug.WriteLine("################");

@@ -109,7 +109,7 @@ namespace HzNS.Cmdr.Tool.ObjectCloner.Internal
             expressions.Add(Expression.Label(_returnTarget, Expression.Convert(_cloneVariable, _typeOfObject)));
 
 
-            var functionBlock = Expression.Block(new[] {_cloneVariable, _originalVariable}, expressions);
+            var functionBlock = Expression.Block(new[] { _cloneVariable, _originalVariable }, expressions);
 
             return Expression.Lambda<DeepCloner>(functionBlock, _originalParameter, _dictionaryParameter);
         }
@@ -137,7 +137,7 @@ namespace HzNS.Cmdr.Tool.ObjectCloner.Internal
 
             var outTVariable = Expression.Variable(_typeOfObject);
             return Expression.Block(
-                new[] {outTVariable},
+                new[] { outTVariable },
                 Expression.IfThen(
                     Expression.IsTrue(
                         Expression.Call(
@@ -161,7 +161,7 @@ namespace HzNS.Cmdr.Tool.ObjectCloner.Internal
             // }
 
 #pragma warning disable CS8600
-            Type itemType = _typeOfT.GetElementType();
+            var itemType = _typeOfT.GetElementType();
             Debug.Assert(itemType != null);
 #pragma warning restore CS8653
 
@@ -177,12 +177,12 @@ namespace HzNS.Cmdr.Tool.ObjectCloner.Internal
                 );
             }
 
-            ParameterExpression lengthVariable = Expression.Variable(typeof(int));
-            ParameterExpression indexVariable = Expression.Variable(typeof(int));
-            LabelTarget breakTarget = Expression.Label();
+            var lengthVariable = Expression.Variable(typeof(int));
+            var indexVariable = Expression.Variable(typeof(int));
+            var breakTarget = Expression.Label();
 
             return Expression.Block(
-                new[] {lengthVariable, indexVariable},
+                new[] { lengthVariable, indexVariable },
                 Expression.Assign(
                     lengthVariable,
                     Expression.ArrayLength(_originalVariable)
@@ -237,7 +237,7 @@ namespace HzNS.Cmdr.Tool.ObjectCloner.Internal
 
         private Expression CreateMemberwiseCloneExpression()
         {
-            MethodInfo cloneMethod =
+            var cloneMethod =
                 _typeOfObject.GetMethod("MemberwiseClone", BindingFlags.Instance | BindingFlags.NonPublic);
             Debug.Assert(cloneMethod != null);
 
@@ -257,7 +257,7 @@ namespace HzNS.Cmdr.Tool.ObjectCloner.Internal
 
         private Expression CreateAddToDictionaryExpression()
         {
-            MethodInfo addMethod =
+            var addMethod =
                 typeof(Dictionary<object, object>).GetMethod("Add", BindingFlags.Instance | BindingFlags.Public);
             Debug.Assert(addMethod != null);
             return Expression.Call(
@@ -270,7 +270,7 @@ namespace HzNS.Cmdr.Tool.ObjectCloner.Internal
 
         private IEnumerable<Expression> CreateFieldCopyExpressions()
         {
-            IEnumerable<FieldInfo> fields = _typeOfT.GetAllFieldsDeep();
+            var fields = _typeOfT.GetAllFieldsDeep();
 
             foreach (FieldInfo field in fields)
             {
@@ -281,7 +281,7 @@ namespace HzNS.Cmdr.Tool.ObjectCloner.Internal
                 }
 
 
-                MemberExpression cloneFieldExpression = Expression.Field(_cloneVariable, field);
+                var cloneFieldExpression = Expression.Field(_cloneVariable, field);
 
                 if (!field.IsInitOnly)
                 {
@@ -301,8 +301,8 @@ namespace HzNS.Cmdr.Tool.ObjectCloner.Internal
                     // Readonly fields can be written using reflection. (Although it is an implementation detail: https://stackoverflow.com/questions/934930/can-i-change-a-private-readonly-field-in-c-sharp-using-reflection#comment743456_934944)
                     // Code: fieldInfoConstant.SetValue(clone.field, DeepCloneInternal<TypeOfField>.DeepCloner(original.field, dict));
 
-                    MethodInfo setValueMethod =
-                        typeof(FieldInfo).GetMethod("SetValue", new[] {_typeOfObject, _typeOfObject});
+                    var setValueMethod =
+                        typeof(FieldInfo).GetMethod("SetValue", new[] { _typeOfObject, _typeOfObject });
                     Debug.Assert(setValueMethod != null);
 
                     yield return Expression.Call(

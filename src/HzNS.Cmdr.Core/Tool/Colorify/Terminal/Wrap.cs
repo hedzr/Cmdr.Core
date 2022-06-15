@@ -42,24 +42,29 @@ namespace HzNS.Cmdr.Tool.Colorify.Terminal
 
         static void Item(ref StringBuilder line, string item)
         {
-            if (item.Length >= _screenWidth)
+            while (true)
             {
-                if (line.Length > 0)
+                if (item.Length >= _screenWidth)
                 {
-                    Out.WriteLine($" {line.ToString().TrimEnd()}");
-                    line.Clear();
+                    if (line.Length > 0)
+                    {
+                        Out.WriteLine($" {line.ToString().TrimEnd()}");
+                        line.Clear();
+                    }
+
+                    var chunkSize = item.Length - _screenWidth;
+                    var chunk = item[.._screenWidth];
+                    line.Append(chunk).Append(' ');
+                    Line(ref line, item);
+                    item = item.Substring(_screenWidth, chunkSize);
+                    continue;
+                }
+                else
+                {
+                    line.Append(item).Append(' ');
                 }
 
-                int chunkSize = item.Length - _screenWidth;
-                string chunk = item.Substring(0, _screenWidth);
-                line.Append($"{chunk} ");
-                Line(ref line, item);
-                item = item.Substring(_screenWidth, chunkSize);
-                Item(ref line, item);
-            }
-            else
-            {
-                line.Append($"{item} ");
+                break;
             }
         }
     }

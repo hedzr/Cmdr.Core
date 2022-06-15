@@ -7,14 +7,14 @@
 
 Useful POSIX command line arguments parser for dotNet. Hierarchical configurations Store for app.
 
-**WIP**
+Supported:
 
-The Pre-release has been out and the final first coming soon.
+- dotNet 6 (since v1.3+)
+- dotNet Core 3.1 (since v1.1+)
+- dotNet Standard 2.1+ (since v1.1+)
+- ~~dotNet 4.8+ [?] (*NOT SURE*)~~
 
-- dotNet Core 3.0+
-- dotNet Standard 2.1+
-- dotNet 4.8+ [?] (*NOT SURE*)
-
+> NOTED .NET 5 has been ignored.
 
 ## NuGet
 

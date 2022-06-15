@@ -34,14 +34,16 @@ namespace HzNS.Cmdr.Tool
             }
 #pragma warning restore CS8603,CS8653
 
-            IFormatter formatter = new BinaryFormatter();
-            Stream stream = new MemoryStream();
+            var formatter = new BinaryFormatter();
+#pragma warning disable SYSLIB0011
+            var stream = new MemoryStream();
             using (stream)
             {
                 formatter.Serialize(stream, source);
                 stream.Seek(0, SeekOrigin.Begin);
-                return (T) formatter.Deserialize(stream);
+                return (T)formatter.Deserialize(stream);
             }
+#pragma warning restore SYSLIB0011
         }
     }
 }

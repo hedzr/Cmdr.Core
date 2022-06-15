@@ -23,7 +23,7 @@ namespace HzNS.Cmdr.Tool.Ext
 
             return s;
         }
-        
+
         [Pure]
         // [PublicAPI]
         // ReSharper disable once BuiltInTypeReferenceStyle
@@ -85,7 +85,7 @@ namespace HzNS.Cmdr.Tool.Ext
             var v = "[" + string.Join(",", @this) + "]";
             return v;
         }
-        
+
         /// <summary>
         /// no way, this codes can't take effect
         /// </summary>
@@ -100,7 +100,7 @@ namespace HzNS.Cmdr.Tool.Ext
         public static string ToStringEx(this object @this, bool quoteForString = false)
         {
             // ReSharper disable once InvertIf
-            if (!(@this is string) && @this is IEnumerable a)
+            if (@this is not string && @this is IEnumerable a)
             {
                 var v = "[" + string.Join(",", a.Cast<object>()) + "]";
                 return v;
@@ -110,7 +110,7 @@ namespace HzNS.Cmdr.Tool.Ext
             {
                 return Quote(s, true);
             }
-            
+
             // if (@this.GetType().IsArray)
             // {
             //     // try
@@ -149,7 +149,7 @@ namespace HzNS.Cmdr.Tool.Ext
         {
             return StringEx.EllipseStart(@this, max);
         }
-        
+
         public static string EatStart(this string @this, string part)
         {
             return @this.StartsWith(part) ? @this.Substring(part.Length) : @this;
@@ -217,12 +217,12 @@ namespace HzNS.Cmdr.Tool.Ext
         {
             return HttpUtility.UrlEncode(s);
         }
-        
+
         public static string HtmlEncode(this string s)
         {
             return HttpUtility.HtmlEncode(s);
         }
-        
+
         public static string HtmlDecode(this string s)
         {
             return HttpUtility.HtmlDecode(s);
@@ -251,7 +251,7 @@ namespace HzNS.Cmdr.Tool.Ext
                     '\n' => "\\n",
                     '\r' => "\\r",
                     '\t' => "\\t",
-                    _ => ((c < 32 || c > 127) && !char.IsLetterOrDigit(c) ? $"\\u{(int) c:X04}" : c.ToString())
+                    _ => ((c < 32 || c > 127) && !char.IsLetterOrDigit(c) ? $"\\u{(int)c:X04}" : c.ToString())
                 };
             }));
 
@@ -341,7 +341,7 @@ namespace HzNS.Cmdr.Tool.Ext
             return s;
         }
 
-        private static readonly char[] _defaultKnobbleChars = {'.'};
+        private static readonly char[] _defaultKnobbleChars = { '.' };
 
 
         [Pure]
@@ -501,7 +501,7 @@ namespace HzNS.Cmdr.Tool.Ext
 
             if (theResult)
             {
-                convertedValue = (TDestinationType) theConvertedValue!;
+                convertedValue = (TDestinationType)theConvertedValue!;
             }
             else
             {

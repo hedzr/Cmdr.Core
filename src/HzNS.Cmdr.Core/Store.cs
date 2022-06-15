@@ -20,7 +20,7 @@ namespace HzNS.Cmdr
     {
         private Slot Root { get; set; } = new Slot();
 
-        public string[] Prefixes { get; set; } = {"app"};
+        public string[] Prefixes { get; set; } = { "app" };
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public static Action<Slot, string, object?, object?>? OnSetHandler { get; set; }
@@ -33,7 +33,7 @@ namespace HzNS.Cmdr
             dumpTo(print, Root);
         }
 
-        private void dumpTo(Action<string, string> print, Slot? node, int level = 0, params string[] parts)
+        private static void dumpTo(Action<string, string> print, Slot? node, int level = 0, params string[] parts)
         {
             if (node == null) return;
 
@@ -87,16 +87,16 @@ namespace HzNS.Cmdr
 #pragma warning restore CS8603,CS8653
 
             if (typeof(T) == v.GetType())
-                return (T) v;
+                return (T)v;
 
             if (typeof(T) == typeof(bool))
             {
                 var bv = v.ToBool();
-                return (T) Convert.ChangeType(bv, typeof(T));
+                return (T)Convert.ChangeType(bv, typeof(T));
             }
 
             if (Cmdr.Instance.EnableAutoBoxingWhenExtracting)
-                return (T) Convert.ChangeType(v, typeof(T));
+                return (T)Convert.ChangeType(v, typeof(T));
 
             throw new CmdrException(
                 $"type info mismatch, cannot get value from option store. expect: {typeof(T)}, the underlying data type is: {v.GetType()}.");
@@ -226,7 +226,7 @@ namespace HzNS.Cmdr
             foreach (var (key, childSlot) in parent.Children)
             {
                 nodesWalker?.Invoke(parent, key, Slot.Empty, level, StatusOrIndex.ENTERING);
-                if (nodesWalker?.Invoke(parent, key, childSlot, level, (StatusOrIndex) i) == false)
+                if (nodesWalker?.Invoke(parent, key, childSlot, level, (StatusOrIndex)i) == false)
                     return;
                 walkForSlot(childSlot, level + 1, nodesWalker, valuesWalker);
                 nodesWalker?.Invoke(parent, key, Slot.Empty, level, StatusOrIndex.LEAVING);
@@ -431,7 +431,7 @@ namespace HzNS.Cmdr
                 case JTokenType.String:
                 {
                     var v = token.ToObject<string>();
-                    object av = v;
+                    object? av = v;
                     if (isArray) av = new string[] { };
                     if (setValueInternal(av, key, remainsParts, node, appendToArray, v))
                         OnSetHandler?.Invoke(node, key, old, node.Values[key]);
@@ -463,7 +463,7 @@ namespace HzNS.Cmdr
                 {
                     var v = token.ToObject<object>();
                     // ReSharper disable once SuggestVarOrType_SimpleTypes
-                    object av = v;
+                    object? av = v;
                     if (isArray) av = new object[] { };
                     if (setValueInternal(av, key, remainsParts, node, appendToArray, v))
                         OnSetHandler?.Invoke(node, key, old, node.Values[key]);
@@ -577,7 +577,7 @@ namespace HzNS.Cmdr
         private static void appendTArray<T>(Slot node, string key, T[] v, bool appendToArray, object? val)
         {
             var (ok, valArray) = toTSafe<T[]>(val);
-            if (ok)
+            if (ok && valArray != null)
             {
                 foreach (var val1 in valArray)
                 {
@@ -614,7 +614,7 @@ namespace HzNS.Cmdr
 #pragma warning restore CS8603, CS8653
         }
 
-        private static (bool ok, T) toTSafe<T>(object? it)
+        private static (bool, T?) toTSafe<T>(object? it)
         {
 #pragma warning disable CS8602, CS8653
             var tv = default(T);
@@ -650,16 +650,17 @@ namespace HzNS.Cmdr
 #pragma warning disable CS8600
                     v = default(T[]);
 #pragma warning restore CS8600
-                else v = (T[]) tv;
+                else v = (T[])tv;
             }
 
 // #pragma warning disable CS8619
             // ReSharper disable once LoopCanBeConvertedToQuery
-            //foreach (var value in val)
-            //{
-            //    v = v.Append(value).ToArray();
-            //}
-            v = v.Append(val).ToArray();
+            // foreach (var item in val)
+            // {
+            //    v = v.Append(item).ToArray();
+            // }
+            if (val != null && v != null)
+                v = v.Append(val).ToArray();
 // #pragma warning restore CS8619
 
             node.Values[key] = v;

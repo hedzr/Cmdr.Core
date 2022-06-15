@@ -45,7 +45,7 @@ namespace HzNS.Cmdr
         // ReSharper disable once ConvertToAutoPropertyWithPrivateSetter
         // ReSharper disable once UnusedMember.Global
         public IRootCommand RootCommand => _root;
-        
+
         public IFlag? FindFlag(string dottedKey, IBaseOpt? @from = null)
         {
             return RootCommand.FindFlag(dottedKey, @from);
@@ -61,7 +61,7 @@ namespace HzNS.Cmdr
         public ICommand? ParsedCommand { get; set; }
         public IFlag? ParsedFlag { get; set; }
         public string[] RemainsArgs { get; set; } = { };
-        
+
 
         /// <summary>
         /// greedy mode: prefer to longest Long option.
@@ -87,7 +87,9 @@ namespace HzNS.Cmdr
         }
 
         public bool EnableCmdrLogDebug { get; set; }
-        public bool EnableCmdrLogTrace { 
+
+        public bool EnableCmdrLogTrace
+        {
             get => log?.EnableCmdrLogTrace ?? false;
             set
             {
@@ -160,20 +162,20 @@ namespace HzNS.Cmdr
         public bool AppDebugMode => OptionsStore.GetAs("debug", false);
         public bool AppTraceMode => OptionsStore.GetAs("trace", false);
 
-        
+
         public bool EnableDuplicatedCharThrows { get; set; } = false;
         public bool EnableEmptyLongFieldThrows { get; set; } = false;
         public bool EnableUnknownCommandThrows { get; set; } = false;
         public bool EnableUnknownFlagThrows { get; set; } = false;
 
-        
+
         /// <summary>
         /// Sort commands/flags by alphabetic order. (Default: true)
         /// <br/>
         /// [SortAsc] controls the order in [Walk()].
         /// </summary>
         public bool SortByAlphabeticAscending { get; set; } = true;
-        
+
         /// <summary>
         /// Default tab stop position in help screen.
         /// </summary>
@@ -183,6 +185,7 @@ namespace HzNS.Cmdr
         /// As is
         /// </summary>
         public bool EnableExternalConfigFilesLoading { get; set; } = true;
+
         /// <summary>
         /// After the primary config file found and loaded, cmdr will try loading
         /// from `conf.d`/[ConfigFileAutoSubDir] sub-directory.
@@ -190,7 +193,7 @@ namespace HzNS.Cmdr
         /// And [NoPopulationAfterFirstExternalConfigLocationLoaded] will break this action. 
         /// </summary>
         public bool NoPopulationAfterFirstExternalConfigLocationLoaded { get; set; } = true;
-        
+
         /// <summary>
         /// The primary config file folder of $APPNAME.yml, .yaml, .json.
         /// Cmdr.Core will watch its sub-directory `conf.d` and all files in it.
@@ -220,7 +223,7 @@ namespace HzNS.Cmdr
             set => _configFileLocations = value;
         }
 
-        
+
         /// <summary>
         /// <code>bool OnDuplicatedCommandChar(IBaseWorker worker, ICommand command,
         ///     bool isShort, string matchingArg)</code>
@@ -354,7 +357,7 @@ namespace HzNS.Cmdr
             catch (WantHelpScreenException ex)
             {
                 // f5();
-                
+
                 // show help screen
                 log?.logDebug("showing the help screen ...");
                 RemainsArgs = ex.RemainArgs;
@@ -543,7 +546,7 @@ namespace HzNS.Cmdr
             }
         }
 
-        
+
         private void loadExternalConfigurationsFromPredefinedLocations(IBaseWorker w, IRootCommand root)
         {
             if (!EnableExternalConfigFilesLoading) return;
@@ -623,7 +626,7 @@ namespace HzNS.Cmdr
 
             return false;
         }
-        
+
         private bool loadExternalConfigurationsFrom(string location, IBaseWorker w, IRootCommand root)
         {
             var s1 = Regex.Replace(location, @"\$([A-Za-z0-9_]+)", @"%$1%",
@@ -851,7 +854,7 @@ namespace HzNS.Cmdr
                 //     continue;
                 // }
 
-                var newVal = val.ToObject<object?>();
+                var newVal = val?.ToObject<object?>();
                 OptionsStore.Set(parts, newVal);
             }
 
@@ -919,7 +922,7 @@ namespace HzNS.Cmdr
             }, (owner, flag, level) =>
             {
                 if (flag == null) return true;
-                
+
                 var x = xrefs;
                 if (!x.ContainsKey(owner))
                     x.TryAdd(owner, new Xref());
@@ -1088,10 +1091,10 @@ namespace HzNS.Cmdr
 
             return true;
         }
-        
+
         // private Comparison<T> defaultComparator = (o1, o2) => string.CompareOrdinal(o1.Long, o2.Long);
 
-        
+
         // ReSharper disable once UnusedMember.Local
         [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
         private bool walkForFlags(ICommand parent, Func<ICommand, IFlag, int, bool> watcher1, int level = 0)

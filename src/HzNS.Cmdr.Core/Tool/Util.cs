@@ -63,8 +63,8 @@ namespace HzNS.Cmdr.Tool
 #pragma warning restore CS8603,CS8653
 
             if (typeof(T) == typeof(string))
-                return (T) (object) v;
-            return (T) Convert.ChangeType(v, typeof(T));
+                return (T)(object)v;
+            return (T)Convert.ChangeType(v, typeof(T));
         }
 
         #region About Json
@@ -79,17 +79,17 @@ namespace HzNS.Cmdr.Tool
             return jsonString;
         }
 
-        public static T JsonDeserialize<T>(string jsonString)
+        public static T? JsonDeserialize<T>(string jsonString)
         {
             var ser = new DataContractJsonSerializer(typeof(T));
             using var ms = new MemoryStream(Encoding.UTF8.GetBytes(jsonString));
-            var obj = (T) ser.ReadObject(ms);
+            var obj = (T?)ser.ReadObject(ms);
             return obj;
         }
 
         public static void TestJsonSerializer()
         {
-            var p = new Person {Name = "Tony", Age = 23};
+            var p = new Person { Name = "Tony", Age = 23 };
             var jsonString = JsonSerializer(p);
             Console.Write(jsonString);
             var pp = JsonDeserialize<Person>(jsonString);
