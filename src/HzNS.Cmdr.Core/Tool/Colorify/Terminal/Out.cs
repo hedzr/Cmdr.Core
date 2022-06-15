@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using HzNS.Cmdr.Tool.Ext;
 
 namespace HzNS.Cmdr.Tool.Colorify.Terminal
@@ -13,15 +12,15 @@ namespace HzNS.Cmdr.Tool.Colorify.Terminal
 
         public static void WriteLine(string text)
         {
-            int size = Console.WindowWidth - 1;
+            var size = Console.WindowWidth - 1;
             if (size != Console.CursorLeft + 1)
             {
-                size = size - Console.CursorLeft;
+                size -= Console.CursorLeft;
             }
 
             if (size < text.Length)
             {
-                size = Console.WindowWidth + size;
+                size += Console.WindowWidth;
             }
 
             if (size < 0)
@@ -45,10 +44,10 @@ namespace HzNS.Cmdr.Tool.Colorify.Terminal
         public static void AlignCenter(string text)
         {
             decimal size = Console.WindowWidth - 1 - text.Length;
-            int rightSize = (int) Math.Round(size / 2);
-            int leftSize = (int) (size - rightSize);
-            string leftMargin = " ".Repeat(leftSize);
-            string rightMargin = " ".Repeat(rightSize);
+            var rightSize = (int)Math.Round(size / 2);
+            var leftSize = (int)(size - rightSize);
+            var leftMargin = new String(' ', leftSize);
+            var rightMargin = new String(' ', rightSize);
 
             Console.Write(leftMargin);
             Console.Write(text);
@@ -58,8 +57,8 @@ namespace HzNS.Cmdr.Tool.Colorify.Terminal
         public static void Extreme(string left, string right)
         {
             decimal size = Console.WindowWidth - 1;
-            int rightMargin = (int) Math.Round(size / 2);
-            int leftMargin = (int) (size - rightMargin);
+            var rightMargin = (int)Math.Round(size / 2);
+            var leftMargin = (int)(size - rightMargin);
 
             Console.Write($"{left}".PadRight(rightMargin));
             Console.WriteLine($"{right}".PadLeft(leftMargin));
@@ -67,13 +66,13 @@ namespace HzNS.Cmdr.Tool.Colorify.Terminal
 
         public static void DivisionLine(char character)
         {
-            string text = new String(character, Console.WindowWidth - 1);
+            var text = new string(character, Console.WindowWidth - 1);
             Console.WriteLine(text);
         }
 
         public static void BlankLines(int? lines = 1)
         {
-            for (int i = 0; i < lines; i++)
+            for (var i = 0; i < lines; i++)
             {
                 DivisionLine(' ');
             }

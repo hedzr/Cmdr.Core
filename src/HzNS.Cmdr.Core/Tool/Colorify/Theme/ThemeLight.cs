@@ -35,21 +35,23 @@ namespace HzNS.Cmdr.Tool.Colorify.Theme
 
         public override void SetComponents()
         {
-            var colors = new Dictionary<string, Color>();
-            colors.Add("text-default", AddColor(null, null));
-            colors.Add("bg-default", AddColor(null, null));
-            colors.Add("text-muted", AddColor(null, ConsoleColor.Gray));
-            colors.Add("text-primary", AddColor(null, ConsoleColor.DarkGray));
-            colors.Add("text-warning", AddColor(null, ConsoleColor.DarkYellow));
-            colors.Add("text-danger", AddColor(null, ConsoleColor.DarkRed));
-            colors.Add("bg-muted", AddColor(ConsoleColor.Gray, ConsoleColor.Black));
-            colors.Add("bg-primary", AddColor(ConsoleColor.DarkGray, ConsoleColor.White));
-            colors.Add("bg-warning", AddColor(ConsoleColor.DarkYellow, ConsoleColor.White));
-            colors.Add("bg-danger", AddColor(ConsoleColor.DarkRed, ConsoleColor.White));
-            colors.Add("text-success", AddColor(null, ConsoleColor.DarkGreen));
-            colors.Add("text-info", AddColor(null, ConsoleColor.DarkCyan));
-            colors.Add("bg-success", AddColor(ConsoleColor.DarkGreen, ConsoleColor.White));
-            colors.Add("bg-info", AddColor(ConsoleColor.DarkCyan, ConsoleColor.White));
+            var colors = new Dictionary<string, Color>
+            {
+                { "text-default", AddColor(null, null) },
+                { "text-muted", AddColor(null, ConsoleColor.Gray) },
+                { "text-primary", AddColor(null, ConsoleColor.DarkGray) },
+                { "text-warning", AddColor(null, ConsoleColor.DarkYellow) },
+                { "text-danger", AddColor(null, ConsoleColor.DarkRed) },
+                { "text-success", AddColor(null, ConsoleColor.DarkGreen) },
+                { "text-info", AddColor(null, ConsoleColor.DarkCyan) },
+                { "bg-default", AddColor(null, null) },
+                { "bg-muted", AddColor(ConsoleColor.Gray, ConsoleColor.Black) },
+                { "bg-primary", AddColor(ConsoleColor.DarkGray, ConsoleColor.White) },
+                { "bg-warning", AddColor(ConsoleColor.DarkYellow, ConsoleColor.White) },
+                { "bg-danger", AddColor(ConsoleColor.DarkRed, ConsoleColor.White) },
+                { "bg-success", AddColor(ConsoleColor.DarkGreen, ConsoleColor.White) },
+                { "bg-info", AddColor(ConsoleColor.DarkCyan, ConsoleColor.White) }
+            };
             base._colors = colors;
         }
     }

@@ -15,6 +15,8 @@ namespace HzNS.Cmdr.Tool.Colorify
         Dictionary<string, Color> _theme { get; set; }
         private readonly object colorLock = new object();
 
+        public bool KeepBackgroundColor { get; set; } = true;
+
         public Format(ITheme theme)
         {
             if (theme == null)
@@ -26,11 +28,12 @@ namespace HzNS.Cmdr.Tool.Colorify
             DefaultColor();
         }
 
-        void SetColor(string color)
+        void SetColor(string color, bool keepBackgroundColor = true)
         {
             if (_theme.TryGetValue(color, out var value))
             {
-                Console.BackgroundColor = value._background;
+                if (!keepBackgroundColor && !KeepBackgroundColor)
+                    Console.BackgroundColor = value._background;
                 Console.ForegroundColor = value._foreground;
             }
             else
@@ -39,10 +42,11 @@ namespace HzNS.Cmdr.Tool.Colorify
             }
         }
 
-        void DefaultColor(string color = Colors.bgDefault)
+        void DefaultColor(bool keepBackgroundColor = true, string color = Colors.bgDefault)
         {
             var theme = _theme[color];
-            Console.BackgroundColor = theme._background;
+            if (!keepBackgroundColor && !KeepBackgroundColor)
+                Console.BackgroundColor = theme._background;
             Console.ForegroundColor = theme._foreground;
         }
 
@@ -149,17 +153,12 @@ namespace HzNS.Cmdr.Tool.Colorify
             }
         }
 
-        // public void BlankLines(int lines = 1)
-        // {
-        //     BlankLines(lines, Colors.txtDefault);
-        // }
-
         public void BlankLines(string color)
         {
             BlankLines(1, color);
         }
 
-        public void BlankLines(int lines = 1, string color = Colors.txtDefault)
+        public void BlankLines(int lines, string color = Colors.txtDefault)
         {
             lock (colorLock)
             {
